@@ -46,7 +46,7 @@ fetch('media/test.webm')
 ## get WebP frame from MediaRecorder WebM Stream
 
 ```ts
-import EBML, {Decoder, Encoder, Refiner} from "./";
+import EBML, {Decoder, Encoder, Refiner, tools} from "./";
 
 const decoder = new Decoder();
 const encoder = new Encoder();
@@ -65,9 +65,8 @@ async function recorder_main() {
     const task = readAsArrayBuffer(chunk)
       .then((buf)=>{
         const chunks = decoder.decode(buf);
-        const WebPBufs = Decoder.getWebPFrames(chunks);
-        WebPBufs.forEach((buf)=>{
-          const WebP = new Blob([buf], {type: "image/webp"});
+        const WebPs = tools.WebPFrameFilter(chunks);
+        WebPs.forEach((WebP)=>{
           const img = new Image();
           img.src = URL.createObjectURL(WebP);
           document.body.appendChild(img);
@@ -92,3 +91,13 @@ async function recorder_main() {
 # license
 
 MIT
+
+
+# related works
+
+* https://github.com/antimatter15/js-ebml
+* https://github.com/themasch/node-ebml
+* https://github.com/oeuillot/node-matroska
+* https://github.com/Matroska-Org/libebml/
+* https://chromium.googlesource.com/webm/libvpx/+/master/third_party/libwebm
+* https://github.com/mozilla/gecko-dev/tree/master/dom/media/webm

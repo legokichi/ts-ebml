@@ -47,35 +47,6 @@ export default class EBMLDecoder {
     return diff;
   }
 
-  static readBlock(buf: Buffer): EBML.SimpleBlock {
-    return ebmlBlock(buf);
-  }
-
-  /**
-   * @return - Complete WebP File Buffer
-   */
-  static getWebPFrames(elms: EBML.EBMLElementDetail[]): ArrayBuffer[] {
-    return elms.reduce<ArrayBuffer[]>((lst, elm)=>{
-      if(elm.type !== "b"){ return lst; }
-      if(elm.name !== "SimpleBlock"){ return lst; }
-      const o = ebmlBlock(elm.data);
-      return o.frames.reduce<ArrayBuffer[]>((lst, frame)=>{
-        // https://tools.ietf.org/html/rfc6386#section-19.1
-        const startcode = frame.slice(3, 6).toString("hex");
-        if(startcode !== "9d012a"){ return lst; }
-        // https://developers.google.com/speed/webp/docs/riff_container
-        const VP8Chunk = createRIFFChunk("VP8 ", frame);
-        const WebPChunk = Buffer.concat([
-          new Buffer("WEBP", "ascii"),
-          VP8Chunk
-        ]);
-        const webpBuf = createRIFFChunk("RIFF", WebPChunk);
-        return lst.concat(webpBuf.buffer);
-      }, lst);
-    }, []);
-  }
-
-
   private readChunk(chunk: ArrayBuffer): void {
     this._buffer = Buffer.concat([this._buffer, new Buffer(chunk)]);
     while (this._cursor < this._buffer.length) {
@@ -275,16 +246,4 @@ export default class EBMLDecoder {
 
     return true;
   }
-}
-
-
-function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer {
-  const chunkSize = new Buffer(4);
-  chunkSize.writeUInt32LE(chunk.byteLength , 0);
-  return Buffer.concat([
-    new Buffer(FourCC.substr(0, 4), "ascii"),
-    chunkSize,
-    chunk,
-    new Buffer(chunk.byteLength % 2 === 0 ? 0 : 1) // padding
-  ]);
 }

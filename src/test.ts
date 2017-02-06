@@ -1,4 +1,4 @@
-import EBML, {Decoder, Encoder, Refiner} from "./";
+import EBML, {Decoder, Encoder, Refiner, tools} from "./";
 
 const Buffer: typeof global.Buffer = require("buffer/").Buffer;
 
@@ -19,9 +19,8 @@ async function recorder_main() {
     const task = readAsArrayBuffer(chunk)
       .then((buf)=>{
         const chunks = decoder.decode(buf);
-        const WebPBufs = Decoder.getWebPFrames(chunks);
-        WebPBufs.forEach((buf)=>{
-          const WebP = new Blob([buf], {type: "image/webp"});
+        const WebPs = tools.WebPFrameFilter(chunks);
+        WebPs.forEach((WebP)=>{
           const img = new Image();
           img.src = URL.createObjectURL(WebP);
           document.body.appendChild(img);
