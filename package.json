@@ -1,6 +1,6 @@
 {
   "name": "ts-ebml",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "ebml decoder and encoder",
   "scripts": {
     "setup": "npm install -g http-server;",
@@ -27,7 +27,8 @@
     "ebml",
     "webm",
     "mkv",
-    "matrosika"
+    "matrosika",
+    "webp"
   ],
   "author": "legokichi duckscallion",
   "license": "MIT",

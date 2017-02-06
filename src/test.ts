@@ -10,25 +10,30 @@ async function recorder_main() {
 	const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
   const rec = new MediaRecorder(stream, { mimeType: 'video/webm; codecs="vp8, opus"' });  
   const tasks: Promise<void>[] = []; 
-  let blob = new Blob([], {type: "video/webm"});
-  let elms: EBML.EBMLElementDetail[] = [];
-
+  let WebM = new Blob([], {type: "video/webm"});
+  
   rec.ondataavailable = (ev: BlobEvent)=>{
     const chunk = ev.data;
-    blob = new Blob([blob, chunk], {type: chunk.type});
+    WebM = new Blob([WebM, chunk], {type: chunk.type});
     
     const task = readAsArrayBuffer(chunk)
       .then((buf)=>{
         const chunks = decoder.decode(buf);
-        elms = elms.concat(chunks);
+        const WebPBufs = Decoder.getWebPFrames(chunks);
+        WebPBufs.forEach((buf)=>{
+          const WebP = new Blob([buf], {type: "image/webp"});
+          const img = new Image();
+          img.src = URL.createObjectURL(WebP);
+          document.body.appendChild(img);
+        })
         refiner.read(chunks);
       });
     
     tasks.push(task);
   };
-  rec.start(500);
+  rec.start(100);
 
-  await new Promise((resolve)=> setTimeout(resolve, 10 * 1000) );
+  await new Promise((resolve)=> setTimeout(resolve, 30 * 1000) );
 
   rec.ondataavailable = undefined;
   rec.stream.getTracks().map((track) => { track.stop(); });
@@ -38,17 +43,19 @@ async function recorder_main() {
   // insert new header
   const metadataElms = refiner.putRefinedMetaData();
   const refinedMetadataBuf = new Encoder().encode(metadataElms);
-  const webmBuf = await readAsArrayBuffer(blob);
+  const webmBuf = await readAsArrayBuffer(WebM);
   const clustersBuf = webmBuf.slice(refiner.clusterStartPos);
   const refined = new Blob([refinedMetadataBuf, clustersBuf], {type: "video/webm"});
 
-  const originalVid = await putVideo(blob, "plain recorded webm");
+  const originalVid = await putVideo(WebM, "plain recorded webm");
   const refinedVid = await putVideo(refined, "refined webm");
 
   console.assert(! Number.isFinite(originalVid.duration));
   console.assert(  Number.isFinite(refinedVid.duration));
-
 }
+
+
+
 
 function node_main() {
   const fs = require('fs');
@@ -115,6 +122,19 @@ function writer_main(){
     console.assert(elm.value === origin.value);
   });
 }
+
+
+
+function byteToBit(byte: number): string{
+  let bits = byte.toString(2);
+  const padding = 8 - bits.length;
+  for(let i=0; i<padding; i++){
+    bits = "0" + bits;
+  }
+  return bits;
+}
+
+
 
 function readAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
   return new Promise((resolve, reject)=>{
