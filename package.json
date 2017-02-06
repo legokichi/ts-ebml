@@ -9,15 +9,15 @@
     "reset": "rm -rf node_modules",
     "mkdir": "mkdir lib dist 2>/dev/null",
     "clean": "rm -rf lib/* dist/*; mkdir -p dist",
-    "build": "npm run clean   && tsc    -p .",
-    "start": "http-server . -s & tsc -w -p .",
+    "build": "npm run clean   && tsc    -p .; npm run browserify",
+    "start": "http-server . -s & tsc -w -p .& npm run watchify",
     "stop": "killall -- node */tsc -w -p",
     "browserify": "browserify lib/index.js --standalone EBML -o dist/index.js",
     "watchify": "watchify lib/index.js --standalone EBML -o dist/index.js -v",
     "check": "tsc -w --noEmit -p ./",
     "lint": "tslint -c ./tslint.json --project ./tsconfig.json --type-check",
     "doc": "typedoc --mode modules --out doc --disableOutputCheck",
-    "test": "browserify lib/test.js -o test/test.browser.js; http-server"
+    "test": "tsc -p .; browserify lib/test.js -o test/test.browser.js; http-server"
   },
   "repository": {
     "type": "git",

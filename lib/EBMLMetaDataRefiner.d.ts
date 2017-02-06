@@ -19,6 +19,7 @@ export default class EBMLMetaDataRefiner {
     _duration: number;
     private reachFirstCluster;
     private metadata;
+    clusterStartPos: number;
     constructor();
     /**
      * SeekHead および Info > Duration 構成のための情報を集める

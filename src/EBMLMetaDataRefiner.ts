@@ -24,6 +24,7 @@ export default class EBMLMetaDataRefiner {
   _duration: number;
   private reachFirstCluster: boolean;
   private metadata: EBML.EBMLElementDetail[];
+  clusterStartPos: number;
 
   constructor(){
     this.clusters = [];
@@ -36,6 +37,7 @@ export default class EBMLMetaDataRefiner {
     this.trackDefaultDuration = [];
     this.reachFirstCluster = false;
     this.metadata = [];
+    this.clusterStartPos = -1;
   }
   
   /**
@@ -54,8 +56,9 @@ export default class EBMLMetaDataRefiner {
       }
       if(elm.type === "m" && elm.name === "Cluster"){
         if(!this.reachFirstCluster){
-          this.metadata.pop(); // Cluster を取り除く
           this.reachFirstCluster = true;
+          this.clusterStartPos = elm.start;
+          this.metadata.pop(); // Cluster を取り除く
         }
         if(!elm.isEnd){
           //console.log(`Cluster: `, elm.start);
