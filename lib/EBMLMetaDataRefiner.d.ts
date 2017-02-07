@@ -1,10 +1,9 @@
 import * as EBML from "./EBML";
 export default class EBMLMetaDataRefiner {
     /**
-     * SeekHead に記載すべき Cluster Element
+     * SeekHead に記載すべき Cluster Element の start
      */
     private clusters;
-    private segments;
     private currentTrack;
     private trackTypes;
     /**
@@ -19,7 +18,6 @@ export default class EBMLMetaDataRefiner {
     _duration: number;
     private reachFirstCluster;
     private metadata;
-    private clusterStartPos;
     constructor();
     /**
      * SeekHead および Info > Duration 構成のための情報を集める

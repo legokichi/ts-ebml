@@ -7,10 +7,9 @@ import * as EBML from "./EBML";
 
 export default class EBMLMetaDataRefiner {
   /**
-   * SeekHead に記載すべき Cluster Element
+   * SeekHead に記載すべき Cluster Element の start
    */
-  private clusters: (EBML.MasterElement & EBML.ElementDetail)[];
-  private segments: (EBML.MasterElement & EBML.ElementDetail)[];
+  private clusters: number[];
   private currentTrack: {TrackNumber: number, TrackType: number, DefaultDuration: (number | null) };
   private trackTypes: number[];//{ [trackID: number]: number };
   /**
@@ -25,11 +24,9 @@ export default class EBMLMetaDataRefiner {
   _duration: number;
   private reachFirstCluster: boolean;
   private metadata: EBML.EBMLElementDetail[];
-  private clusterStartPos: number;
 
   constructor(){
     this.clusters = [];
-    this.segments = [];
     this.currentTrack = {TrackNumber: -1, TrackType: -1, DefaultDuration: null};
     this.trackTypes = [];
     this.timecodeScale = 0;
@@ -38,7 +35,6 @@ export default class EBMLMetaDataRefiner {
     this.trackDefaultDuration = [];
     this.reachFirstCluster = false;
     this.metadata = [];
-    this.clusterStartPos = -1;
   }
   
   /**
@@ -50,20 +46,14 @@ export default class EBMLMetaDataRefiner {
       if(!this.reachFirstCluster){
         this.metadata.push(elm);
       }
-      if(elm.type === "m" && elm.name === "Segment"){
-        //console.log(`Segment: `, elm.start);
-        this.segments.push(elm);
-        return;
-      }
       if(elm.type === "m" && elm.name === "Cluster"){
         if(!this.reachFirstCluster){
           this.reachFirstCluster = true;
-          this.clusterStartPos = elm.start;
           this.metadata.pop(); // Cluster を取り除く
         }
         if(!elm.isEnd){
           //console.log(`Cluster: `, elm.start);
-          this.clusters.push(elm);
+          this.clusters.push(elm.start);
         }
         return;
       }
@@ -120,53 +110,12 @@ export default class EBMLMetaDataRefiner {
   }
 
   putRefinedMetaData(): { metadata: ArrayBuffer, clusterStartPos: number } {
-    const clusterStartPos = this.clusterStartPos;
-    const fstSgm = this.segments[0];
-    if(fstSgm == null){ return {metadata: new ArrayBuffer(0), clusterStartPos}; } // まだ Segment まで読んでない
-    if(!this.reachFirstCluster){ return {metadata: new ArrayBuffer(0), clusterStartPos}; } // まだ Cluster に到達していない => metadata 全部読めてない
-    const lastmetadata = this.metadata[this.metadata.length-1];
-    
-    if(lastmetadata == null){ return {metadata: new ArrayBuffer(0), clusterStartPos}; }
-    if(lastmetadata.dataEnd < 0){ throw new Error("metadata does not have size"); } // metadata が 不定サイズ
-    const metadataSize = lastmetadata.dataEnd; // 書き換える前の metadata のサイズ
-    const create = (sizeDiff=0)=>{
-      let metadata: EBML.EBMLElementBuffer[] = this.metadata.slice(0);
-      for(let i=0; i<metadata.length; i++){
-        const elm = metadata[i];
-        if(elm.type === "m" && elm.name === "Info" && elm.isEnd){
-          const durBuf = new Buffer(4);
-          durBuf.writeFloatBE(this.duration, 0);
-          const durationElm: EBML.ChildElementBuffer = {name: "Duration", type: "f", data: durBuf };
-          metadata.splice(i, 0, durationElm); // </Info> 前に <Duration /> を追加
-          i++; // <duration /> 追加した分だけインクリメント
-        }
-      }
-      const seekHead: EBML.EBMLElementBuffer[] = [];
-      seekHead.push({name: "SeekHead", type: "m"});
-      this.clusters.forEach((cluster)=>{
-        seekHead.push({name: "Seek", type: "m"});
-        // [0x1F, 0x43, 0xB6, 0x75] で Cluster の意
-        seekHead.push({name: "SeekID", type: "b", data: new Buffer([0x1F, 0x43, 0xB6, 0x75]) });
-        const posBuf = new Buffer(4); // 実際可変長 int なので 4byte 固定という実装は良くない
-        // しかし ms 単位だとすれば 0xFFFFFFFF は 49 日もの時間を記述できるので実用上問題ない
-        // 64bit や 可変長 int を js で扱うの面倒
-        const {start} = cluster;
-        const offset = start +  sizeDiff;
-        posBuf.writeUInt32BE(offset, 0);
-        seekHead.push({name: "SeekPosition", type: "u", data: posBuf});
-        seekHead.push({name: "Seek", type: "m", isEnd: true});
-      });
-      seekHead.push({name: "SeekHead", type: "m", isEnd: true});
-      metadata = metadata.concat(seekHead); // metadata 末尾に <SeekHead /> を追加
-      return metadata;
-    };
-    const encorder = new Encoder();
-    // 一旦 seekhead を作って自身のサイズを調べる
-    const bufs = create(0).reduce<ArrayBuffer[]>((lst, elm)=> lst.concat(encorder.encode([elm])), []);
-    const totalByte = bufs.reduce((o, buf)=> o + buf.byteLength, 0);
-    // 自分自身のサイズを考慮した seekhead を再構成する
-    //console.log("sizeDiff", totalByte - metadataSize);
-    const metadata = create(totalByte - metadataSize);
+    const clusterStartPos = this.clusters[0];
+    const metadata = tools.putRefinedMetaData(
+      this.metadata,
+      this.clusters,
+      this.duration
+    );
     const metadataBuf = new Encoder().encode(metadata);
     return {metadata: metadataBuf, clusterStartPos};
     
