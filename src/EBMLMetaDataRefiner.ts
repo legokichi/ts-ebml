@@ -113,7 +113,7 @@ export default class EBMLMetaDataRefiner {
     if(typeof defaultDuration !== "number"){ return this._duration; }
     // defaultDuration は 生の nano sec
     // this._duration は timecodescale 考慮されている
-    return this._duration + (defaultDuration / this.timecodeScale);
+    return (((this._duration + (defaultDuration / this.timecodeScale)) * 1000) | 0) / 1000;
   }
 
   putRefinedMetaData(): EBML.EBMLElementBuffer[] {

@@ -2,7 +2,7 @@ export * from "./EBML";
 import Decoder from "./EBMLDecoder";
 import Encoder from "./EBMLEncoder";
 import Refiner from "./EBMLMetaDataRefiner";
-import tools from "./tools";
+import * as tools from "./tools";
 
 export {
   Decoder,

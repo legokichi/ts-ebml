@@ -28,7 +28,7 @@ export function WebPBlockFilter(elms: EBML.EBMLElementDetail[]): (EBML.BinaryEle
     const hasWebP = o.frames.some((frame)=>{
       // https://tools.ietf.org/html/rfc6386#section-19.1
       const startcode = frame.slice(3, 6).toString("hex");
-      return startcode !== "9d012a";
+      return startcode === "9d012a";
     });
     if(!hasWebP){ return lst; }
     return lst.concat(elm);

@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import * as EBML from "./EBML";
 export default class EBMLDecoder {
     private _buffer;
@@ -16,7 +15,6 @@ export default class EBMLDecoder {
     private _result;
     constructor();
     decode(chunk: ArrayBuffer): EBML.EBMLElementDetail[];
-    static readBlock(buf: Buffer): EBML.SimpleBlock;
     private readChunk(chunk);
     private getSchemaInfo(tagNum);
     /**

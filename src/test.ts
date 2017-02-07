@@ -20,12 +20,17 @@ async function recorder_main() {
       .then((buf)=>{
         const chunks = decoder.decode(buf);
         const WebPs = tools.WebPFrameFilter(chunks);
-        WebPs.forEach((WebP)=>{
-          const img = new Image();
-          img.src = URL.createObjectURL(WebP);
-          document.body.appendChild(img);
-        })
         refiner.read(chunks);
+        const prms = WebPs
+          .map(URL.createObjectURL)
+          .map(fetchImage);
+        return Promise.all(prms)
+          .then((imgs)=>{
+            imgs.forEach((img)=>{
+              console.assert(Number.isFinite(img.width));
+              document.body.appendChild(img);
+            });
+        });
       });
     
     tasks.push(task);
@@ -33,7 +38,8 @@ async function recorder_main() {
   rec.start(100);
 
   await new Promise((resolve)=> setTimeout(resolve, 30 * 1000) );
-
+  
+  rec.stop();
   rec.ondataavailable = undefined;
   rec.stream.getTracks().map((track) => { track.stop(); });
   
@@ -51,6 +57,14 @@ async function recorder_main() {
 
   console.assert(! Number.isFinite(originalVid.duration));
   console.assert(  Number.isFinite(refinedVid.duration));
+
+  originalVid.currentTime = 1000 * 60 * 60 * 24 * 7;
+  originalVid.onseeked = ()=>{
+    originalVid.onseeked = <any>undefined;
+    originalVid.currentTime = 0;
+    console.log(refinedVid.duration, originalVid.duration)
+    console.assert(refinedVid.duration === originalVid.duration);
+  }
 }
 
 
@@ -133,7 +147,14 @@ function byteToBit(byte: number): string{
   return bits;
 }
 
-
+function fetchImage(src: string): Promise<HTMLImageElement>{
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.src = src;
+    img.onload = ()=>{ resolve(img); };
+    img.onerror = (err)=>{ reject(err.error); };
+  });
+}
 
 function readAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
   return new Promise((resolve, reject)=>{
