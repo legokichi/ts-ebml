@@ -28,7 +28,8 @@ export default class EBMLMetaDataRefiner {
     read(elms: EBML.EBMLElementDetail[]): void;
     /**
      * DefaultDuration が定義されている場合は最後のフレームのdurationも考慮する
+     * 単位 timecodeScale
      */
-    readonly duration: number;
+    private readonly duration;
     putRefinedMetaData(): EBML.EBMLElementBuffer[];
 }

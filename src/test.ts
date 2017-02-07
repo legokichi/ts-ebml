@@ -46,11 +46,10 @@ async function recorder_main() {
   await tasks.reduce((o, prm) => o.then(() => prm), Promise.resolve(void 0));
 
   // insert new header
-  const metadataElms = refiner.putRefinedMetaData();
-  const refinedMetadataBuf = new Encoder().encode(metadataElms);
+  const {metadata, clusterStartPos} = refiner.putRefinedMetaData();
   const webmBuf = await readAsArrayBuffer(WebM);
-  const clustersBuf = webmBuf.slice(refiner.clusterStartPos);
-  const refined = new Blob([refinedMetadataBuf, clustersBuf], {type: "video/webm"});
+  const clustersBuf = webmBuf.slice(clusterStartPos);
+  const refined = new Blob([metadata, clustersBuf], {type: "video/webm"});
 
   const originalVid = await putVideo(WebM, "plain recorded webm");
   const refinedVid = await putVideo(refined, "refined webm");
@@ -62,7 +61,6 @@ async function recorder_main() {
   originalVid.onseeked = ()=>{
     originalVid.onseeked = <any>undefined;
     originalVid.currentTime = 0;
-    console.log(refinedVid.duration, originalVid.duration)
     console.assert(refinedVid.duration === originalVid.duration);
   }
 }
@@ -85,11 +83,10 @@ async function serv_main() {
   refiner.read(elms);
 
   // insert new header
-  const metadataElms = refiner.putRefinedMetaData();
-  const refinedMetadataBuf = new Encoder().encode(metadataElms);
-  const clustersBuf = webmBuf.slice(refiner.clusterStartPos);
+  const {metadata, clusterStartPos} = refiner.putRefinedMetaData();
+  const clustersBuf = webmBuf.slice(clusterStartPos);
   const original = new Blob([webmBuf], {type: "video/webm"});
-  const refined = new Blob([refinedMetadataBuf, clustersBuf], {type: "video/webm"});
+  const refined = new Blob([metadata, clustersBuf], {type: "video/webm"});
 
   const refinedBuf = await readAsArrayBuffer(refined);
   const redinedElms = new Decoder().decode(refinedBuf);

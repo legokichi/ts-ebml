@@ -25,7 +25,7 @@ export default class EBMLMetaDataRefiner {
   _duration: number;
   private reachFirstCluster: boolean;
   private metadata: EBML.EBMLElementDetail[];
-  clusterStartPos: number;
+  private clusterStartPos: number;
 
   constructor(){
     this.clusters = [];
@@ -105,24 +105,28 @@ export default class EBMLMetaDataRefiner {
   }
   /**
    * DefaultDuration が定義されている場合は最後のフレームのdurationも考慮する
+   * 単位 timecodeScale
    */
-  get duration(){
+  private get duration(){
     const videoTrackNum = this.trackTypes.indexOf(1); // find first video track
     if(videoTrackNum < 0){ return 0; }
     const defaultDuration = this.trackDefaultDuration[videoTrackNum];
     if(typeof defaultDuration !== "number"){ return this._duration; }
     // defaultDuration は 生の nano sec
     // this._duration は timecodescale 考慮されている
-    return (((this._duration + (defaultDuration / this.timecodeScale)) * 1000) | 0) / 1000;
+    const duration_nanosec = (this._duration * this.timecodeScale) + defaultDuration;
+    const duration = duration_nanosec / this.timecodeScale;
+    return duration|0;
   }
 
-  putRefinedMetaData(): EBML.EBMLElementBuffer[] {
+  putRefinedMetaData(): { metadata: ArrayBuffer, clusterStartPos: number } {
+    const clusterStartPos = this.clusterStartPos;
     const fstSgm = this.segments[0];
-    if(fstSgm == null){ return []; } // まだ Segment まで読んでない
-    if(!this.reachFirstCluster){ return []; } // まだ Cluster に到達していない => metadata 全部読めてない
+    if(fstSgm == null){ return {metadata: new ArrayBuffer(0), clusterStartPos}; } // まだ Segment まで読んでない
+    if(!this.reachFirstCluster){ return {metadata: new ArrayBuffer(0), clusterStartPos}; } // まだ Cluster に到達していない => metadata 全部読めてない
     const lastmetadata = this.metadata[this.metadata.length-1];
     
-    if(lastmetadata == null){ return []; }
+    if(lastmetadata == null){ return {metadata: new ArrayBuffer(0), clusterStartPos}; }
     if(lastmetadata.dataEnd < 0){ throw new Error("metadata does not have size"); } // metadata が 不定サイズ
     const metadataSize = lastmetadata.dataEnd; // 書き換える前の metadata のサイズ
     const create = (sizeDiff=0)=>{
@@ -162,7 +166,10 @@ export default class EBMLMetaDataRefiner {
     const totalByte = bufs.reduce((o, buf)=> o + buf.byteLength, 0);
     // 自分自身のサイズを考慮した seekhead を再構成する
     //console.log("sizeDiff", totalByte - metadataSize);
-    return create(totalByte - metadataSize);
+    const metadata = create(totalByte - metadataSize);
+    const metadataBuf = new Encoder().encode(metadata);
+    return {metadata: metadataBuf, clusterStartPos};
+    
   }
 }
 
