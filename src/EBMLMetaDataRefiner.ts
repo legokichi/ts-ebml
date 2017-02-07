@@ -97,7 +97,7 @@ export default class EBMLMetaDataRefiner {
    * DefaultDuration が定義されている場合は最後のフレームのdurationも考慮する
    * 単位 timecodeScale
    */
-  private get duration(){
+  get duration(){
     const videoTrackNum = this.trackTypes.indexOf(1); // find first video track
     if(videoTrackNum < 0){ return 0; }
     const defaultDuration = this.trackDefaultDuration[videoTrackNum];

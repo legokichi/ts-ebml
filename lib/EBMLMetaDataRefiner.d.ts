@@ -28,7 +28,7 @@ export default class EBMLMetaDataRefiner {
      * DefaultDuration が定義されている場合は最後のフレームのdurationも考慮する
      * 単位 timecodeScale
      */
-    private readonly duration;
+    readonly duration: number;
     putRefinedMetaData(): {
         metadata: ArrayBuffer;
         clusterStartPos: number;
