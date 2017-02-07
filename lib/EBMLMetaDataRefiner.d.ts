@@ -19,7 +19,7 @@ export default class EBMLMetaDataRefiner {
     _duration: number;
     private reachFirstCluster;
     private metadata;
-    clusterStartPos: number;
+    private clusterStartPos;
     constructor();
     /**
      * SeekHead および Info > Duration 構成のための情報を集める
@@ -31,5 +31,8 @@ export default class EBMLMetaDataRefiner {
      * 単位 timecodeScale
      */
     private readonly duration;
-    putRefinedMetaData(): EBML.EBMLElementBuffer[];
+    putRefinedMetaData(): {
+        metadata: ArrayBuffer;
+        clusterStartPos: number;
+    };
 }
