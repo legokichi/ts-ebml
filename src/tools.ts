@@ -20,8 +20,8 @@ export function WebPFrameFilter(elms: EBML.EBMLElementDetail[]): Blob[] {
   }, []);
 }
 
-export function WebPBlockFilter(elms: EBML.EBMLElementDetail[]): (EBML.BinaryElement & {data: Buffer})[] {
-  return elms.reduce<(EBML.BinaryElement & {data: Buffer})[]>((lst, elm)=>{
+export function WebPBlockFilter(elms: EBML.EBMLElementDetail[]): (EBML.BinaryElement & EBML.ElementDetail & {data: Buffer})[] {
+  return elms.reduce<(EBML.BinaryElement & EBML.ElementDetail & {data: Buffer})[]>((lst, elm)=>{
     if(elm.type !== "b"){ return lst; }
     if(elm.name !== "SimpleBlock"){ return lst; }
     const o = ebmlBlock(elm.data);
