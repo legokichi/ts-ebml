@@ -96,13 +96,16 @@ export default class EBMLDecoder {
         type: schema.type,
         name: schema.name,
         level: schema.level,
-        start: this._total,
-        end: this._total + tag.length,
-        dataStart: this._total + tag.length,
+        tagStart: this._total,
+        tagEnd: this._total + tag.length,
+        sizeStart: this._total + tag.length,
+        sizeEnd: null,
+        dataStart: null,
         dataEnd: null,
         dataSize: null,
         data: null
     };
+    // | tag: vint | size: vint | data: Buffer(size) |
 
     this._tag_stack.push(tagObj);
     // <<<<<<<<
@@ -135,6 +138,10 @@ export default class EBMLDecoder {
     // current tag の data size 決定
     const tagObj = this._tag_stack[this._tag_stack.length - 1];
 
+    tagObj.sizeEnd = tagObj.sizeStart + size.length;
+
+    tagObj.dataStart = tagObj.sizeEnd;
+
     tagObj.dataSize = size.value;
 
     if (size.value === -1) {
@@ -144,9 +151,9 @@ export default class EBMLDecoder {
         tagObj.unknownSize = true;
       }
     } else {
-      // データ開始位置 + vint の大きさ + データそのものの大きさ
-      tagObj.dataEnd = tagObj.end + size.length + size.value;
+      tagObj.dataEnd = tagObj.sizeEnd + size.value;
     }
+    
     // <<<<<<<<
 
     // ポインタを進める

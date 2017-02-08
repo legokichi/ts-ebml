@@ -54,7 +54,7 @@ export default class EBMLMetaDataRefiner {
         }
         if(!elm.isEnd){
           //console.log(`Cluster: `, elm.start);
-          this.clusters.push(elm.start);
+          this.clusters.push(elm.tagStart);
         }
         return;
       }

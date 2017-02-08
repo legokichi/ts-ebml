@@ -58,11 +58,19 @@ export interface ElementDetail {
   /**
    * このタグのバッファ全体における開始オフセット位置
    */
-  start: number;
+  tagStart: number;
   /**
    * このタグのバッファ全体における終了オフセット位置
    */
-  end: number;
+  tagEnd: number;
+  /**
+   * size vint start
+   */
+  sizeStart: number;
+  /**
+   * size vint end
+   */
+  sizeEnd: number;
   /**
    * 要素の中身の開始位置
    */
