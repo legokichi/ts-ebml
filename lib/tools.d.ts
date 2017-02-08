@@ -6,6 +6,7 @@ export declare const readVint: (buffer: Buffer, start: number) => null | ({
     value: number;
 });
 export declare const writeVint: (val: number) => Buffer;
+export declare const ebmlBlock: (buf: Buffer) => EBML.SimpleBlock;
 export declare function readBlock(buf: ArrayBuffer): EBML.SimpleBlock;
 /**
  * @return - SimpleBlock to WebP Filter
