@@ -2,9 +2,18 @@
 import * as EBML from "./EBML";
 import Encoder from "./EBMLEncoder";
 
-const Buffer: typeof global.Buffer = require("buffer/").Buffer;
+const ebmlBlock: (buf: Buffer)=> EBML.SimpleBlock = require("ebml-block");
 
-export const ebmlBlock: (buf: Buffer)=> EBML.SimpleBlock = require("ebml-block");
+export const Buffer: typeof global.Buffer = require("buffer/").Buffer;
+
+export const readVint: (buffer: Buffer, start: number)=> null | ({length: number; value: number; }) = require("ebml/lib/ebml/tools").readVint;
+export const writeVint: (val: number)=> Buffer = require("ebml/lib/ebml/tools").writeVint;
+
+
+
+export function readBlock(buf: ArrayBuffer): EBML.SimpleBlock {
+  return ebmlBlock(new Buffer(buf));
+}
 
 /**
  * @return - SimpleBlock to WebP Filter

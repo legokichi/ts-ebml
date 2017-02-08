@@ -1,6 +1,12 @@
 /// <reference types="node" />
 import * as EBML from "./EBML";
-export declare const ebmlBlock: (buf: Buffer) => EBML.SimpleBlock;
+export declare const Buffer: typeof global.Buffer;
+export declare const readVint: (buffer: Buffer, start: number) => null | ({
+    length: number;
+    value: number;
+});
+export declare const writeVint: (val: number) => Buffer;
+export declare function readBlock(buf: ArrayBuffer): EBML.SimpleBlock;
 /**
  * @return - SimpleBlock to WebP Filter
  */

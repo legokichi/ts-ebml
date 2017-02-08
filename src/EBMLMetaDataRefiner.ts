@@ -1,4 +1,5 @@
 const Buffer: typeof global.Buffer = require("buffer/").Buffer;
+const ebmlBlock: (buf: Buffer)=> EBML.SimpleBlock = require("ebml-block");
 
 import Encoder from "./EBMLEncoder";
 import Decoder from "./EBMLDecoder";
@@ -66,7 +67,7 @@ export default class EBMLMetaDataRefiner {
         return;
       }
       if(elm.type === "b" && elm.name === "SimpleBlock"){
-        const {timecode, trackNumber} = tools.ebmlBlock(elm.data);
+        const {timecode, trackNumber} = ebmlBlock(elm.data);
         if(this.trackTypes[trackNumber] !== 1){ return; } // trackType === 1 => video track
         //logger(new Error, "log")(`SimpleBlock: `, elm.dataStart, "keyframe:", keyframe,"(", this.clusterTimecode, "+", timecode ,")*", this.timecodeScale, "nano sec");
         this._duration = this.clusterTimecode + timecode;
