@@ -15,7 +15,7 @@ export default class EBMLMetaDataRefiner {
     /**
       * based on timecodescale
       */
-    _duration: number;
+    private _duration;
     private reachFirstCluster;
     private metadata;
     constructor();

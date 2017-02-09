@@ -22,7 +22,7 @@ export default class EBMLMetaDataRefiner {
   /**
     * based on timecodescale
     */
-  _duration: number;
+  private _duration: number;
   private reachFirstCluster: boolean;
   private metadata: EBML.EBMLElementDetail[];
 

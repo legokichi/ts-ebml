@@ -22,7 +22,7 @@ export declare function WebPBlockFilter(elms: EBML.EBMLElementDetail[]): (EBML.B
  * @param frame - VP8 BitStream のうち startcode をもつ frame
  * @return - WebP ファイルの ArrayBuffer
  */
-export declare function VP8BitStreamToRiffWebPBuffer(frame: Buffer): ArrayBuffer;
+export declare function VP8BitStreamToRiffWebPBuffer(frame: Buffer): Buffer;
 /**
  * RIFF データチャンクを作る
  */
@@ -34,3 +34,4 @@ export declare function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer;
  * @param duration - Duration に記載する値
  */
 export declare function putRefinedMetaData(metadata: EBML.EBMLElementDetail[], clusterPtrs: number[], duration?: number): EBML.EBMLElementBuffer[];
+export declare function concat(list: Buffer[]): Buffer;

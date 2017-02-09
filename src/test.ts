@@ -27,7 +27,7 @@ async function recorder_main() {
         return Promise.all(prms)
           .then((imgs)=>{
             imgs.forEach((img)=>{
-              console.assert(Number.isFinite(img.width));
+              console.assert(Number.isFinite(img.width), "image load failed");
               document.body.appendChild(img);
             });
         });
@@ -54,14 +54,15 @@ async function recorder_main() {
   const originalVid = await putVideo(WebM, "plain recorded webm");
   const refinedVid = await putVideo(refined, "refined webm");
 
-  console.assert(! Number.isFinite(originalVid.duration));
-  console.assert(  Number.isFinite(refinedVid.duration));
+  console.assert(! Number.isFinite(originalVid.duration), "media recorder webm duration is not finite");
+  console.assert(  Number.isFinite(refinedVid.duration), "refined webm duration is finite");
 
   originalVid.currentTime = 1000 * 60 * 60 * 24 * 7;
   originalVid.onseeked = ()=>{
     originalVid.onseeked = <any>undefined;
     originalVid.currentTime = 0;
-    console.assert(refinedVid.duration === originalVid.duration);
+    console.assert(refinedVid.duration === originalVid.duration, "compare duration "+`${refinedVid.duration} === ${originalVid.duration}`);
+    console.log(refiner["trackDefaultDuration"], refiner["timecodeScale"], refiner["_duration"]);
   }
 }
 
@@ -96,8 +97,8 @@ async function serv_main() {
   const originalVid = await putVideo(original, "plain recorded webm");
   const refinedVid = await putVideo(refined, "refined webm");
 
-  console.assert(!Number.isFinite(originalVid.duration));
-  console.assert(Number.isFinite(refinedVid.duration));
+  console.assert(! Number.isFinite(originalVid.duration), "media recorder webm duration is not finite");
+  console.assert(  Number.isFinite(refinedVid.duration), "refined webm duration is finite");
 }
 
 function writer_main(){
@@ -126,10 +127,10 @@ function writer_main(){
   const elms = decoder.decode(abuf);
   elms.forEach((elm, i)=>{
     const origin = tagStream[i];
-    console.assert(elm.name === origin.name);
-    console.assert(elm.type === origin.type);
+    console.assert(elm.name === origin.name, "compare tag name");
+    console.assert(elm.type === origin.type, "compare tag type");
     if(elm.type === "m" || origin.type === "m"){ return; }
-    console.assert(elm.value === origin.value);
+    console.assert(elm.value === origin.value, "compare tag value");
   });
 }
 

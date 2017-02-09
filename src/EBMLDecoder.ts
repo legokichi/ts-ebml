@@ -1,5 +1,6 @@
 import {Int64BE} from "int64-buffer";
 import * as EBML from "./EBML";
+import * as tools from "./tools";
 const Buffer: typeof global.Buffer = require("buffer/").Buffer;
 
 const {byEbmlID}: {byEbmlID: { [key: number]: EBML.Schema } } = require("matroska/lib/schema");
@@ -48,7 +49,7 @@ export default class EBMLDecoder {
   }
 
   private readChunk(chunk: ArrayBuffer): void {
-    this._buffer = Buffer.concat([this._buffer, new Buffer(chunk)]);
+    this._buffer = tools.concat([this._buffer, new Buffer(chunk)]);
     while (this._cursor < this._buffer.length) {
       // console.log(this._cursor, this._total, this._tag_stack);
       if(this._state === State.STATE_TAG && !this.readTag()) { break; }

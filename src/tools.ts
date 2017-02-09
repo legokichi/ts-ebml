@@ -52,7 +52,7 @@ export function WebPBlockFilter(elms: EBML.EBMLElementDetail[]): (EBML.BinaryEle
  */
 export function VP8BitStreamToRiffWebPBuffer(frame: Buffer): Buffer {
   const VP8Chunk = createRIFFChunk("VP8 ", frame);
-  const WebPChunk = Buffer.concat([
+  const WebPChunk = concat([
     new Buffer("WEBP", "ascii"),
     VP8Chunk
   ]);
@@ -65,7 +65,7 @@ export function VP8BitStreamToRiffWebPBuffer(frame: Buffer): Buffer {
 export function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer {
   const chunkSize = new Buffer(4);
   chunkSize.writeUInt32LE(chunk.byteLength , 0);
-  return Buffer.concat([
+  return concat([
     new Buffer(FourCC.substr(0, 4), "ascii"),
     chunkSize,
     chunk,
@@ -128,4 +128,22 @@ export function putRefinedMetaData(
   // 自分自身のサイズを考慮した seekhead を再構成する
   //console.log("sizeDiff", totalByte - metadataSize);
   return refineMetadata(totalByte - metadataSize);
+}
+
+// alter Buffer.concat
+export function concat(list: Buffer[]): Buffer {
+  let i;
+  let length = 0;
+  for (i = 0; i < list.length; ++i) {
+    length += list[i].length;
+  }
+
+  let buffer = Buffer.allocUnsafe(length);
+  let pos = 0;
+  for (i = 0; i < list.length; ++i) {
+    let buf = list[i];
+    buf.copy(buffer, pos);
+    pos += buf.length;
+  }
+  return buffer;
 }

@@ -1,5 +1,6 @@
 import {Int64BE} from "int64-buffer";
 import * as EBML from "./EBML";
+import * as tools from "./tools";
 
 const Buffer: typeof global.Buffer = require("buffer/").Buffer;
 
@@ -26,7 +27,7 @@ export default class EBMLEncoder {
   }
 
   encode(elms: EBML.EBMLElementBuffer[]): ArrayBuffer {
-    return Buffer.concat(
+    return tools.concat(
       elms.reduce<Buffer[]>((lst, elm)=>
         lst.concat(this.encodeChunk(elm)), [])).buffer;
   }
@@ -65,7 +66,7 @@ export default class EBMLEncoder {
    * @param end - if end === false then length is unknown
    */
   private _encodeTag(tagId: Buffer, tagData: Buffer, unknownSize=false): Buffer {
-    return Buffer.concat([
+    return tools.concat([
       tagId,
       unknownSize ?
         new Buffer('01ffffffffffffff', 'hex') : 
@@ -141,7 +142,7 @@ export default class EBMLEncoder {
       if(child.data === null){ throw new Error("EBML structure is broken"); }
       return lst.concat(child.data);
     }, []);
-    const childTagDataBuffer = Buffer.concat(childTagDataBuffers);
+    const childTagDataBuffer = tools.concat(childTagDataBuffers);
     if(tag.elm.type === "m"){
       tag.data = this._encodeTag(tag.tagId, childTagDataBuffer, tag.elm.unknownSize);  
     }else{
