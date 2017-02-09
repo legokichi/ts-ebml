@@ -26,7 +26,7 @@ export declare function VP8BitStreamToRiffWebPBuffer(frame: Buffer): ArrayBuffer
 /**
  * RIFF データチャンクを作る
  */
-export declare function createRIFFChunk(FourCC: string, chunk: ArrayBuffer): ArrayBuffer;
+export declare function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer;
 /**
  * metadata に対して duration と seekhead を追加した metadata を返す
  * @param metadata - 変更前の webm における ファイル先頭から 最初の Cluster 要素までの 要素
