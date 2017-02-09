@@ -22,7 +22,7 @@ export declare function WebPBlockFilter(elms: EBML.EBMLElementDetail[]): (EBML.B
  * @param frame - VP8 BitStream のうち startcode をもつ frame
  * @return - WebP ファイルの ArrayBuffer
  */
-export declare function VP8BitStreamToRiffWebPBuffer(frame: ArrayBuffer): ArrayBuffer;
+export declare function VP8BitStreamToRiffWebPBuffer(frame: Buffer): ArrayBuffer;
 /**
  * RIFF データチャンクを作る
  */

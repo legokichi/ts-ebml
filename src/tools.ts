@@ -50,11 +50,11 @@ export function WebPBlockFilter(elms: EBML.EBMLElementDetail[]): (EBML.BinaryEle
  * @param frame - VP8 BitStream のうち startcode をもつ frame
  * @return - WebP ファイルの ArrayBuffer
  */
-export function VP8BitStreamToRiffWebPBuffer(frame: ArrayBuffer): ArrayBuffer {
-  const VP8Chunk = createRIFFChunk("VP8 ", new Buffer(frame));
+export function VP8BitStreamToRiffWebPBuffer(frame: Buffer): ArrayBuffer {
+  const VP8Chunk = createRIFFChunk("VP8 ", frame);
   const WebPChunk = Buffer.concat([
     new Buffer("WEBP", "ascii"),
-    new Buffer(VP8Chunk)
+    VP8Chunk
   ]);
   return createRIFFChunk("RIFF", WebPChunk);
 }
@@ -62,15 +62,15 @@ export function VP8BitStreamToRiffWebPBuffer(frame: ArrayBuffer): ArrayBuffer {
 /**
  * RIFF データチャンクを作る
  */
-export function createRIFFChunk(FourCC: string, chunk: ArrayBuffer): ArrayBuffer {
+export function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer {
   const chunkSize = new Buffer(4);
   chunkSize.writeUInt32LE(chunk.byteLength , 0);
   return Buffer.concat([
     new Buffer(FourCC.substr(0, 4), "ascii"),
     chunkSize,
-    new Buffer(chunk),
+    chunk,
     new Buffer(chunk.byteLength % 2 === 0 ? 0 : 1) // padding
-  ]).buffer;
+  ]);
 }
 
 /**
