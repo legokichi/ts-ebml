@@ -50,7 +50,7 @@ export function WebPBlockFilter(elms: EBML.EBMLElementDetail[]): (EBML.BinaryEle
  * @param frame - VP8 BitStream のうち startcode をもつ frame
  * @return - WebP ファイルの ArrayBuffer
  */
-export function VP8BitStreamToRiffWebPBuffer(frame: Buffer): ArrayBuffer {
+export function VP8BitStreamToRiffWebPBuffer(frame: Buffer): Buffer {
   const VP8Chunk = createRIFFChunk("VP8 ", frame);
   const WebPChunk = Buffer.concat([
     new Buffer("WEBP", "ascii"),
