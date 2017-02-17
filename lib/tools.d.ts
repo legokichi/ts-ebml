@@ -35,3 +35,5 @@ export declare function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer;
  */
 export declare function putRefinedMetaData(metadata: EBML.EBMLElementDetail[], clusterPtrs: number[], duration?: number): EBML.EBMLElementBuffer[];
 export declare function concat(list: Buffer[]): Buffer;
+export declare function encodeValueToBuffer(elm: EBML.MasterElement): EBML.MasterElement;
+export declare function encodeValueToBuffer(elm: EBML.ChildElementsValue): EBML.ChildElementBuffer;

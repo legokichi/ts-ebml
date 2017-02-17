@@ -46,7 +46,7 @@ fetch('media/test.webm')
 ## get WebP frame from MediaRecorder WebM Stream
 
 ```ts
-import EBML, {Decoder, Encoder, Refiner, tools} from "./";
+import EBML, {Decoder, Encoder, tools} from "./";
 
 const decoder = new Decoder();
 const encoder = new Encoder();

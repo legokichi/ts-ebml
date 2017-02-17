@@ -1,5 +1,5 @@
-import EBML, {Decoder, Encoder, Refiner, tools} from "./";
-
+import EBML, {Decoder, Encoder, tools} from "./";
+import Refiner from "./EBMLMetaDataRefiner";
 const Buffer: typeof global.Buffer = require("buffer/").Buffer;
 
 const decoder = new Decoder();
@@ -122,7 +122,7 @@ function writer_main(){
     {name: "Timecode", type: "u", value: 1},
     {name: "SimpleBlock", type: "b", value: new Buffer(1024)},
   ];
-  const binarized = tagStream.map(Encoder.encodeValueToBuffer);
+  const binarized = tagStream.map(tools.encodeValueToBuffer);
   const abuf = encoder.encode(binarized);
   const elms = decoder.decode(abuf);
   elms.forEach((elm, i)=>{
@@ -202,7 +202,7 @@ declare class MediaRecorder extends EventTarget {
 //console.clear();
 //node_main();
 //serv_main().catch(console.error);
-//writer_main();
-recorder_main().catch(console.error);
+writer_main();
+//recorder_main().catch(console.error);
 // tsc --target es5 test/test.ts; browserify test/test.js -o test/test.browser.js; http-server
 

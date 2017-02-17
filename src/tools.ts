@@ -1,4 +1,4 @@
-
+import {Int64BE} from "int64-buffer";
 import * as EBML from "./EBML";
 import Encoder from "./EBMLEncoder";
 
@@ -146,4 +146,22 @@ export function concat(list: Buffer[]): Buffer {
     pos += buf.length;
   }
   return buffer;
+}
+
+export function encodeValueToBuffer(elm: EBML.MasterElement): EBML.MasterElement;
+export function encodeValueToBuffer(elm: EBML.ChildElementsValue): EBML.ChildElementBuffer;
+export function encodeValueToBuffer(elm: EBML.EBMLElementValue): EBML.EBMLElementBuffer {
+  let data = new Buffer(0);
+  if(elm.type === "m"){ return elm; }
+  switch(elm.type){
+    // 実際可変長 int なので 4byte 固定という設計は良くない
+    case "u": data = new Buffer(4); data.writeUInt32BE(elm.value, 0); break;
+    case "i": data = new Buffer(4); data.writeInt32BE(elm.value, 0); break;
+    case "f": data = new Buffer(8); data.writeFloatBE(elm.value, 0); break; // 64bit
+    case "s": data = new Buffer(elm.value, 'ascii'); break;
+    case "8": data = new Buffer(elm.value, 'utf8'); break;
+    case "b": data = elm.value; break;
+    case "d": data = new Int64BE(elm.value).toBuffer(); break;
+  }
+  return Object.assign({}, elm, {data});
 }

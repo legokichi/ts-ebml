@@ -15,5 +15,4 @@ export default class EBMLEncoder {
     private writeTag(elm);
     private startTag(elm);
     private endTag(elm);
-    static encodeValueToBuffer(elm: EBML.EBMLElementValue): EBML.EBMLElementBuffer;
 }
