@@ -66,6 +66,7 @@
         "placeOpenBraceOnNewLineForControlBlocks": true
     },
     "files": [
+        "src/EBMLReader.ts",
         "src/index.ts",
         "src/test.ts"
     ],

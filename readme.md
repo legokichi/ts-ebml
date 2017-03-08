@@ -101,3 +101,4 @@ MIT
 * https://github.com/Matroska-Org/libebml/
 * https://chromium.googlesource.com/webm/libvpx/+/master/third_party/libwebm
 * https://github.com/mozilla/gecko-dev/tree/master/dom/media/webm
+* https://bitbucket.org/desmaj/libvpx.js/src/1ea3218282b6eb129061341831d23409dd539054/webm.js

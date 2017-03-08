@@ -2,7 +2,6 @@ const Buffer: typeof global.Buffer = require("buffer/").Buffer;
 const ebmlBlock: (buf: Buffer)=> EBML.SimpleBlock = require("ebml-block");
 
 import Encoder from "./EBMLEncoder";
-import Decoder from "./EBMLDecoder";
 import * as tools from "./tools";
 import * as EBML from "./EBML";
 
