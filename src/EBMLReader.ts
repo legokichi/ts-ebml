@@ -1,3 +1,7 @@
+/**
+ * This is an informal code for reference.
+ */
+
 import {EventEmitter} from "events";
 import * as EBML from './EBML';
 import * as tools from './tools';

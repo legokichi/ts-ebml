@@ -1,6 +1,6 @@
 {
   "name": "ts-ebml",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "description": "ebml decoder and encoder",
   "scripts": {
     "setup": "npm install -g http-server;",
@@ -15,10 +15,10 @@
     "browserify": "browserify lib/index.js --standalone EBML -o dist/EBML.js",
     "watchify": "watchify lib/index.js --standalone EBML -o dist/EBMl.js -v",
     "reader": "browserify lib/EBMLReader.js --standalone EBMLReader -o dist/EBMLReader.js",
+    "test": "tsc; espower lib/test.js > lib/test.tmp; mv -f lib/test.tmp lib/test.js; browserify lib/test.js -o test/test.js",
     "check": "tsc -w --noEmit -p ./",
     "lint": "tslint -c ./tslint.json --project ./tsconfig.json --type-check",
-    "doc": "typedoc --mode modules --out doc --disableOutputCheck",
-    "test": "tsc -p .; browserify lib/seekable_example.js -o test/test.browser.js; http-server"
+    "doc": "typedoc --mode modules --out doc --disableOutputCheck"
   },
   "repository": {
     "type": "git",
@@ -46,13 +46,20 @@
     "matroska": "^2.2.3"
   },
   "devDependencies": {
+    "empower": "^1.2.1",
+    "espower-cli": "^1.1.0",
+    "power-assert": "^1.4.1",
+    "power-assert-formatter": "^1.4.1",
+    "qunit-tap": "^1.5.1",
+    "qunitjs": "^2.0.1",
     "@types/node": "0.0.2",
-    "@types/whatwg-fetch": "0.0.33",
     "browserify": "^13.1.0",
     "tslint": "^3.15.1",
     "typedoc": "^0.5.3",
     "typescript": "^2.0.3",
-    "watchify": "^3.7.0"
+    "watchify": "^3.7.0",
+    "@types/power-assert-formatter": "^1.4.28",
+    "@types/qunit": "^2.0.31"
   },
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts"

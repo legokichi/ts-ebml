@@ -107,7 +107,7 @@ export function putRefinedMetaData(
     seekHead.push({name: "SeekHead", type: "m"});
     clusterPtrs.forEach((start)=>{
       seekHead.push({name: "Seek", type: "m"});
-      // [0x1F, 0x43, 0xB6, 0x75] で Cluster の意
+      // [0x1F, 0x43, 0xB6, 0x75] で Cluster 意
       seekHead.push({name: "SeekID", type: "b", data: new Buffer([0x1F, 0x43, 0xB6, 0x75]) });
       const posBuf = new Buffer(4); // 実際可変長 int なので 4byte 固定という実装は良くない
       // しかし ms 単位だとすれば 0xFFFFFFFF は 49 日もの時間を記述できるので実用上問題ない

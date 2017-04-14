@@ -17,7 +17,7 @@
         "isolatedModules": false,
         //"jsx": "react",
         "lib": ["dom", "es5", "es2015.core", "es2015.promise", "es2015.iterable", "es2015.symbol"],
-        "types" : ["node"],//, "whatwg-fetch"],
+        "types" : ["node", "qunit", "power-assert-formatter"],
         "listFiles": true,
         "locale": "en-us",
         //"mapRoot": null,
@@ -66,7 +66,6 @@
         "placeOpenBraceOnNewLineForControlBlocks": true
     },
     "files": [
-        "src/seekable_example.ts",
         "src/EBMLReader.ts",
         "src/index.ts",
         "src/test.ts"

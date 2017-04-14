@@ -13,25 +13,25 @@ export declare function readBlock(buf: ArrayBuffer): EBML.SimpleBlock;
  */
 export declare function WebPFrameFilter(elms: EBML.EBMLElementDetail[]): Blob[];
 /**
- * WebP ファイルにできる SimpleBlock の パスフィルタ
+ * SimpleBlock path filter that can be used for WebP files.
  */
 export declare function WebPBlockFilter(elms: EBML.EBMLElementDetail[]): (EBML.BinaryElement & EBML.ElementDetail & {
     data: Buffer;
 })[];
 /**
- * @param frame - VP8 BitStream のうち startcode をもつ frame
- * @return - WebP ファイルの ArrayBuffer
+ * @param frame - VP8 BitStream frame with startcode
+ * @return - ArrayBuffer of WebP file
  */
 export declare function VP8BitStreamToRiffWebPBuffer(frame: Buffer): Buffer;
 /**
- * RIFF データチャンクを作る
+ * Make a RIFF data chunk.
  */
 export declare function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer;
 /**
- * metadata に対して duration と seekhead を追加した metadata を返す
- * @param metadata - 変更前の webm における ファイル先頭から 最初の Cluster 要素までの 要素
- * @param clusterPtrs - 変更前の webm における SeekHead に追加する Cluster 要素 への start pointer
- * @param duration - Duration に記載する値
+ * Return metadata which added duration and seekhead to metadata.
+ * @param metadata - Elements from the beginning of the file to the first Cluster element in webm before change
+ * @param clusterPtrs - Start pointer to the Cluster element to be added to SeekHead in webm before change.
+ * @param duration - Segment > Info > Duration
  */
 export declare function putRefinedMetaData(metadata: EBML.EBMLElementDetail[], clusterPtrs: number[], duration?: number): EBML.EBMLElementBuffer[];
 export declare function concat(list: Buffer[]): Buffer;
