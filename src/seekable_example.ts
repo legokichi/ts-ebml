@@ -48,6 +48,7 @@ async function main() {
   rec.stop();
   rec.ondataavailable = undefined;
   rec.stream.getTracks().map((track) => { track.stop(); });
+  reader.stop();
 
   if(metadataBuf.byteLength === 0){ throw new Error("cluster element not found."); }
   

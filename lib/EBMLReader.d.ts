@@ -26,12 +26,17 @@ export default class EBMLReader extends EventEmitter {
      * 単位 timecodeScale
      */
     private readonly duration;
+    /** emit on every cluster element start */
     addListener(event: "cluster_ptr", listener: (ev: number) => void): this;
+    /** latest EBML > Info > TimecodeScale and EBML > Info > Duration */
     addListener(event: "duration", listener: (ev: DurationInfo) => void): this;
+    /** EBML header without Cluster Element */
     addListener(event: "metadata", listener: (ev: EBMLInfo) => void): this;
+    /** emit every Cluster Element and its children */
     addListener(event: "cluster", listener: (ev: EBMLInfo & {
         timecode: number;
     }) => void): this;
+    /** for thumbnail */
     addListener(event: "webp", listener: (ev: ThumbnailInfo) => void): this;
 }
 export interface EBMLInfo {

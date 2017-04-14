@@ -22,7 +22,7 @@ export default class EBMLReader extends EventEmitter {
 
   private ended: boolean;
   use_webp: boolean;
-  emit_duration_every_simpleblock: boolean;
+  emit_duration_every_simpleblock: boolean; // heavy
   logging: boolean;
 
   constructor(){
@@ -47,6 +47,7 @@ export default class EBMLReader extends EventEmitter {
     this.ended = false;
     this.emit_duration_every_simpleblock = false;
     this.use_webp = false;
+
   }
   stop(){
     this.ended = true;
@@ -161,10 +162,15 @@ export default class EBMLReader extends EventEmitter {
     const duration = duration_nanosec / this.timecodeScale;
     return duration|0;
   }
+  /** emit on every cluster element start */
   addListener(event: "cluster_ptr", listener: (ev: number )=> void): this;
+  /** latest EBML > Info > TimecodeScale and EBML > Info > Duration */
   addListener(event: "duration", listener: (ev: DurationInfo )=> void): this;
+  /** EBML header without Cluster Element */
   addListener(event: "metadata", listener: (ev: EBMLInfo )=> void): this;
+  /** emit every Cluster Element and its children */
   addListener(event: "cluster", listener: (ev: EBMLInfo & {timecode: number })=> void): this;
+  /** for thumbnail */
   addListener(event: "webp", listener: (ev: ThumbnailInfo)=> void): this;
   addListener(event: string, listener: (ev: any)=> void): this {
     return super.addListener(event, listener);
