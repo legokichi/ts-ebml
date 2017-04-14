@@ -18,7 +18,7 @@
     "check": "tsc -w --noEmit -p ./",
     "lint": "tslint -c ./tslint.json --project ./tsconfig.json --type-check",
     "doc": "typedoc --mode modules --out doc --disableOutputCheck",
-    "test": "tsc -p .; browserify lib/test.js -o test/test.browser.js; http-server"
+    "test": "tsc -p .; browserify lib/seekable_example.js -o test/test.browser.js; http-server"
   },
   "repository": {
     "type": "git",

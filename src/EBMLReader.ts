@@ -21,6 +21,8 @@ export default class EBMLReader extends EventEmitter {
   private _duration: number;
 
   private ended: boolean;
+  use_webp: boolean;
+  emit_duration_every_simpleblock: boolean;
   logging: boolean;
 
   constructor(){
@@ -43,6 +45,8 @@ export default class EBMLReader extends EventEmitter {
 
     this.logging = false;
     this.ended = false;
+    this.emit_duration_every_simpleblock = false;
+    this.use_webp = false;
   }
   stop(){
     this.ended = true;
@@ -96,27 +100,25 @@ export default class EBMLReader extends EventEmitter {
         // デバグ処理ここまで
         this._duration = this.lastClusterTimecode + timecode;
       }
-      frames.forEach((frame)=>{
-        const startcode = frame.slice(3, 6).toString("hex");
-        if(startcode !== "9d012a"){ return; }; // VP8 の場合
-        const webpBuf = tools.VP8BitStreamToRiffWebPBuffer(frame);
-        const webp = new Blob([webpBuf], {type: "image/webp"});
-        const currentTime = this.duration;
-        this.emit("webp", {currentTime, webp});
-      });
+      if(this.use_webp){
+        frames.forEach((frame)=>{
+          const startcode = frame.slice(3, 6).toString("hex");
+          if(startcode !== "9d012a"){ return; }; // VP8 の場合
+          const webpBuf = tools.VP8BitStreamToRiffWebPBuffer(frame);
+          const webp = new Blob([webpBuf], {type: "image/webp"});
+          const currentTime = this.duration;
+          this.emit("webp", {currentTime, webp});
+        });
+      }
+      if(this.emit_duration_every_simpleblock){
+        const duration = this.duration;
+        const timecodeScale = this.timecodeScale;
+        this.emit("duration", {timecodeScale, duration})
+      }
     }else if(elm.type === "m" && elm.name === "Cluster" && !elm.isEnd){
+      this.emit("cluster_ptr", elm.tagStart);
       this.flush();
     }else if(elm.type === "u" && elm.name === "Timecode"){
-      /* 関係なさそう
-      if(this.duration !== 0 && elm.value <= this.duration){
-        // https://bugs.chromium.org/p/chromium/issues/detail?id=606000
-        // 前の Cluster の 最後の SimpleBlock の timecode と Cluster の Timecode が一致すると停止するバグ対策
-        console.warn("https://bugs.chromium.org/p/chromium/issues/detail?id=606000 bug detected!!");
-        console.warn("duration",this.duration,"Cluster>Timecode", elm.value, "last SimpleBlock timecode", this.lastSimpleBlockVideoTrackTimecode, "delta", this.deltaDuration);
-        //elm.value = this.duration + this.deltaDuration;
-        //const o = EBML.tools.encodeValueToBuffer(elm);
-        //elm.data = o.data;
-      }*/
       this.lastClusterTimecode = elm.value;
     }else if(elm.type === "u" && elm.name === "TimecodeScale"){
       this.timecodeScale = elm.value;
@@ -159,11 +161,12 @@ export default class EBMLReader extends EventEmitter {
     const duration = duration_nanosec / this.timecodeScale;
     return duration|0;
   }
-  addListener(event: "duration", listener: (ev: CustomEvent & {detail: DurationInfo })=> void): this;
-  addListener(event: "metadata", listener: (ev: CustomEvent & {detail: EBMLInfo })=> void): this;
-  addListener(event: "cluster", listener: (ev: CustomEvent & {detail: EBMLInfo & {timecode: number} })=> void): this;
-  addListener(event: "webp", listener: (ev: CustomEvent & {detail: ThumbnailInfo })=> void): this;
-  addListener(event: string, listener: (ev: CustomEvent)=> void): this {
+  addListener(event: "cluster_ptr", listener: (ev: number )=> void): this;
+  addListener(event: "duration", listener: (ev: DurationInfo )=> void): this;
+  addListener(event: "metadata", listener: (ev: EBMLInfo )=> void): this;
+  addListener(event: "cluster", listener: (ev: EBMLInfo & {timecode: number })=> void): this;
+  addListener(event: "webp", listener: (ev: ThumbnailInfo)=> void): this;
+  addListener(event: string, listener: (ev: any)=> void): this {
     return super.addListener(event, listener);
   }
 }

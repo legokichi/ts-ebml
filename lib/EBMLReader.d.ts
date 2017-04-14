@@ -14,6 +14,8 @@ export default class EBMLReader extends EventEmitter {
     private trackDefaultDuration;
     private _duration;
     private ended;
+    use_webp: boolean;
+    emit_duration_every_simpleblock: boolean;
     logging: boolean;
     constructor();
     stop(): void;
@@ -24,20 +26,13 @@ export default class EBMLReader extends EventEmitter {
      * 単位 timecodeScale
      */
     private readonly duration;
-    addListener(event: "duration", listener: (ev: CustomEvent & {
-        detail: DurationInfo;
+    addListener(event: "cluster_ptr", listener: (ev: number) => void): this;
+    addListener(event: "duration", listener: (ev: DurationInfo) => void): this;
+    addListener(event: "metadata", listener: (ev: EBMLInfo) => void): this;
+    addListener(event: "cluster", listener: (ev: EBMLInfo & {
+        timecode: number;
     }) => void): this;
-    addListener(event: "metadata", listener: (ev: CustomEvent & {
-        detail: EBMLInfo;
-    }) => void): this;
-    addListener(event: "cluster", listener: (ev: CustomEvent & {
-        detail: EBMLInfo & {
-            timecode: number;
-        };
-    }) => void): this;
-    addListener(event: "webp", listener: (ev: CustomEvent & {
-        detail: ThumbnailInfo;
-    }) => void): this;
+    addListener(event: "webp", listener: (ev: ThumbnailInfo) => void): this;
 }
 export interface EBMLInfo {
     data: EBML.EBMLElementBufferValue[];
