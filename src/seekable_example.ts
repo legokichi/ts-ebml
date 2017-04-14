@@ -9,7 +9,6 @@ async function main() {
   let tasks = Promise.resolve(void 0);
   let metadataBuf: ArrayBuffer = new ArrayBuffer(0);
   let webM = new Blob([], {type: "video/webm"});
-  let last_timecodeScale = 0;
   let last_duration = 0;
   const clusterPtrs: number[] = [];
 
@@ -22,7 +21,6 @@ async function main() {
   });
 
   reader.addListener("duration", ({timecodeScale, duration})=>{
-    last_timecodeScale = timecodeScale;
     last_duration = duration;
   });
 
