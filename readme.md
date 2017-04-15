@@ -165,6 +165,16 @@ QUnit.test("convert_to_seekable_from_media_recorder", async (assert: Assert)=>{
 });
 ```
 
+# develop
+
+```sh
+npm run setup # install cli tools
+npm run init  # install libraries
+npm run build # build js code
+npm run lint  # tslint
+npm run doc   # typedoc
+npm run check # type check
+```
 
 # license
 

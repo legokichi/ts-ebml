@@ -3,7 +3,7 @@ export type EBMLElementValue = MasterElement | ChildElementsValue;
 export type ChildElementBuffer = ChildElement & {data: Buffer};
 export type EBMLElementBuffer = MasterElement | ChildElementBuffer;
 export type EBMLElementBufferValue = MasterElement | (ChildElementsValue & {data: Buffer});
-export type EBMLElementDetail = (MasterElement & {isEnd: boolean} | (ChildElementsValue & {data: Buffer})) & ElementDetail;
+export type EBMLElementDetail = (MasterElement | (ChildElementsValue & {data: Buffer}) ) & ElementDetail;
 
 export interface IElement {
   name: string;
@@ -16,7 +16,7 @@ export interface ChildElement extends IElement {
 
 export interface MasterElement extends IElement {
   type: "m";
-  isEnd?: boolean;
+  isEnd: boolean;
   unknownSize?: boolean;
 }
 
@@ -41,7 +41,11 @@ export interface BinaryElement extends ChildElementValue {
 
 export interface DateElement extends ChildElementValue {
   type: "d";
-  value: string; // Date - signed 8 octets integer in nanoseconds with 0 indicating the precise beginning of the millennium (at 2001-01-01T00:00:00,000000000 UTC)
+  /**
+   * Date - signed 8 octets integer in nanoseconds with 0 indicating the precise
+   * beginning of the millennium (at 2001-01-01T00:00:00,000000000 UTC)
+   */
+  value: string; 
 }
 
 
@@ -52,7 +56,9 @@ export interface ElementDetail {
    */
   EBML_ID: string;
   /**
-   * The level within an EBML tree that the element may occur at. + is for a recursive level (can be its own child). g: global element (can be found at any level)
+   * The level within an EBML tree that the element may occur at. 
+   * + is for a recursive level (can be its own child). 
+   * g: global element (can be found at any level)
    */
   level: number;
   /**

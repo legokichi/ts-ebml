@@ -1,6 +1,6 @@
 {
   "name": "ts-ebml",
-  "version": "1.3.7",
+  "version": "1.4.0",
   "description": "ebml decoder and encoder",
   "scripts": {
     "setup": "npm install -g http-server;",
@@ -16,6 +16,7 @@
     "watchify": "watchify lib/index.js --standalone EBML -o dist/EBMl.js -v",
     "reader": "browserify lib/EBMLReader.js --standalone EBMLReader -o dist/EBMLReader.js",
     "test": "tsc; espower lib/test.js > lib/test.tmp; mv -f lib/test.tmp lib/test.js; browserify lib/test.js -o test/test.js",
+    "example": "tsc; for file in `find lib -name 'example_*.js' -type f -printf '%f\n'`; do browserify lib/$file -o test/$file; done",
     "check": "tsc -w --noEmit -p ./",
     "lint": "tslint -c ./tslint.json --project ./tsconfig.json --type-check",
     "doc": "typedoc --mode modules --out doc --disableOutputCheck"

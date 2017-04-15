@@ -1,4 +1,4 @@
-import {Int64BE} from "int64-buffer";
+import {Int64BE, Uint64BE} from "int64-buffer";
 import * as EBML from "./EBML";
 import Encoder from "./EBMLEncoder";
 
@@ -82,13 +82,22 @@ export function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer {
 export function putRefinedMetaData(
   metadata: EBML.EBMLElementDetail[],
   clusterPtrs: number[],
-  duration?: number
+  duration: number,
+  cueInfos?: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[]
 ): EBML.EBMLElementBuffer[] {
   const lastmetadata = metadata[metadata.length-1];
   if(lastmetadata == null){ throw new Error("metadata not found"); }
   if(lastmetadata.dataEnd < 0){ throw new Error("metadata does not have size"); } // metadata が 不定サイズ
   const metadataSize = lastmetadata.dataEnd; // 書き換える前の metadata のサイズ
-  const refineMetadata = (sizeDiff=0): EBML.EBMLElementBuffer[] =>{
+  const encorder = new Encoder();
+  // 一旦 seekhead を作って自身のサイズを調べる
+  const bufs = refineMetadata(0).reduce<ArrayBuffer[]>((lst, elm)=> lst.concat(encorder.encode([elm])), []);
+  const totalByte = bufs.reduce((o, buf)=> o + buf.byteLength, 0);
+  // 自分自身のサイズを考慮した seekhead を再構成する
+  //console.log("sizeDiff", totalByte - metadataSize);
+  return refineMetadata(totalByte - metadataSize);
+
+  function refineMetadata(sizeDiff: number = 0): EBML.EBMLElementBuffer[] {
     let _metadata: EBML.EBMLElementBuffer[] = metadata.slice(0);
     if(typeof duration === "number"){
       // duration を追加する
@@ -103,38 +112,64 @@ export function putRefinedMetaData(
         }
       }
     }
-    const seekHead: EBML.EBMLElementBuffer[] = [];
-    seekHead.push({name: "SeekHead", type: "m"});
-    clusterPtrs.forEach((start)=>{
-      seekHead.push({name: "Seek", type: "m"});
-      // [0x1F, 0x43, 0xB6, 0x75] で Cluster 意
-      seekHead.push({name: "SeekID", type: "b", data: new Buffer([0x1F, 0x43, 0xB6, 0x75]) });
-      const posBuf = new Buffer(4); // 実際可変長 int なので 4byte 固定という実装は良くない
-      // しかし ms 単位だとすれば 0xFFFFFFFF は 49 日もの時間を記述できるので実用上問題ない
-      // 64bit や 可変長 int を js で扱うの面倒
-      const offset = start +  sizeDiff;
-      posBuf.writeUInt32BE(offset, 0);
-      seekHead.push({name: "SeekPosition", type: "u", data: posBuf});
-      seekHead.push({name: "Seek", type: "m", isEnd: true});
-    });
-    seekHead.push({name: "SeekHead", type: "m", isEnd: true});
-    _metadata = _metadata.concat(seekHead); // metadata 末尾に <SeekHead /> を追加
+    if(Array.isArray(clusterPtrs)){
+      insertTag(_metadata, "SeekHead", create_seek(clusterPtrs, sizeDiff));
+    }
+    if(Array.isArray(cueInfos)){
+      insertTag(_metadata, "Que", create_que(cueInfos, sizeDiff));
+    }
     return _metadata;
-  };
-  const encorder = new Encoder();
-  // 一旦 seekhead を作って自身のサイズを調べる
-  const bufs = refineMetadata(0).reduce<ArrayBuffer[]>((lst, elm)=> lst.concat(encorder.encode([elm])), []);
-  const totalByte = bufs.reduce((o, buf)=> o + buf.byteLength, 0);
-  // 自分自身のサイズを考慮した seekhead を再構成する
-  //console.log("sizeDiff", totalByte - metadataSize);
-  return refineMetadata(totalByte - metadataSize);
+  }
+}
+function create_seek(clusterPtrs: number[], sizeDiff: number): EBML.EBMLElementBuffer[] {
+  const seeks: EBML.EBMLElementBuffer[] = [];
+  clusterPtrs.forEach((start)=>{
+    seeks.push({name: "Seek", type: "m", isEnd: false});
+      // [0x1F, 0x43, 0xB6, 0x75] で Cluster 意
+      seeks.push({name: "SeekID", type: "b", data: new Buffer([0x1F, 0x43, 0xB6, 0x75]) });
+      seeks.push({name: "SeekPosition", type: "u", data: createUIntBuffer(start +  sizeDiff)});
+    seeks.push({name: "Seek", type: "m", isEnd: true});
+  });
+  return seeks;
+}
+function create_que(cueInfos: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[], sizeDiff: number): EBML.EBMLElementBuffer[] {
+  const ques: EBML.EBMLElementBuffer[] = [];
+  cueInfos.forEach(({CueTrack, CueClusterPosition, CueTime})=>{
+    ques.push({name: "CuePoint", type: "m", isEnd: false});
+      ques.push({name: "CueTime", type: "u", data: createUIntBuffer(CueTime) });
+      ques.push({name: "CueTrackPositions", type: "m", isEnd: false});
+        ques.push({name: "CueTrack", type: "u", data: createUIntBuffer(CueTrack) }); // video track
+        ques.push({name: "CueClusterPosition", type: "u", data: createUIntBuffer(CueClusterPosition +  sizeDiff) });
+      ques.push({name: "CueTrackPositions", type: "m", isEnd: true});
+    ques.push({name: "CuePoint", type: "m", isEnd: true});
+  });
+  return ques;
 }
 
-// alter Buffer.concat
+export function insertTag(_metadata: EBML.EBMLElementBuffer[], tagName: string, children: EBML.EBMLElementBuffer[]): void {
+  let idx = -1;
+  _metadata.filter((elm)=> elm.type === "m" && elm.name === tagName && elm.isEnd === false).forEach((elm)=>{
+    idx = _metadata.indexOf(elm);
+  });
+  if(idx > 0){
+    // insert [<CuePoint />] to <Cues />
+    Array.prototype.splice.apply(_metadata, [<any>idx+1, 0].concat(children));
+  }else{
+    // metadata 末尾に <Cues /> を追加
+    // insert <Cues />
+    _metadata.push({name: tagName, type: "m", isEnd: false});
+    children.forEach((elm)=>{ _metadata.push(elm); });
+    _metadata.push({name: tagName, type: "m", isEnd: true});
+  }
+}
+
+
+// alter Buffer.concat - https://github.com/feross/buffer/issues/154
 export function concat(list: Buffer[]): Buffer {
-  let i;
+  //return Buffer.concat.apply(Buffer, list);
+  let i = 0;
   let length = 0;
-  for (i = 0; i < list.length; ++i) {
+  for (; i < list.length; ++i) {
     length += list[i].length;
   }
 
@@ -154,14 +189,59 @@ export function encodeValueToBuffer(elm: EBML.EBMLElementValue): EBML.EBMLElemen
   let data = new Buffer(0);
   if(elm.type === "m"){ return elm; }
   switch(elm.type){
-    // 実際可変長 int なので 4byte 固定という設計は良くない
-    case "u": data = new Buffer(4); data.writeUInt32BE(elm.value, 0); break;
-    case "i": data = new Buffer(4); data.writeInt32BE(elm.value, 0); break;
-    case "f": data = new Buffer(8); data.writeFloatBE(elm.value, 0); break; // 64bit
+    case "u": data = createUIntBuffer(elm.value); break;
+    case "i": data = createIntBuffer(elm.value); break;
+    case "f": data = createFloatBuffer(elm.value); break;
     case "s": data = new Buffer(elm.value, 'ascii'); break;
     case "8": data = new Buffer(elm.value, 'utf8'); break;
     case "b": data = elm.value; break;
     case "d": data = new Int64BE(elm.value).toBuffer(); break;
   }
   return Object.assign({}, elm, {data});
+}
+
+export function createUIntBuffer(value: number): Buffer {
+  // Big-endian, any size from 1 to 8
+  // but js number is float64, so max 6 bit octets
+  let bytes: 1|2|3|4|5|6 = 1;
+  for(; Math.pow(2, 16) >= Math.pow(2, 8*bytes); bytes++){}
+  if(bytes >= 7){
+    console.warn("7bit or more bigger uint not supported.");
+    return new Uint64BE(value).toBuffer();
+  }
+  const data = new Buffer(bytes);
+  data.writeUIntBE(value, 0, bytes);
+  return data;
+}
+
+export function createIntBuffer(value: number): Buffer {
+  // Big-endian, any size from 1 to 8 octets
+  // but js number is float64, so max 6 bit
+  let bytes: 1|2|3|4|5|6 = 1;
+  for(; Math.pow(2, 16) >= Math.pow(2, 8*bytes); bytes++){}
+  if(bytes >= 7){
+    console.warn("7bit or more bigger uint not supported.");
+    return new Int64BE(value).toBuffer();
+  }
+  const data = new Buffer(bytes);
+  data.writeIntBE(value, 0, bytes);
+  return data;
+}
+
+export function createFloatBuffer(value: number, bytes: 4|8 = 8): Buffer {
+  // Big-endian, defined for 4 and 8 octets (32, 64 bits)
+  // js number is float64 so 8 bytes.
+  if(bytes === 8){
+    // 64bit
+    const data = new Buffer(8);
+    data.writeDoubleBE(value, 0);
+    return data;
+  }else if(bytes === 4){
+    // 32bit
+    const data = new Buffer(4);
+    data.writeFloatBE(value, 0);
+    return data;
+  }else{
+    throw new Error("float type bits must 4bytes or 8bytes");
+  }
 }

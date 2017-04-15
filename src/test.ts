@@ -1,6 +1,6 @@
 import EBML, {Decoder, Encoder} from "./";
 import {tools} from "./";
-import EBMLReader from './EBMLReader';
+import EBMLReader, {CueInfo} from './EBMLReader';
 
 const Buffer: typeof global.Buffer = require("buffer/").Buffer;
 const QUnit     = <QUnit>require('qunitjs');
@@ -12,40 +12,64 @@ QUnit.config.autostart = true;
 empower(QUnit.assert, formatter(), { destructive: true });
 qunitTap(QUnit, function() { console.log.apply(console, arguments); }, {showSourceOnFailure: false});
 
+const WEBM_FILE_LIST = [
+  "./chrome57.webm",
+  "./firefox55nightly.webm",
+];
+
 QUnit.module("ts-EBML");
 
-QUnit.test("encoder-decoder", async (assert: Assert)=>{
-  const decoder = new Decoder();
-  const encoder = new Encoder();
-  const res = await fetch("../ok.webm");
-  const buf = await res.arrayBuffer();
-  const elms = new Decoder().decode(buf);
-  const buf2 = new Encoder().encode(elms);
-  const elms2 = new Decoder().decode(buf2);
-  assert.ok(buf.byteLength === buf2.byteLength, "This problem is due to not implementing the variable int writing tools.putRefinedMetaData function");
-  assert.ok(elms.length === elms2.length);
+WEBM_FILE_LIST.forEach((file)=>{
+  QUnit.test("encoder-decoder"+file, encoder_decoder_test(file));
 });
+
+function encoder_decoder_test(file: string){
+  return async (assert: Assert)=>{
+    const decoder = new Decoder();
+    const encoder = new Encoder();
+    const res = await fetch(file);
+    const buf = await res.arrayBuffer();
+    const elms = new Decoder().decode(buf);
+    const buf2 = new Encoder().encode(elms);
+    const elms2 = new Decoder().decode(buf2);
+    assert.ok(buf.byteLength !== buf2.byteLength, "This problem is caused by JS being unable to handle Int64.");
+    assert.ok(elms.length === elms2.length);
+    for(let i=0; i<elms.length; i++){
+      const elm = elms[i];
+      const elm2 = elms2[i];
+      assert.ok(elm.name === elm2.name);
+      assert.ok(elm.type === elm2.type);
+      if(elm.type === "m" || elm2.type === "m"){ return; }
+      if(elm.type === "b" && elm2.type === "b"){
+        assert.ok(elm.value.length === elm2.value.length);
+        return;
+      }
+      assert.ok(elm.value === elm2.value);
+      await sleep(1);
+    }
+  };
+}
 
 QUnit.test("handwrite-encoder", async (assert: Assert)=>{
   const tagStream: EBML.EBMLElementValue[] = [
-    {name: "EBML", type: "m"},
-    {name: "EBMLVersion", type: "u", value: 1},
-    {name: "EBMLReadVersion", type: "u", value: 1},
-    {name: "EBMLMaxIDLength", type: "u", value: 4},
-    {name: "EBMLMaxSizeLength", type: "u", value: 8},
-    {name: "DocType", type: "s", value: "webm"},
-    {name: "DocTypeVersion", type: "u", value: 4},
-    {name: "DocTypeReadVersion", type: "u", value: 2},
+    {name: "EBML", type: "m", isEnd: false},
+      {name: "EBMLVersion", type: "u", value: 1},
+      {name: "EBMLReadVersion", type: "u", value: 1},
+      {name: "EBMLMaxIDLength", type: "u", value: 4},
+      {name: "EBMLMaxSizeLength", type: "u", value: 8},
+      {name: "DocType", type: "s", value: "webm"},
+      {name: "DocTypeVersion", type: "u", value: 4},
+      {name: "DocTypeReadVersion", type: "u", value: 2},
     {name: "EBML", type: "m", isEnd: true},
-    {name: "Segment", type: "m", unknownSize: true},
-    {name: "SeekHead", type: "m"},
-    {name: "SeekHead", type: "m", isEnd: true},
-    {name: "Info", type: "m"},
-    {name: "TimecodeScale", type: "u", value: 1000000},
-    {name: "Info", type: "m", isEnd: true},
-    {name: "Cluster", type: "m", unknownSize: true},
-    {name: "Timecode", type: "u", value: 1},
-    {name: "SimpleBlock", type: "b", value: new Buffer(1024)},
+    {name: "Segment", type: "m", unknownSize: true, isEnd: false},
+      {name: "SeekHead", type: "m", isEnd: false},
+      {name: "SeekHead", type: "m", isEnd: true},
+      {name: "Info", type: "m", isEnd: false},
+        {name: "TimecodeScale", type: "u", value: 1000000},
+      {name: "Info", type: "m", isEnd: true},
+      {name: "Cluster", type: "m", unknownSize: true, isEnd: false},
+        {name: "Timecode", type: "u", value: 1},
+        {name: "SimpleBlock", type: "b", value: new Buffer(1024)},
   ];
   const binarized = tagStream.map(tools.encodeValueToBuffer);
   const buf = new Encoder().encode(binarized);
@@ -55,8 +79,8 @@ QUnit.test("handwrite-encoder", async (assert: Assert)=>{
     assert.ok(elm.name === origin.name, "compare tag name");
     assert.ok(elm.type === origin.type, "compare tag type");
     if(elm.type === "m" || origin.type === "m"){ return; }
-    if(elm.type === "b" || origin.type === "b"){
-      assert.ok(elm.value["length"] === origin.value["length"], "compare tag value");
+    if(elm.type === "b" && origin.type === "b"){
+      assert.ok(elm.value.length === origin.value.length, "compare tag value");
       return;
     }
     assert.ok(elm.value === origin.value, "compare tag value");
@@ -64,189 +88,138 @@ QUnit.test("handwrite-encoder", async (assert: Assert)=>{
 });
 
 
-QUnit.test("convert_to_seekable_from_media_recorder", async (assert: Assert)=>{
-  const decoder = new Decoder();
-  const reader = new EBMLReader();
-  reader.logging = true;
+QUnit.module("EBMLReader");
 
-  console.info("unseekable original")
-
-  let tasks = Promise.resolve(void 0);
-  let metadataBuf: ArrayBuffer = new ArrayBuffer(0);
-  let webM = new Blob([], {type: "video/webm"});
-  let last_duration = 0;
-  const clusterPtrs: number[] = [];
-
-  const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-  const rec = new MediaRecorder(stream, { mimeType: 'video/webm; codecs="vp8, opus"' });  
-
-  reader.addListener("metadata", ({data})=>{
-    metadataBuf = new Encoder().encode(data);
-  });
-
-  reader.addListener("duration", ({timecodeScale, duration})=>{
-    last_duration = duration;
-  });
-
-  reader.addListener("cluster_ptr", (ptr)=>{
-    clusterPtrs.push(ptr);
-  });
-
-  rec.ondataavailable = (ev: BlobEvent)=>{
-    const chunk = ev.data;
-    webM = new Blob([webM, chunk], {type: chunk.type});
-    const task = async ()=>{
-      const buf = await readAsArrayBuffer(chunk);
-      const elms = decoder.decode(buf);
-      elms.forEach((elm)=>{ reader.read(elm); });
-    };
-    tasks = tasks.then(()=> task() );
-  };
-
-  rec.start(100);
-
-  await sleep(10 * 1000);
-
-  rec.stop();
-  rec.ondataavailable = undefined;
-  rec.stream.getTracks().map((track) => { track.stop(); });
-  reader.stop();
-  
-  const metadataElms = new Decoder().decode(metadataBuf);
-  const refinedElms = tools.putRefinedMetaData(metadataElms, clusterPtrs, last_duration);
-  const refinedMetadataBuf = new Encoder().encode(refinedElms);
-  const webMBuf = await readAsArrayBuffer(webM);
-  const body = webMBuf.slice(metadataBuf.byteLength);
-  const refinedWebM = new Blob([refinedMetadataBuf, body], {type: webM.type});
-
-  console.info("seekable webm");
-
-  const refinedWebMBuf = await readAsArrayBuffer(refinedWebM);
-  const elms = new Decoder().decode(refinedWebMBuf)
-  const _reader = new EBMLReader();
-  _reader.logging = true;
-  elms.forEach((elm)=> _reader.read(elm) );
-  _reader.stop();
-
-  const raw_video = await fetchVideo(URL.createObjectURL(webM));
-  put(raw_video, "media-recorder-original(not seekable)");
-
-  const refined_video = await fetchVideo(URL.createObjectURL(refinedWebM));
-  put(refined_video, "add-seekhead-and-duration(seekable)");
-
-  assert.ok(! Number.isFinite(raw_video.duration), "media recorder webm duration is not finite");
-  assert.ok(  Number.isFinite(refined_video.duration), "refined webm duration is finite");
-
+WEBM_FILE_LIST.forEach((file)=>{
+  QUnit.test("convert_to_seekable_from_media_recorder_webm"+file, convert_to_seekable_test(file));
 });
 
-QUnit.test("convert_to_seekable_from_moz_file", async (assert: Assert)=>{
-  const res = await fetch("../ok.webm");
-  const buf = await res.arrayBuffer();
-  const elms = new Decoder().decode(buf);
-  const reader = new EBMLReader();
-  reader.logging = true;
+function convert_to_seekable_test(file: string){
+  return async (assert: Assert)=>{
+    const decoder = new Decoder();
+    const reader = new EBMLReader();
+    reader.logging = true;
 
-  let metadataBuf: ArrayBuffer = new ArrayBuffer(0);
-  let last_duration = 0;
+    let metadataElms: EBML.EBMLElementDetail[] = [];
+    let metadataSize = 0;
+    let last_duration = 0;
+    const cluster_ptrs: number[] = [];
 
-  const clusterPtrs: number[] = [];
+    reader.addListener("metadata", ({data, metadataSize: size})=>{
+      assert.ok(data.length > 0, "metadata.length:"+data.length);
+      assert.ok(data[0].name === "EBML");
 
-  reader.addListener("metadata", ({data})=>{
-    metadataBuf = new Encoder().encode(data);
-  });
+      metadataElms = data;
+      metadataSize = size;
+    });
 
-  reader.addListener("duration", ({timecodeScale, duration})=>{
-    last_duration = duration;
-  });
+    reader.addListener("duration", ({timecodeScale, duration})=>{
+      const d = duration * timecodeScale / 1000 / 1000 / 1000;
+      assert.ok(Number.isFinite(d), "duration:"+d);
 
-  reader.addListener("cluster_ptr", (ptr)=>{
-    clusterPtrs.push(ptr);
-  });
+      last_duration = duration;
+    });
 
-  elms.forEach((elm)=> reader.read(elm) );
+    reader.addListener("cluster_ptr", (ptr)=>{
+      cluster_ptrs.push(ptr);
+    });
+    
+    const res = await fetch(file);
+    const webm_buf = await res.arrayBuffer();
 
-  reader.stop();
+    console.info("put unseekable original ebml tree");
+    const elms = decoder.decode(webm_buf);
+    elms.forEach((elm)=>{ reader.read(elm); });
+    reader.stop();
 
-  const metadataElms = new Decoder().decode(metadataBuf);
-  const refinedElms = tools.putRefinedMetaData(metadataElms, clusterPtrs, last_duration);
-  const _reader = new EBMLReader();
-  _reader.logging = true;
-  refinedElms.forEach((elm)=> _reader.read(<any>elm));
+    console.info("convert to seekable file");
 
-  assert.ok(true);
-});
+    const refinedMetadataElms = tools.putRefinedMetaData(metadataElms, cluster_ptrs, last_duration);
+    const refinedMetadataBuf = new Encoder().encode(refinedMetadataElms);
+    const body = webm_buf.slice(metadataSize);
 
+    assert.ok(webm_buf.byteLength === (metadataSize + body.byteLength));
 
+    console.info("check duration");
 
-QUnit.test("webp", async (assert: Assert)=> {
-  const reader = new EBMLReader();
-  const decoder = new Decoder();
-  reader.use_webp = true;
+    const raw_webM = new Blob([webm_buf], {type: "video/webm"});
+    const refinedWebM = new Blob([refinedMetadataBuf, body], {type: "video/webm"});
 
-  let tasks = Promise.resolve(void 0);
-  let metadataBuf: ArrayBuffer = new ArrayBuffer(0);
-  let webM = new Blob([], {type: "video/webm"});
+    assert.ok(refinedMetadataBuf.byteLength - metadataSize > 0);
 
-  const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-  const rec = new MediaRecorder(stream, {mimeType: 'video/webm; codecs="opus,vp8"'});
-
-  rec.ondataavailable = (ev: BlobEvent)=>{
-    const chunk = ev.data;
-    webM = new Blob([webM, chunk], {type: chunk.type});
-    const task = async ()=>{
-      const buf = await readAsArrayBuffer(chunk);
-      const elms = decoder.decode(buf);
-      elms.forEach((elm)=>{ reader.read(elm); });
-    };
-    tasks = tasks.then(()=> task() );
-  };
-
-  reader.addListener("metadata", (ev)=>{
-    const {data} = ev;
-    assert.ok(data.length > 0, "metadata.length:"+data.length);
-    assert.ok(data[0].name === "EBML");
-  });
-
-  reader.addListener("cluster", (ev)=>{
-    const {data, timecode} = ev;
-    assert.ok(Number.isFinite(timecode), "cluster.timecode:"+timecode);
-    assert.ok(data.length > 0, "cluster.length:"+data.length);
-    const assertion = data.every((elm)=> elm.name === "Cluster" || elm.name === "Timecode" || elm.name === "SimpleBlock");
-    assert.ok(assertion, "element check");
-  });
-
-  reader.addListener("duration", (ev)=>{
-    const {duration, timecodeScale} = ev;
-    const d = duration * timecodeScale / 1000 / 1000 / 1000;
-    assert.ok(Number.isFinite(d), "duration:"+d);
-  });
-
-  reader.addListener("webp", async (ev)=>{
-    const {webp, currentTime} = ev;
-    assert.ok(Number.isFinite(currentTime), "webp.currentTime:"+currentTime);
-    const src = URL.createObjectURL(webp);
     try{
-      const img = await fetchImage(src)
-      assert.ok(img.width > 0, "webp.width:"+img.width);
-      put(img, "time: "+currentTime);
+      await sleep(1000);
+      const raw_video = await fetchVideo(URL.createObjectURL(raw_webM));
+      await sleep(1000);
+
+      const refined_video = await fetchVideo(URL.createObjectURL(refinedWebM));
+      await sleep(1000);
+      assert.ok(! Number.isFinite(raw_video.duration), "media recorder webm duration is not finite");
+      assert.ok(  Number.isFinite(refined_video.duration), "refined webm duration is finite");
     }catch(err){
-      assert.ok(false, "webp load failre");
+      assert.notOk(err);
     }
-    URL.revokeObjectURL(src);
-  });
 
-  assert.ok(true, "wait a minute");
 
-  rec.start(100);
+    console.info("put seekable ebml tree");
+    const refinedBuf = await readAsArrayBuffer(refinedWebM);
+    const refinedElms = new Decoder().decode(refinedBuf);
+    const _reader = new EBMLReader();
+    _reader.logging = true;
+    refinedElms.forEach((elm)=> _reader.read(elm) );
+    _reader.stop();
 
-  await sleep(10 * 1000);
+  };
+}
 
-  rec.stop();
-  rec.stream.getTracks().map((track)=>{ track.stop(); });
-  reader.stop();
 
-  assert.ok(true, "stop");
+WEBM_FILE_LIST.forEach((file)=>{
+  QUnit.test("create_webp"+file, create_webp_test(file));
 });
+
+function create_webp_test(file: string){
+  return async (assert: Assert)=>{
+    const reader = new EBMLReader();
+    const decoder = new Decoder();
+    reader.use_webp = true;
+
+    const res = await fetch(file);
+    const webm_buf = await res.arrayBuffer();
+
+    reader.addListener("cluster", (ev)=>{
+      // cluster chunk test
+      const {data, timecode} = ev;
+      assert.ok(Number.isFinite(timecode), "cluster.timecode:"+timecode);
+      assert.ok(data.length > 0, "cluster.length:"+data.length);
+      const assertion = data.every((elm)=> elm.name === "Cluster" || elm.name === "Timecode" || elm.name === "SimpleBlock");
+      assert.ok(assertion, "element check");
+    });
+
+    let tasks = Promise.resolve(void 0);
+
+    reader.addListener("webp", (ev)=>{
+      const task = async ()=>{
+        const {webp, currentTime} = ev;
+        assert.ok(Number.isFinite(currentTime), "webp.currentTime:"+currentTime);
+        const src = URL.createObjectURL(webp);
+        try{
+          const img = await fetchImage(src);
+          assert.ok(img.width > 0, "webp.width:"+img.width);
+        }catch(err){
+          assert.notOk(err, "webp load failre");
+        }
+        URL.revokeObjectURL(src);
+      };
+      tasks = tasks.then(()=> task() );
+    });
+
+    const elms = new Decoder().decode(webm_buf);
+    elms.forEach((elm)=> reader.read(elm) );
+    reader.stop();
+    
+    await tasks;
+  };
+}
 
 
 
@@ -288,15 +261,6 @@ function readAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
     reader.onerror = (ev)=>{ reject(ev.error); };
   });
 }
-
-function put(elm: HTMLElement, title: string): void {
-  const h1 = document.createElement("h1");
-  h1.appendChild(document.createTextNode(title));
-  document.body.appendChild(h1);
-  document.body.appendChild(elm);
-}
-
-
 
 // MediaRecorder API
 interface BlobEvent extends Event {

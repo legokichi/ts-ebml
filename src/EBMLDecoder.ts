@@ -216,8 +216,10 @@ export default class EBMLDecoder {
         //  Unicode string, zero padded when needed (RFC 2279)
       case "b": tagObj.value = data; break;
         // Binary - not interpreted by the parser
-      case "d": tagObj.value = new Int64BE(data).toString(); break; // nano second; Date.UTC(2001,1,1,0,0,0,0) === 980985600000
-        // Date - signed 8 octets integer in nanoseconds with 0 indicating the precise beginning of the millennium (at 2001-01-01T00:00:00,000000000 UTC)
+      case "d": tagObj.value = new Int64BE(data).toString(); break;
+        // nano second; Date.UTC(2001,1,1,0,0,0,0) === 980985600000
+        // Date - signed 8 octets integer in nanoseconds with 0 indicating 
+        // the precise beginning of the millennium (at 2001-01-01T00:00:00,000000000 UTC)
     }
     if(tagObj.value === null){
       throw new Error("unknown tag type:" + tagObj.type);

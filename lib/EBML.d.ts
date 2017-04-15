@@ -8,9 +8,7 @@ export declare type EBMLElementBuffer = MasterElement | ChildElementBuffer;
 export declare type EBMLElementBufferValue = MasterElement | (ChildElementsValue & {
     data: Buffer;
 });
-export declare type EBMLElementDetail = (MasterElement & {
-    isEnd: boolean;
-} | (ChildElementsValue & {
+export declare type EBMLElementDetail = (MasterElement | (ChildElementsValue & {
     data: Buffer;
 })) & ElementDetail;
 export interface IElement {
@@ -22,7 +20,7 @@ export interface ChildElement extends IElement {
 }
 export interface MasterElement extends IElement {
     type: "m";
-    isEnd?: boolean;
+    isEnd: boolean;
     unknownSize?: boolean;
 }
 export interface ChildElementValue extends ChildElement {
