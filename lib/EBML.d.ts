@@ -40,6 +40,10 @@ export interface BinaryElement extends ChildElementValue {
 }
 export interface DateElement extends ChildElementValue {
     type: "d";
+    /**
+     * Date - signed 8 octets integer in nanoseconds with 0 indicating the precise
+     * beginning of the millennium (at 2001-01-01T00:00:00,000000000 UTC)
+     */
     value: string;
 }
 export interface ElementDetail {
@@ -49,7 +53,9 @@ export interface ElementDetail {
      */
     EBML_ID: string;
     /**
-     * The level within an EBML tree that the element may occur at. + is for a recursive level (can be its own child). g: global element (can be found at any level)
+     * The level within an EBML tree that the element may occur at.
+     * + is for a recursive level (can be its own child).
+     * g: global element (can be found at any level)
      */
     level: number;
     /**
