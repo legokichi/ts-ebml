@@ -1,23 +1,27 @@
 import * as EBML from './';
+import {Decoder, Encoder, tools} from './';
 import EBMLReader from './EBMLReader';
 
 async function main() {
-  const decoder = new EBML.Decoder();
+  const decoder = new Decoder();
   const reader = new EBMLReader();
+  reader.logging = true;
 
   let tasks = Promise.resolve(void 0);
-  let metadataBuf: ArrayBuffer = new ArrayBuffer(0);
+  let metadataElms: EBML.EBMLElementDetail[] = [];
+  let metadataSize = 0;
   let webM = new Blob([], {type: "video/webm"});
   let last_duration = 0;
   const cluster_ptrs: number[] = [];
 
 
   const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-  const rec = new MediaRecorder(stream, { mimeType: 'video/webm; codecs="vp8, opus"' });  
+  const rec = new MediaRecorder(stream, { mimeType: 'video/webm; codecs="vp8, opus"'});
 
-  reader.addListener("metadata", ({data})=>{
-    metadataBuf = new EBML.Encoder().encode(data);
-  });
+  reader.addListener("metadata", ({data, metadataSize: size})=>{
+      metadataElms = data;
+      metadataSize = size;
+    });
 
   reader.addListener("duration", ({timecodeScale, duration})=>{
     last_duration = duration;
@@ -47,19 +51,26 @@ async function main() {
   rec.stream.getTracks().map((track) => { track.stop(); });
   reader.stop();
 
-  if(metadataBuf.byteLength === 0){ throw new Error("cluster element not found."); }
-  
-  const metadataElms = new EBML.Decoder().decode(metadataBuf);
-  const refinedElms = EBML.tools.putRefinedMetaData(metadataElms, cluster_ptrs, last_duration);
-  const refinedMetadataBuf = new EBML.Encoder().encode(refinedElms);
+  const refinedMetadataElms = tools.putRefinedMetaData(metadataElms, cluster_ptrs, last_duration);
+  const refinedMetadataBuf = new Encoder().encode(refinedMetadataElms);
   const webMBuf = await readAsArrayBuffer(webM);
-  const body = webMBuf.slice(metadataBuf.byteLength);
+  const body = webMBuf.slice(metadataSize);
   const refinedWebM = new Blob([refinedMetadataBuf, body], {type: webM.type});
-
-  const raw_video = await fetchVideo(URL.createObjectURL(webM));
+  
+  const refinedBuf = await readAsArrayBuffer(refinedWebM);
+  const _reader = new EBMLReader();
+  _reader.logging = true;
+  new Decoder().decode(refinedBuf).forEach((elm)=> _reader.read(elm) );
+  _reader.stop();
+  
+  const raw_video = document.createElement("video");
+  raw_video.src = URL.createObjectURL(webM);
+  raw_video.controls = true;
   put(raw_video, "media-recorder-original(not seekable)");
 
-  const refined_video = await fetchVideo(URL.createObjectURL(refinedWebM));
+  const refined_video = document.createElement("video");
+  refined_video.src = URL.createObjectURL(refinedWebM);
+  refined_video.controls = true;
   put(refined_video, "add-seekhead-and-duration(seekable)");
 }
 
@@ -70,23 +81,6 @@ function put(elm: HTMLElement, title: string): void {
   document.body.appendChild(h1);
   document.body.appendChild(elm);
 }
-
-function fetchVideo(src: string): Promise<HTMLVideoElement>{
-  return new Promise((resolve, reject)=>{
-    const video = document.createElement("video");
-    video.src = src;
-    video.controls = true;
-    video.onloadeddata = ()=>{
-      video.onloadeddata = <any>null;
-      resolve(video);
-    };
-    video.onerror = (err)=>{
-      video.onerror = <any>null;
-      reject(err);
-    };
-  });
-}
-
 
 function readAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
   return new Promise((resolve, reject)=>{

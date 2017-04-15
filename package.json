@@ -1,6 +1,6 @@
 {
   "name": "ts-ebml",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "ebml decoder and encoder",
   "scripts": {
     "setup": "npm install -g http-server;",
@@ -8,7 +8,7 @@
     "update": "npm run reset; npm update",
     "reset": "rm -rf node_modules",
     "mkdir": "mkdir lib dist 2>/dev/null",
-    "clean": "rm -rf lib/* dist/*; mkdir -p dist",
+    "clean": "rm -rf lib/* dist/* test/*.js; mkdir -p dist",
     "build": "npm run clean   && tsc    -p .; npm run browserify; npm run reader",
     "start": "http-server . -s & tsc -w -p .& npm run watchify",
     "stop": "killall -- node */tsc -w -p",

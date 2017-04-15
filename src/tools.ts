@@ -101,13 +101,15 @@ export function putRefinedMetaData(
     let _metadata: EBML.EBMLElementBuffer[] = metadata.slice(0);
     if(typeof duration === "number"){
       // duration を追加する
-      for(let i=0; i<_metadata.length; i++){
-        const elm = _metadata[i];
-        if(elm.type === "m" && elm.name === "Info" && elm.isEnd){
-          const durationElm: EBML.ChildElementBuffer = {name: "Duration", type: "f", data: createFloatBuffer(duration, 8) };
-          _metadata.splice(i, 0, durationElm); // </Info> 前に <Duration /> を追加
-          i++; // <duration /> 追加した分だけインクリメント
+      let overwrited = false;
+      _metadata.forEach((elm)=>{
+        if(elm.type === "f" && elm.name === "Duration"){
+          overwrited = true;
+          elm.data = createFloatBuffer(duration, 8);
         }
+      });
+      if(!overwrited){
+        insertTag(_metadata, "Info", [{name: "Duration", type: "f", data: createFloatBuffer(duration, 8) }]);
       }
     }
     if(Array.isArray(clusterPtrs)){

@@ -148,12 +148,9 @@ function convert_to_seekable_test(file: string){
     assert.ok(refinedMetadataBuf.byteLength - metadataSize > 0);
 
     try{
-      await sleep(1000);
       const raw_video = await fetchVideo(URL.createObjectURL(raw_webM));
-      await sleep(1000);
-
       const refined_video = await fetchVideo(URL.createObjectURL(refinedWebM));
-      await sleep(1000);
+
       assert.ok(! Number.isFinite(raw_video.duration), "media recorder webm duration is not finite");
       assert.ok(  Number.isFinite(refined_video.duration), "refined webm duration is finite");
     }catch(err){

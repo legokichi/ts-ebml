@@ -166,6 +166,12 @@ npm run test  # build test
 npm run example # build example
 ```
 
+## tools
+
+* https://www.matroska.org/downloads/mkvalidator.html
+* https://mkvtoolnix.download/doc/mkvinfo.html
+* https://github.com/Matroska-Org/matroska-test-files
+
 # license
 
 MIT
