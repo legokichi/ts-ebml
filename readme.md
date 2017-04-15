@@ -89,80 +89,70 @@ async function recorder_main() {
 ## get seekable webm from media-recoder
 
 ```ts
-QUnit.test("convert_to_seekable_from_media_recorder", async (assert: Assert)=>{
-  const decoder = new Decoder();
+import EBMLReader from 'ts-ebml/lib/EBMLReader';
+import {Decoder, Encoder, tools} from "ts-ebml";
+import * as EBML from "ts-ebml";
+
+main("media-recoder.webm");
+
+async function main(file: string){
+  const res = await fetch(file);
+  const webm_buf = await res.arrayBuffer();
+  const elms = new Decoder().decode(webm_buf);
+  
+  let metadataElms: EBML.EBMLElementDetail[] = [];
+  let metadataSize = 0;
+  let last_duration = 0;
+  const cluster_ptrs: number[] = [];
   const reader = new EBMLReader();
   reader.logging = true;
 
-  console.info("unseekable original")
+  reader.addListener("metadata", ({data, metadataSize: size})=>{
+    metadataElms = data;
+    metadataSize = size;
+  });
 
-  let tasks = Promise.resolve(void 0);
-  let metadataBuf: ArrayBuffer = new ArrayBuffer(0);
-  let webM = new Blob([], {type: "video/webm"});
-  let last_duration = 0;
-  const clusterPtrs: number[] = [];
-
-  const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-  const rec = new MediaRecorder(stream, { mimeType: 'video/webm; codecs="vp8, opus"' });  
-
-  reader.addListener("metadata", ({data})=>{
-    metadataBuf = new Encoder().encode(data);
+  reader.addListener("cluster_ptr", (ptr)=>{
+    cluster_ptrs.push(ptr);
   });
 
   reader.addListener("duration", ({timecodeScale, duration})=>{
     last_duration = duration;
   });
-
-  reader.addListener("cluster_ptr", (ptr)=>{
-    clusterPtrs.push(ptr);
-  });
-
-  rec.ondataavailable = (ev: BlobEvent)=>{
-    const chunk = ev.data;
-    webM = new Blob([webM, chunk], {type: chunk.type});
-    const task = async ()=>{
-      const buf = await readAsArrayBuffer(chunk);
-      const elms = decoder.decode(buf);
-      elms.forEach((elm)=>{ reader.read(elm); });
-    };
-    tasks = tasks.then(()=> task() );
-  };
-
-  rec.start(100);
-
-  await sleep(10 * 1000);
-
-  rec.stop();
-  rec.ondataavailable = undefined;
-  rec.stream.getTracks().map((track) => { track.stop(); });
-  reader.stop();
   
-  const metadataElms = new Decoder().decode(metadataBuf);
-  const refinedElms = tools.putRefinedMetaData(metadataElms, clusterPtrs, last_duration);
-  const refinedMetadataBuf = new Encoder().encode(refinedElms);
-  const webMBuf = await readAsArrayBuffer(webM);
-  const body = webMBuf.slice(metadataBuf.byteLength);
-  const refinedWebM = new Blob([refinedMetadataBuf, body], {type: webM.type});
+  elms.forEach((elm)=>{ reader.read(elm); });
+  reader.stop();
 
-  console.info("seekable webm");
+  const refinedMetadataElms = tools.putRefinedMetaData(metadataElms, cluster_ptrs, last_duration);
+  const refinedMetadataBuf = new Encoder().encode(refinedMetadataElms);
+  const body = webm_buf.slice(metadataSize);
 
-  const refinedWebMBuf = await readAsArrayBuffer(refinedWebM);
-  const elms = new Decoder().decode(refinedWebMBuf)
-  const _reader = new EBMLReader();
-  _reader.logging = true;
-  elms.forEach((elm)=> _reader.read(elm) );
-  _reader.stop();
+  const raw_webM = new Blob([webm_buf], {type: "video/webm"});
+  const refinedWebM = new Blob([refinedMetadataBuf, body], {type: "video/webm"});
 
-  const raw_video = await fetchVideo(URL.createObjectURL(webM));
-  put(raw_video, "media-recorder-original(not seekable)");
-
+  const raw_video = await fetchVideo(URL.createObjectURL(raw_webM));
   const refined_video = await fetchVideo(URL.createObjectURL(refinedWebM));
-  put(refined_video, "add-seekhead-and-duration(seekable)");
+  
+  document.body.appendChild(raw_video);
+  document.body.appendChild(refined_video);
+}
 
-  assert.ok(! Number.isFinite(raw_video.duration), "media recorder webm duration is not finite");
-  assert.ok(  Number.isFinite(refined_video.duration), "refined webm duration is finite");
 
-});
+function fetchVideo(src: string): Promise<HTMLVideoElement>{
+  return new Promise((resolve, reject)=>{
+    const video = document.createElement("video");
+    video.src = src;
+    video.controls = true;
+    video.onloadeddata = ()=>{
+      video.onloadeddata = <any>null;
+      resolve(video);
+    };
+    video.onerror = (err)=>{
+      video.onerror = <any>null;
+      reject(err);
+    };
+  });
+}
 ```
 
 # develop
@@ -174,6 +164,8 @@ npm run build # build js code
 npm run lint  # tslint
 npm run doc   # typedoc
 npm run check # type check
+npm run test  # build test
+npm run example # build example
 ```
 
 # license
