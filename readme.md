@@ -46,43 +46,41 @@ fetch('media/test.webm')
 ## get WebP frame from MediaRecorder WebM Stream
 
 ```ts
-import EBML, {Decoder, Encoder, tools} from "./";
+import {Decoder, Encoder, tools} from "ts-ebml";
+import * as EBML from "ts-ebml";
 
-async function recorder_main() {
+async function main() {
   const decoder = new Decoder();
-  const encoder = new Encoder();
+
 	const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
   const rec = new MediaRecorder(stream, { mimeType: 'video/webm; codecs="vp8, opus"' });
-  const tasks: Promise<void>[] = [];
 
-  let WebM = new Blob([], {type: "video/webm"});
+  let tasks = Promise.resolve(void 0);
   
   rec.ondataavailable = (ev: BlobEvent)=>{
     const chunk = ev.data;
-    WebM = new Blob([WebM, chunk], {type: chunk.type});
-    
-    const task = readAsArrayBuffer(chunk)
-      .then((buf)=>{
-        const chunks = decoder.decode(buf);
-        const WebPs = tools.WebPFrameFilter(chunks);
-        WebPs.forEach((WebP)=>{
-          const img = new Image();
-          img.src = URL.createObjectURL(WebP);
-          document.body.appendChild(img);
-        })
+    const task = async ()=>{
+      const buf = await readAsArrayBuffer(chunk);
+      const chunks = decoder.decode(buf);
+      const WebPs = tools.WebPFrameFilter(chunks);
+      WebPs.forEach((WebP)=>{
+        const img = new Image();
+        img.src = URL.createObjectURL(WebP);
+        document.body.appendChild(img);
       });
-
-    tasks.push(task);
+    };
+    tasks = tasks.then(()=> task() );
   };
 
   rec.start(100);
 
   await new Promise((resolve)=> setTimeout(resolve, 30 * 1000) ); // 30 sec
 
-  rec.ondataavailable = undefined;
+  rec.stop();
+  rec.ondataavailable = <any>undefined;
   rec.stream.getTracks().map((track) => { track.stop(); });
   
-  await tasks.reduce((o, prm) => o.then(() => prm), Promise.resolve(void 0));
+  await tasks;
 }
 ```
 
@@ -93,9 +91,9 @@ import EBMLReader from 'ts-ebml/lib/EBMLReader';
 import {Decoder, Encoder, tools} from "ts-ebml";
 import * as EBML from "ts-ebml";
 
-main("media-recoder.webm");
+const file = "media-recoder.webm";
 
-async function main(file: string){
+async function main(){
   const res = await fetch(file);
   const webm_buf = await res.arrayBuffer();
   const elms = new Decoder().decode(webm_buf);
