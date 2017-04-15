@@ -262,6 +262,19 @@ function readAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
   });
 }
 
+function waitEvent<E extends Event>(target: EventTarget, ev: string, err="error"): Promise<E>{
+  return new Promise((resolve, reject)=>{
+    target.addEventListener(ev, succ);
+    target.addEventListener(err, fail);
+    function succ(ev){ clean(); resolve(ev); }
+    function fail(ev){ clean(); reject(ev); }
+    function clean(){
+      target.removeEventListener(ev, succ);
+      target.removeEventListener(err, fail);
+    }
+  });
+}
+
 // MediaRecorder API
 interface BlobEvent extends Event {
   data: Blob;
@@ -280,8 +293,6 @@ declare class MediaRecorder extends EventTarget {
   onerror?: (ev: ErrorEvent)=> void;
   addEventListener(event: "dataavailable", callback: (ev: BlobEvent)=> any);
 }
-
-
 
 
 
