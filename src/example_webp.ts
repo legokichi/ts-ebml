@@ -3,7 +3,6 @@ import EBMLReader from './EBMLReader';
 
 async function main() {
   const decoder = new EBML.Decoder();
-  const encoder = new EBML.Encoder();
   const reader = new EBMLReader();
   reader.use_webp = true;
 
