@@ -69,8 +69,7 @@
         "src/EBMLReader.ts",
         "src/index.ts",
         "src/test.ts",
-        "src/example_seekable.ts",
-        "src/example_webp.ts"
+        "src/example_seekable.ts"
     ],
     "exclude": [
         "node_modules"
