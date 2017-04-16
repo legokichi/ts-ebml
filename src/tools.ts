@@ -204,7 +204,7 @@ export function createUIntBuffer(value: number): Buffer {
   // Big-endian, any size from 1 to 8
   // but js number is float64, so max 6 bit octets
   let bytes: 1|2|3|4|5|6 = 1;
-  for(; Math.pow(2, 16) >= Math.pow(2, 8*bytes); bytes++){}
+  for(; value >= Math.pow(2, 8*bytes); bytes++){}
   if(bytes >= 7){
     console.warn("7bit or more bigger uint not supported.");
     return new Uint64BE(value).toBuffer();
@@ -218,7 +218,7 @@ export function createIntBuffer(value: number): Buffer {
   // Big-endian, any size from 1 to 8 octets
   // but js number is float64, so max 6 bit
   let bytes: 1|2|3|4|5|6 = 1;
-  for(; Math.pow(2, 16) >= Math.pow(2, 8*bytes); bytes++){}
+  for(; value >= Math.pow(2, 8*bytes); bytes++){}
   if(bytes >= 7){
     console.warn("7bit or more bigger uint not supported.");
     return new Int64BE(value).toBuffer();
