@@ -1,10 +1,12 @@
-/**
- * This is an informal code for reference.
- */
-
 import {EventEmitter} from "events";
 import * as EBML from './EBML';
 import * as tools from './tools';
+
+/**
+ * This is an informal code for reference.
+ * EBMLReader is a class for getting information to enable seeking Webm recorded by MediaRecorder.
+ * So please do not use for regular WebM files.
+ */
 
 export default class EBMLReader extends EventEmitter {
   private metadataloaded: boolean;
@@ -31,6 +33,7 @@ export default class EBMLReader extends EventEmitter {
   use_duration_every_simpleblock: boolean; // heavy
   logging: boolean;
   use_segment_info: boolean;
+  drop_default_duration: boolean;
 
   constructor(){
     super();
@@ -59,6 +62,7 @@ export default class EBMLReader extends EventEmitter {
     this.use_duration_every_simpleblock = false;
     this.use_webp = false;
     this.use_segment_info = true;
+    this.drop_default_duration = true;
   }
   stop(){
     this.ended = true;
@@ -154,14 +158,16 @@ export default class EBMLReader extends EventEmitter {
     }else if(elm.type === "u" && elm.name === "TrackNumber"){
       this.currentTrack.TrackNumber = elm.value;
     }else if(elm.type === "u" && elm.name === "DefaultDuration"){
-      console.warn("DefaultDuration detected!, remove it");
       // this.currentTrack.DefaultDuration = elm.value;
       // media source api は DefaultDuration を計算するとバグる。
       // https://bugs.chromium.org/p/chromium/issues/detail?id=606000
       // opus,vp9
       // chrome 58 ではこれを回避するために DefaultDuration 要素を抜き取った。
       // chrome 58 以前でもこのタグを抜き取ることで回避できる
-      drop = true;
+      if(this.drop_default_duration){
+        console.warn("DefaultDuration detected!, remove it");
+        drop = true;
+      }
     }else if(elm.name === "unknown"){
       console.warn(elm);
     }

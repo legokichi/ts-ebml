@@ -24,6 +24,7 @@ export default class EBMLReader extends EventEmitter {
     use_duration_every_simpleblock: boolean;
     logging: boolean;
     use_segment_info: boolean;
+    drop_default_duration: boolean;
     constructor();
     stop(): void;
     private emit_segment_info();
