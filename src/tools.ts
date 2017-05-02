@@ -116,7 +116,7 @@ export function putRefinedMetaData(
       insertTag(_metadata, "SeekHead", create_seek(clusterPtrs, sizeDiff));
     }
     if(Array.isArray(cueInfos)){
-      insertTag(_metadata, "Que", create_que(cueInfos, sizeDiff));
+      insertTag(_metadata, "Cues", create_cue(cueInfos, sizeDiff));
     }
     return _metadata;
   }
@@ -132,18 +132,18 @@ function create_seek(clusterPtrs: number[], sizeDiff: number): EBML.EBMLElementB
   });
   return seeks;
 }
-function create_que(cueInfos: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[], sizeDiff: number): EBML.EBMLElementBuffer[] {
-  const ques: EBML.EBMLElementBuffer[] = [];
+function create_cue(cueInfos: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[], sizeDiff: number): EBML.EBMLElementBuffer[] {
+  const cues: EBML.EBMLElementBuffer[] = [];
   cueInfos.forEach(({CueTrack, CueClusterPosition, CueTime})=>{
-    ques.push({name: "CuePoint", type: "m", isEnd: false});
-      ques.push({name: "CueTime", type: "u", data: createUIntBuffer(CueTime) });
-      ques.push({name: "CueTrackPositions", type: "m", isEnd: false});
-        ques.push({name: "CueTrack", type: "u", data: createUIntBuffer(CueTrack) }); // video track
-        ques.push({name: "CueClusterPosition", type: "u", data: createUIntBuffer(CueClusterPosition +  sizeDiff) });
-      ques.push({name: "CueTrackPositions", type: "m", isEnd: true});
-    ques.push({name: "CuePoint", type: "m", isEnd: true});
+    cues.push({name: "CuePoint", type: "m", isEnd: false});
+      cues.push({name: "CueTime", type: "u", data: createUIntBuffer(CueTime) });
+      cues.push({name: "CueTrackPositions", type: "m", isEnd: false});
+        cues.push({name: "CueTrack", type: "u", data: createUIntBuffer(CueTrack) }); // video track
+        cues.push({name: "CueClusterPosition", type: "u", data: createUIntBuffer(CueClusterPosition +  sizeDiff) });
+      cues.push({name: "CueTrackPositions", type: "m", isEnd: true});
+    cues.push({name: "CuePoint", type: "m", isEnd: true});
   });
-  return ques;
+  return cues;
 }
 
 export function insertTag(_metadata: EBML.EBMLElementBuffer[], tagName: string, children: EBML.EBMLElementBuffer[]): void {
