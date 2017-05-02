@@ -13,6 +13,7 @@ async function main() {
   let webM = new Blob([], {type: "video/webm"});
   let last_duration = 0;
   const cluster_ptrs: number[] = [];
+  const cue_points: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[] = [];
 
 
   const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
@@ -30,6 +31,10 @@ async function main() {
   reader.addListener("cluster_ptr", (ptr)=>{
     cluster_ptrs.push(ptr);
   });
+
+  reader.addListener("cue_info", ({CueTrack, CueClusterPosition, CueTime}) =>{
+    cue_points.push({CueTrack, CueClusterPosition, CueTime});
+  })
 
   rec.ondataavailable = (ev: BlobEvent)=>{
     const chunk = ev.data;
@@ -51,7 +56,7 @@ async function main() {
   rec.stream.getTracks().map((track) => { track.stop(); });
   reader.stop();
 
-  const refinedMetadataElms = tools.putRefinedMetaData(metadataElms, cluster_ptrs, last_duration);
+  const refinedMetadataElms = tools.putRefinedMetaData(metadataElms, cluster_ptrs, last_duration, cue_points);
   const refinedMetadataBuf = new Encoder().encode(refinedMetadataElms);
   const webMBuf = await readAsArrayBuffer(webM);
   const body = webMBuf.slice(metadataSize);
