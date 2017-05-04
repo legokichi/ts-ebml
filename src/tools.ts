@@ -75,11 +75,13 @@ export function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer {
 
 /**
  * metadata に対して duration と seekhead を追加した metadata を返す
+ * @param segmentOffset - the offset that needs to be applied to create relative offsets into a segement from abolsute offsets
  * @param metadata - 変更前の webm における ファイル先頭から 最初の Cluster 要素までの 要素
  * @param clusterPtrs - 変更前の webm における SeekHead に追加する Cluster 要素 への start pointer
  * @param duration - Duration に記載する値
  */
 export function putRefinedMetaData(
+  segmentOffset: number,
   metadata: EBML.EBMLElementDetail[],
   clusterPtrs: number[],
   duration: number,
@@ -91,11 +93,32 @@ export function putRefinedMetaData(
   const metadataSize = lastmetadata.dataEnd; // 書き換える前の metadata のサイズ
   const encorder = new Encoder();
   // 一旦 seekhead を作って自身のサイズを調べる
-  const bufs = refineMetadata(0).reduce<ArrayBuffer[]>((lst, elm)=> lst.concat(encorder.encode([elm])), []);
-  const totalByte = bufs.reduce((o, buf)=> o + buf.byteLength, 0);
+  let refinedMetadata = refineMetadata(-segmentOffset);
+  let refinedMetadataSize = encodedSizeOfEbml(refinedMetadata);
   // 自分自身のサイズを考慮した seekhead を再構成する
   //console.log("sizeDiff", totalByte - metadataSize);
-  return refineMetadata(totalByte - metadataSize);
+  // We need the size to be stable between two refinements in order for our offsets to be correct
+  // Bound the number of possible refinements so we can't go infinate if something goes wrong
+  let i;
+  for(i = 1; i < 20; i++) {
+    let sizeDiff = refinedMetadataSize - metadataSize;
+    let newRefinedMetadata = refineMetadata(sizeDiff - segmentOffset);
+    let newRefinedMetadataSize = encodedSizeOfEbml(newRefinedMetadata);
+    if(newRefinedMetadataSize == refinedMetadataSize) {
+      // Size is stable
+      return newRefinedMetadata;
+    } else {
+      refinedMetadata = newRefinedMetadata;
+      refinedMetadataSize = newRefinedMetadataSize;
+    }
+  }
+  throw new Error("unable to refine metadata, stable size could not be found in " + i + " iterations!");
+
+
+  // Given a list of EBMLElementBuffers, returns their encoded size in bytes
+  function encodedSizeOfEbml(refinedMetaData: EBML.EBMLElementBuffer[]): number {
+    return refinedMetaData.reduce<ArrayBuffer[]>((lst, elm)=> lst.concat(encorder.encode([elm])), []).reduce((o, buf)=> o + buf.byteLength, 0);
+  }
 
   function refineMetadata(sizeDiff: number = 0): EBML.EBMLElementBuffer[] {
     let _metadata: EBML.EBMLElementBuffer[] = metadata.slice(0);

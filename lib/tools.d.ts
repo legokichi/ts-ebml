@@ -29,11 +29,12 @@ export declare function VP8BitStreamToRiffWebPBuffer(frame: Buffer): Buffer;
 export declare function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer;
 /**
  * metadata に対して duration と seekhead を追加した metadata を返す
+ * @param segmentOffset - the offset that needs to be applied to create relative offsets into a segement from abolsute offsets
  * @param metadata - 変更前の webm における ファイル先頭から 最初の Cluster 要素までの 要素
  * @param clusterPtrs - 変更前の webm における SeekHead に追加する Cluster 要素 への start pointer
  * @param duration - Duration に記載する値
  */
-export declare function putRefinedMetaData(metadata: EBML.EBMLElementDetail[], clusterPtrs: number[], duration: number, cueInfos?: {
+export declare function putRefinedMetaData(segmentOffset: number, metadata: EBML.EBMLElementDetail[], clusterPtrs: number[], duration: number, cueInfos?: {
     CueTrack: number;
     CueClusterPosition: number;
     CueTime: number;
