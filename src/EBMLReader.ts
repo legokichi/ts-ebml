@@ -14,6 +14,7 @@ export default class EBMLReader extends EventEmitter {
   private stack: (EBML.MasterElement & EBML.ElementDetail)[];
   private chunks: EBML.EBMLElementBufferValue[];
 
+  private segmentOffset: number;
   private lastSimpleBlockVideoTrackTimecode: number;
   private lastClusterTimecode: number;
   private lastClusterPosition: number;
@@ -41,6 +42,7 @@ export default class EBMLReader extends EventEmitter {
     this.chunks = [];
     
     this.stack = [];
+    this.segmentOffset = 0;
     this.lastSimpleBlockVideoTrackTimecode = 0;
     this.lastClusterTimecode = 0;
     this.lastClusterPosition = 0;
@@ -111,7 +113,13 @@ export default class EBMLReader extends EventEmitter {
         this.stack.push(elm);
       }
     }
-    if(elm.type === "b" && elm.name === "SimpleBlock"){
+    if(elm.type === "m" && elm.name == "Segment"){
+      if(this.segmentOffset != 0) {
+        console.warn("Multiple segments detected!");
+      }
+      this.segmentOffset = elm.tagEnd + 1;
+      this.emit("segment_offset", this.segmentOffset);
+    }else if(elm.type === "b" && elm.name === "SimpleBlock"){
       const {timecode, trackNumber, frames} = tools.ebmlBlock(elm.data);
       if(this.trackTypes[trackNumber] === 1){ // trackType === 1 => video track
         // https://bugs.chromium.org/p/chromium/issues/detail?id=606000#c22
@@ -192,6 +200,8 @@ export default class EBMLReader extends EventEmitter {
     const duration = duration_nanosec / this.timecodeScale;
     return Math.floor(duration);
   }
+  /** emit on every segment **/
+  addListener(event: "segment_offset", listener: (ev: number )=> void): this;
   /** emit on every cluster element start */
   addListener(event: "cluster_ptr", listener: (ev: number )=> void): this;
   /** emit on every cue point */
