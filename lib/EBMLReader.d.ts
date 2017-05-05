@@ -10,6 +10,7 @@ export default class EBMLReader extends EventEmitter {
     private metadataloaded;
     private stack;
     private chunks;
+    private segmentOffset;
     private lastSimpleBlockVideoTrackTimecode;
     private lastClusterTimecode;
     private lastClusterPosition;
@@ -36,6 +37,8 @@ export default class EBMLReader extends EventEmitter {
      * 単位 timecodeScale
      */
     private readonly duration;
+    /** emit on every segment **/
+    addListener(event: "segment_offset", listener: (ev: number) => void): this;
     /** emit on every cluster element start */
     addListener(event: "cluster_ptr", listener: (ev: number) => void): this;
     /** emit on every cue point */

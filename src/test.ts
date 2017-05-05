@@ -140,10 +140,16 @@ function convert_to_seekable_test(file: string){
     const reader = new EBMLReader();
     reader.logging = true;
 
+    let segmentOffset = 0;
     let metadataElms: EBML.EBMLElementDetail[] = [];
     let metadataSize = 0;
     let last_duration = 0;
     const cluster_ptrs: number[] = [];
+
+    reader.addListener("segment_offset", (offset)=>{
+      assert.ok(offset > 0);
+      segmentOffset = offset;
+    });
 
     reader.addListener("metadata", ({data, metadataSize: size})=>{
       assert.ok(data.length > 0, "metadata.length:"+data.length);
@@ -185,7 +191,7 @@ function convert_to_seekable_test(file: string){
 
     console.info("convert to seekable file");
 
-    const refinedMetadataElms = tools.putRefinedMetaData(metadataElms, cluster_ptrs, last_duration);
+    const refinedMetadataElms = tools.putRefinedMetaData(segmentOffset, metadataElms, cluster_ptrs, last_duration);
     const refinedMetadataBuf = new Encoder().encode(refinedMetadataElms);
     const body = webm_buf.slice(metadataSize);
 

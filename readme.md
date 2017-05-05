@@ -99,11 +99,16 @@ async function main(){
   const elms = new Decoder().decode(webm_buf);
   
   let metadataElms: EBML.EBMLElementDetail[] = [];
+  let segmentOffset = 0;
   let metadataSize = 0;
   let last_duration = 0;
   const cluster_ptrs: number[] = [];
   const reader = new EBMLReader();
   reader.logging = true;
+
+  reader.addListener("segment_offset", (offset)=>{
+    segmentOffset = offset;
+  });
 
   reader.addListener("metadata", ({data, metadataSize: size})=>{
     metadataElms = data;
@@ -114,14 +119,18 @@ async function main(){
     cluster_ptrs.push(ptr);
   });
 
+  reader.addListener("cue_info", ({CueTrack, CueClusterPosition, CueTime})=>{
+    cue_points.push({CueTrack, CueClusterPosition, CueTime});
+  })
+
   reader.addListener("duration", ({timecodeScale, duration})=>{
     last_duration = duration;
   });
-  
+
   elms.forEach((elm)=>{ reader.read(elm); });
   reader.stop();
 
-  const refinedMetadataElms = tools.putRefinedMetaData(metadataElms, cluster_ptrs, last_duration);
+  const refinedMetadataElms = tools.putRefinedMetaData(segmentOffset, metadataElms, cluster_ptrs, last_duration, cue_points);
   const refinedMetadataBuf = new Encoder().encode(refinedMetadataElms);
   const body = webm_buf.slice(metadataSize);
 
