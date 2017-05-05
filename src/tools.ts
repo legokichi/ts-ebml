@@ -91,7 +91,6 @@ export function putRefinedMetaData(
   if(lastmetadata == null){ throw new Error("metadata not found"); }
   if(lastmetadata.dataEnd < 0){ throw new Error("metadata does not have size"); } // metadata が 不定サイズ
   const metadataSize = lastmetadata.dataEnd; // 書き換える前の metadata のサイズ
-  const encorder = new Encoder();
   // 一旦 seekhead を作って自身のサイズを調べる
   let refinedMetadata = refineMetadata(-segmentOffset);
   let refinedMetadataSize = encodedSizeOfEbml(refinedMetadata);
@@ -117,6 +116,7 @@ export function putRefinedMetaData(
 
   // Given a list of EBMLElementBuffers, returns their encoded size in bytes
   function encodedSizeOfEbml(refinedMetaData: EBML.EBMLElementBuffer[]): number {
+    const encorder = new Encoder();
     return refinedMetaData.reduce<ArrayBuffer[]>((lst, elm)=> lst.concat(encorder.encode([elm])), []).reduce((o, buf)=> o + buf.byteLength, 0);
   }
 

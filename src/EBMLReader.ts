@@ -117,7 +117,7 @@ export default class EBMLReader extends EventEmitter {
       if(this.segmentOffset != 0) {
         console.warn("Multiple segments detected!");
       }
-      this.segmentOffset = elm.tagEnd + 1;
+      this.segmentOffset = elm.dataStart;
       this.emit("segment_offset", this.segmentOffset);
     }else if(elm.type === "b" && elm.name === "SimpleBlock"){
       const {timecode, trackNumber, frames} = tools.ebmlBlock(elm.data);
