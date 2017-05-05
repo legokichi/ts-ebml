@@ -61,29 +61,38 @@ async function main() {
   rec.stream.getTracks().map((track) => { track.stop(); });
   reader.stop();
 
-  const refinedMetadataElms = tools.putRefinedMetaData(segmentOffset, metadataElms, cluster_ptrs, last_duration, cue_points);
-  const refinedMetadataBuf = new Encoder().encode(refinedMetadataElms);
-  const webMBuf = await readAsArrayBuffer(webM);
-  const body = webMBuf.slice(metadataSize);
-  const refinedWebM = new Blob([refinedMetadataBuf, body], {type: webM.type});
-  
-  const refinedBuf = await readAsArrayBuffer(refinedWebM);
-  const _reader = new EBMLReader();
-  _reader.logging = true;
-  new Decoder().decode(refinedBuf).forEach((elm)=> _reader.read(elm) );
-  _reader.stop();
-  
   const raw_video = document.createElement("video");
   raw_video.src = URL.createObjectURL(webM);
   raw_video.controls = true;
   put(raw_video, "media-recorder-original(not seekable)");
 
-  const refined_video = document.createElement("video");
-  refined_video.src = URL.createObjectURL(refinedWebM);
-  refined_video.controls = true;
-  put(refined_video, "add-seekhead-and-duration(seekable)");
-}
+  const infos = [
+    {duration: last_duration, title: "add-duration(seekable but slow)"},
+    {duration: last_duration, clusterPtrs: cluster_ptrs, title: "add duration and seekhead (seekable fast but not valid)"},
+    {duration: last_duration, clusterPtrs: cluster_ptrs, cueInfos: cue_points, title: "add duration, seekhead and cues (valid seekable file)"},
+  ];
+  for(let info of infos){
+    const refinedMetadataBuf = tools.putRefinedMetaData(metadataElms, info);
+    const webMBuf = await readAsArrayBuffer(webM);
+    const body = webMBuf.slice(metadataSize);
+    const refinedWebM = new Blob([refinedMetadataBuf, body], {type: webM.type});
 
+    // logging
+    /*console.group(info.title);
+    const refinedBuf = await readAsArrayBuffer(refinedWebM);
+    const _reader = new EBMLReader();
+    _reader.logging = true;
+    new Decoder().decode(refinedBuf).forEach((elm)=> _reader.read(elm) );
+    _reader.stop();
+    console.groupEnd();
+    */
+
+    const refined_video = document.createElement("video");
+    refined_video.src = URL.createObjectURL(refinedWebM);
+    refined_video.controls = true;
+    put(refined_video, info.title);
+  }
+}
 
 function put(elm: HTMLElement, title: string): void {
   const h1 = document.createElement("h1");

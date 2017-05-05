@@ -14,6 +14,19 @@ export function readBlock(buf: ArrayBuffer): EBML.SimpleBlock {
 }
 
 /**
+  * @param end - if end === false then length is unknown
+  */
+export function encodeTag(tagId: Buffer, tagData: Buffer, unknownSize=false): Buffer {
+  return concat([
+    tagId,
+    unknownSize ?
+      new Buffer('01ffffffffffffff', 'hex') : 
+      writeVint(tagData.length),
+    tagData
+  ]);
+}
+
+/**
  * @return - SimpleBlock to WebP Filter
  */
 export function WebPFrameFilter(elms: EBML.EBMLElementDetail[]): Blob[] {
@@ -81,69 +94,98 @@ export function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer {
  * @param duration - Duration に記載する値
  */
 export function putRefinedMetaData(
-  segmentOffset: number,
   metadata: EBML.EBMLElementDetail[],
-  clusterPtrs: number[],
-  duration: number,
-  cueInfos?: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[]
-): EBML.EBMLElementBuffer[] {
-  const lastmetadata = metadata[metadata.length-1];
-  if(lastmetadata == null){ throw new Error("metadata not found"); }
-  if(lastmetadata.dataEnd < 0){ throw new Error("metadata does not have size"); } // metadata が 不定サイズ
-  const metadataSize = lastmetadata.dataEnd; // 書き換える前の metadata のサイズ
-  // 一旦 seekhead を作って自身のサイズを調べる
-  let refinedMetadata = refineMetadata(-segmentOffset);
-  let refinedMetadataSize = encodedSizeOfEbml(refinedMetadata);
-  // 自分自身のサイズを考慮した seekhead を再構成する
-  //console.log("sizeDiff", totalByte - metadataSize);
+  info: {
+    duration?: number,
+    clusterPtrs?: number[],
+    cueInfos?: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[]
+  }
+): ArrayBuffer {
+  let ebml: EBML.EBMLElementDetail[] = [];
+  let payload: EBML.EBMLElementDetail[] = [];
+  for(let i=0; i<metadata.length; i++){
+    const elm = metadata[i];
+    if(elm.type === "m" && elm.name === "Segment"){
+      ebml = metadata.slice(0, i);
+      payload = metadata.slice(i);
+      if(elm.unknownSize){
+        payload.shift(); // remove segment tag
+        break;
+      }
+      throw new Error("this metadata is not streaming webm file");
+    }
+  }
+  // [EBML][size]...[Segment][size][Info][size][Duration][size]...[Cluster]
+  //                |              |                              + originalPayloadOffsetEnd
+  //                |              +
+  //                +
+  const originalPayloadOffsetEnd = payload[payload.length-1].dataEnd;
+  const ebmlSize = new Encoder().encode(ebml).byteLength;
+  const payloadSize = new Encoder().encode(payload).byteLength;
+  const segmentTag = new Buffer([0x18, 0x53, 0x80, 0x67]); // Segment
+  let prevPayloadSize = payloadSize;
   // We need the size to be stable between two refinements in order for our offsets to be correct
   // Bound the number of possible refinements so we can't go infinate if something goes wrong
   let i;
   for(i = 1; i < 20; i++) {
-    let sizeDiff = refinedMetadataSize - metadataSize;
-    let newRefinedMetadata = refineMetadata(sizeDiff - segmentOffset);
-    let newRefinedMetadataSize = encodedSizeOfEbml(newRefinedMetadata);
-    if(newRefinedMetadataSize == refinedMetadataSize) {
+    const segmentSize = segmentTag.byteLength + writeVint(prevPayloadSize).byteLength;
+    const sizeDiff = ebmlSize + segmentSize + prevPayloadSize - originalPayloadOffsetEnd;
+    const segmentOffset = ebmlSize + segmentSize;
+    const refined = refineMetadata(payload, sizeDiff - segmentOffset, info);
+    const refinedSize = new Encoder().encode(refined).byteLength; // 一旦 seekhead を作って自身のサイズを調べる
+    if(refinedSize === prevPayloadSize) {
       // Size is stable
-      return newRefinedMetadata;
-    } else {
-      refinedMetadata = newRefinedMetadata;
-      refinedMetadataSize = newRefinedMetadataSize;
+      return new Encoder().encode(
+        (<EBML.EBMLElementBuffer[]>[]).concat(
+          ebml,
+          [{type: "m", name: "Segment", isEnd: false, unknownSize: true}],
+          refined,
+        )
+      );
     }
+    prevPayloadSize = refinedSize;
   }
   throw new Error("unable to refine metadata, stable size could not be found in " + i + " iterations!");
-
-
-  // Given a list of EBMLElementBuffers, returns their encoded size in bytes
-  function encodedSizeOfEbml(refinedMetaData: EBML.EBMLElementBuffer[]): number {
-    const encorder = new Encoder();
-    return refinedMetaData.reduce<ArrayBuffer[]>((lst, elm)=> lst.concat(encorder.encode([elm])), []).reduce((o, buf)=> o + buf.byteLength, 0);
-  }
-
-  function refineMetadata(sizeDiff: number = 0): EBML.EBMLElementBuffer[] {
-    let _metadata: EBML.EBMLElementBuffer[] = metadata.slice(0);
-    if(typeof duration === "number"){
-      // duration を追加する
-      let overwrited = false;
-      _metadata.forEach((elm)=>{
-        if(elm.type === "f" && elm.name === "Duration"){
-          overwrited = true;
-          elm.data = createFloatBuffer(duration, 8);
-        }
-      });
-      if(!overwrited){
-        insertTag(_metadata, "Info", [{name: "Duration", type: "f", data: createFloatBuffer(duration, 8) }]);
-      }
-    }
-    if(Array.isArray(clusterPtrs)){
-      insertTag(_metadata, "SeekHead", create_seek(clusterPtrs, sizeDiff));
-    }
-    if(Array.isArray(cueInfos)){
-      insertTag(_metadata, "Cues", create_cue(cueInfos, sizeDiff));
-    }
-    return _metadata;
-  }
 }
+// Given a list of EBMLElementBuffers, returns their encoded size in bytes
+function encodedSizeOfEbml(refinedMetaData: EBML.EBMLElementBuffer[]): number {
+  const encorder = new Encoder();
+  return refinedMetaData.reduce<ArrayBuffer[]>((lst, elm)=> lst.concat(encorder.encode([elm])), []).reduce((o, buf)=> o + buf.byteLength, 0);
+}
+
+function refineMetadata(
+  mesetadata: EBML.EBMLElementDetail[],
+  sizeDiff: number,
+  info: {
+    duration?: number,
+    clusterPtrs?: number[],
+    cueInfos?: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[]
+  }
+): EBML.EBMLElementBuffer[] {
+  const {duration, clusterPtrs, cueInfos} = info;
+  let _metadata: EBML.EBMLElementBuffer[] = mesetadata.slice(0);
+  if(typeof duration === "number"){
+    // duration を追加する
+    let overwrited = false;
+    _metadata.forEach((elm)=>{
+      if(elm.type === "f" && elm.name === "Duration"){
+        overwrited = true;
+        elm.data = createFloatBuffer(duration, 8);
+      }
+    });
+    if(!overwrited){
+      insertTag(_metadata, "Info", [{name: "Duration", type: "f", data: createFloatBuffer(duration, 8) }]);
+    }
+  }
+  if(Array.isArray(clusterPtrs)){
+    insertTag(_metadata, "SeekHead", create_seek(clusterPtrs, sizeDiff));
+  }
+  if(Array.isArray(cueInfos)){
+    insertTag(_metadata, "Cues", create_cue(cueInfos, sizeDiff));
+  }
+  return _metadata;
+}
+
 function create_seek(clusterPtrs: number[], sizeDiff: number): EBML.EBMLElementBuffer[] {
   const seeks: EBML.EBMLElementBuffer[] = [];
   clusterPtrs.forEach((start)=>{
@@ -155,6 +197,7 @@ function create_seek(clusterPtrs: number[], sizeDiff: number): EBML.EBMLElementB
   });
   return seeks;
 }
+
 function create_cue(cueInfos: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[], sizeDiff: number): EBML.EBMLElementBuffer[] {
   const cues: EBML.EBMLElementBuffer[] = [];
   cueInfos.forEach(({CueTrack, CueClusterPosition, CueTime})=>{
@@ -171,10 +214,14 @@ function create_cue(cueInfos: {CueTrack: number; CueClusterPosition: number; Cue
 
 export function insertTag(_metadata: EBML.EBMLElementBuffer[], tagName: string, children: EBML.EBMLElementBuffer[]): void {
   let idx = -1;
-  _metadata.filter((elm)=> elm.type === "m" && elm.name === tagName && elm.isEnd === false).forEach((elm)=>{
-    idx = _metadata.indexOf(elm);
-  });
-  if(idx > 0){
+  for(let i=0; i<_metadata.length; i++){
+    const elm = _metadata[i];
+    if(elm.type === "m" && elm.name === tagName && elm.isEnd === false){
+      idx = i;
+      break;
+    }
+  }
+  if(idx >= 0){
     // insert [<CuePoint />] to <Cues />
     Array.prototype.splice.apply(_metadata, [<any>idx+1, 0].concat(children));
   }else{

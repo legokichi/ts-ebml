@@ -61,19 +61,6 @@ export default class EBMLEncoder {
     return null;
   }
 
-  /**
-   * @param end - if end === false then length is unknown
-   */
-  private _encodeTag(tagId: Buffer, tagData: Buffer, unknownSize=false): Buffer {
-    return tools.concat([
-      tagId,
-      unknownSize ?
-        new Buffer('01ffffffffffffff', 'hex') : 
-        writeVint(tagData.length),
-      tagData
-    ]);
-  }
-
   private writeTag(elm: EBML.ChildElementBuffer) {
     const tagName = elm.name;
     const tagId = this.getSchemaInfo(tagName);
@@ -84,7 +71,7 @@ export default class EBMLEncoder {
       throw new Error('No schema entry found for ' + tagName);
     }
 
-    const data = this._encodeTag(tagId, tagData);
+    const data = tools.encodeTag(tagId, tagData);
     /**
      * 親要素が閉じタグあり(isEnd)なら閉じタグが来るまで待つ(children queに入る)
      */
@@ -113,7 +100,7 @@ export default class EBMLEncoder {
      * 閉じタグ不定長の場合はスタックに積まずに即時バッファに書き込む
      */
     if(elm.unknownSize){
-      const data = this._encodeTag(tagId, new Buffer(0), elm.unknownSize);
+      const data = tools.encodeTag(tagId, new Buffer(0), elm.unknownSize);
       this._buffers = this._buffers.concat(data);
       return;
     }
@@ -143,9 +130,9 @@ export default class EBMLEncoder {
     }, []);
     const childTagDataBuffer = tools.concat(childTagDataBuffers);
     if(tag.elm.type === "m"){
-      tag.data = this._encodeTag(tag.tagId, childTagDataBuffer, tag.elm.unknownSize);  
+      tag.data = tools.encodeTag(tag.tagId, childTagDataBuffer, tag.elm.unknownSize);  
     }else{
-      tag.data = this._encodeTag(tag.tagId, childTagDataBuffer);
+      tag.data = tools.encodeTag(tag.tagId, childTagDataBuffer);
     }
   
     if (this._stack.length < 1) {

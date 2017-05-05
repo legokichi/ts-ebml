@@ -115,7 +115,7 @@ function create_webp_test(file: string){
     const webm_buf = await res.arrayBuffer();
     const elms = new Decoder().decode(webm_buf);
     const WebPs = tools.WebPFrameFilter(elms);
-    WebPs.reduce((prm, WebP)=> prm.then(async ()=>{
+    return WebPs.reduce((prm, WebP)=> prm.then(async ()=>{
       const src = URL.createObjectURL(WebP);
       try{
         const img = await fetchImage(src);
@@ -191,8 +191,7 @@ function convert_to_seekable_test(file: string){
 
     console.info("convert to seekable file");
 
-    const refinedMetadataElms = tools.putRefinedMetaData(segmentOffset, metadataElms, cluster_ptrs, last_duration);
-    const refinedMetadataBuf = new Encoder().encode(refinedMetadataElms);
+    const refinedMetadataBuf = tools.putRefinedMetaData(metadataElms, {segmentOffset, clusterPtrs: cluster_ptrs, duration: last_duration});
     const body = webm_buf.slice(metadataSize);
 
     assert.ok(refinedMetadataBuf.byteLength - metadataSize > 0);

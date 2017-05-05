@@ -37,9 +37,13 @@ export default class EBMLReader extends EventEmitter {
      * 単位 timecodeScale
      */
     private readonly duration;
-    /** emit on every segment **/
+    /**
+     * emit on every segment
+     * https://www.matroska.org/technical/specs/notes.html#Position_References
+    */
     addListener(event: "segment_offset", listener: (ev: number) => void): this;
-    /** emit on every cluster element start */
+    /** emit on every cluster element start.
+     Offset byte from __file start__. It is not an offset from the Segment element. */
     addListener(event: "cluster_ptr", listener: (ev: number) => void): this;
     /** emit on every cue point */
     addListener(event: "cue_info", listener: (ev: CueInfo) => void): this;
@@ -56,6 +60,7 @@ export default class EBMLReader extends EventEmitter {
     /** for thumbnail */
     addListener(event: "webp", listener: (ev: ThumbnailInfo) => void): this;
 }
+/** CueClusterPosition: Offset byte from __file start__. It is not an offset from the Segment element. */
 export interface CueInfo {
     CueTrack: number;
     CueClusterPosition: number;

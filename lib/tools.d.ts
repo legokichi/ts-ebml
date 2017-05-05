@@ -9,6 +9,10 @@ export declare const writeVint: (val: number) => Buffer;
 export declare const ebmlBlock: (buf: Buffer) => EBML.SimpleBlock;
 export declare function readBlock(buf: ArrayBuffer): EBML.SimpleBlock;
 /**
+  * @param end - if end === false then length is unknown
+  */
+export declare function encodeTag(tagId: Buffer, tagData: Buffer, unknownSize?: boolean): Buffer;
+/**
  * @return - SimpleBlock to WebP Filter
  */
 export declare function WebPFrameFilter(elms: EBML.EBMLElementDetail[]): Blob[];
@@ -34,11 +38,15 @@ export declare function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer;
  * @param clusterPtrs - 変更前の webm における SeekHead に追加する Cluster 要素 への start pointer
  * @param duration - Duration に記載する値
  */
-export declare function putRefinedMetaData(segmentOffset: number, metadata: EBML.EBMLElementDetail[], clusterPtrs: number[], duration: number, cueInfos?: {
-    CueTrack: number;
-    CueClusterPosition: number;
-    CueTime: number;
-}[]): EBML.EBMLElementBuffer[];
+export declare function putRefinedMetaData(metadata: EBML.EBMLElementDetail[], info: {
+    duration?: number;
+    clusterPtrs?: number[];
+    cueInfos?: {
+        CueTrack: number;
+        CueClusterPosition: number;
+        CueTime: number;
+    }[];
+}): ArrayBuffer;
 export declare function insertTag(_metadata: EBML.EBMLElementBuffer[], tagName: string, children: EBML.EBMLElementBuffer[]): void;
 export declare function concat(list: Buffer[]): Buffer;
 export declare function encodeValueToBuffer(elm: EBML.MasterElement): EBML.MasterElement;
