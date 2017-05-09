@@ -88,19 +88,25 @@ export function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer {
 
 /**
  * metadata に対して duration と seekhead を追加した metadata を返す
- * @param segmentOffset - the offset that needs to be applied to create relative offsets into a segement from abolsute offsets
  * @param metadata - 変更前の webm における ファイル先頭から 最初の Cluster 要素までの 要素
- * @param clusterPtrs - 変更前の webm における SeekHead に追加する Cluster 要素 への start pointer
- * @param duration - Duration に記載する値
+ * @param duration - Duration (TimecodeScale)
+ * @param cues - cue points for clusters
+ * @deprecated @param clusterPtrs - 変更前の webm における SeekHead に追加する Cluster 要素 への start pointer
+ * @deprecated @param cueInfos - please use cues.
  */
 export function putRefinedMetaData(
   metadata: EBML.EBMLElementDetail[],
   info: {
     duration?: number,
+    cues?: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[],
     clusterPtrs?: number[],
-    cueInfos?: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[]
+    cueInfos?: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[],
   }
 ): ArrayBuffer {
+  if(Array.isArray(info.cueInfos) && !Array.isArray(info.cues)){
+    console.warn("putRefinedMetaData: info.cueInfos property is deprecated. please use info.cues");
+    info.cues = info.cueInfos;
+  }
   let ebml: EBML.EBMLElementDetail[] = [];
   let payload: EBML.EBMLElementDetail[] = [];
   for(let i=0; i<metadata.length; i++){
@@ -159,10 +165,10 @@ function refineMetadata(
   info: {
     duration?: number,
     clusterPtrs?: number[],
-    cueInfos?: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[]
+    cues?: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[]
   }
 ): EBML.EBMLElementBuffer[] {
-  const {duration, clusterPtrs, cueInfos} = info;
+  const {duration, clusterPtrs, cues} = info;
   let _metadata: EBML.EBMLElementBuffer[] = mesetadata.slice(0);
   if(typeof duration === "number"){
     // duration を追加する
@@ -177,13 +183,13 @@ function refineMetadata(
       insertTag(_metadata, "Info", [{name: "Duration", type: "f", data: createFloatBuffer(duration, 8) }]);
     }
   }
-  if(Array.isArray(cueInfos)){
-    insertTag(_metadata, "Cues", create_cue(cueInfos, sizeDiff));
+  if(Array.isArray(cues)){
+    insertTag(_metadata, "Cues", create_cue(cues, sizeDiff));
   }
 
   let seekhead_children: EBML.EBMLElementBuffer[] = [];
   if(Array.isArray(clusterPtrs)){
-    console.warn("append cluster pointers to seekhead is deprecated. please use cueInfos");
+    console.warn("append cluster pointers to seekhead is deprecated. please use cues");
     seekhead_children = create_seek_from_clusters(clusterPtrs, sizeDiff);
   }
   // i cannot calcurate ptr diff because i am tired.
