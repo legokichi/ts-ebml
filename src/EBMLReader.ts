@@ -56,7 +56,6 @@ export default class EBMLReader extends EventEmitter {
     this.trackDefaultDuration = [];
 
     this._duration = 0;
-    this.first_video_simpleblock_of_cluster_is_loaded = false;
 
     this.ended = false;
 
@@ -128,10 +127,6 @@ export default class EBMLReader extends EventEmitter {
         this.lastSimpleBlockVideoTrackTimecode = timecode;
         // デバグ処理ここまで
         this._duration = this.lastClusterTimecode + timecode;
-        if(this.first_video_simpleblock_of_cluster_is_loaded === false){
-          this.first_video_simpleblock_of_cluster_is_loaded = true;
-          this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.duration});
-        }
         if(this.use_duration_every_simpleblock){
           this.emit("duration", {timecodeScale: this.timecodeScale, duration: this.duration});
         }
@@ -150,9 +145,10 @@ export default class EBMLReader extends EventEmitter {
       this.emit_segment_info();
       this.emit("cluster_ptr", elm.tagStart);
       this.lastClusterPosition = elm.tagStart;
-      this.first_video_simpleblock_of_cluster_is_loaded = false;
     }else if(elm.type === "u" && elm.name === "Timecode"){
       this.lastClusterTimecode = elm.value;
+      const trackNumber = this.trackTypes.indexOf(1);
+      this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
     }else if(elm.type === "u" && elm.name === "TimecodeScale"){
       this.timecodeScale = elm.value;
     }else if(elm.type === "m" && elm.name === "TrackEntry"){

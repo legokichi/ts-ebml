@@ -78,14 +78,14 @@ async function main() {
     const refinedWebM = new Blob([refinedMetadataBuf, body], {type: webM.type});
 
     // logging
-    /*console.group(info.title);
+    console.group(info.title);
     const refinedBuf = await readAsArrayBuffer(refinedWebM);
     const _reader = new EBMLReader();
     _reader.logging = true;
     new Decoder().decode(refinedBuf).forEach((elm)=> _reader.read(elm) );
     _reader.stop();
     console.groupEnd();
-    */
+
 
     const refined_video = document.createElement("video");
     refined_video.src = URL.createObjectURL(refinedWebM);
