@@ -177,16 +177,41 @@ function refineMetadata(
       insertTag(_metadata, "Info", [{name: "Duration", type: "f", data: createFloatBuffer(duration, 8) }]);
     }
   }
-  if(Array.isArray(clusterPtrs)){
-    insertTag(_metadata, "SeekHead", create_seek(clusterPtrs, sizeDiff));
-  }
   if(Array.isArray(cueInfos)){
     insertTag(_metadata, "Cues", create_cue(cueInfos, sizeDiff));
   }
+
+  let seekhead_children: EBML.EBMLElementBuffer[] = [];
+  if(Array.isArray(clusterPtrs)){
+    console.warn("append cluster pointers to seekhead is deprecated. please use cueInfos");
+    seekhead_children = create_seek_from_clusters(clusterPtrs, sizeDiff);
+  }
+  // i cannot calcurate ptr diff because i am tired.
+  // seekhead_children = seekhead_children.concat(create_seekhead(_metadata, sizeDiff))
+  insertTag(_metadata, "SeekHead", seekhead_children, true);
+
   return _metadata;
 }
 
-function create_seek(clusterPtrs: number[], sizeDiff: number): EBML.EBMLElementBuffer[] {
+function create_seekhead(metadata: (EBML.EBMLElementDetail|EBML.EBMLElementBuffer)[], sizeDiff: number): EBML.EBMLElementBuffer[] {
+  const seeks: EBML.EBMLElementBuffer[] = [];
+  ["Info", "Tracks", "Cues"].forEach((tagName)=>{
+    const tagStarts = metadata.filter((elm)=> elm.type === "m" && elm.name === tagName && elm.isEnd === false).map((elm)=> elm["tagStart"]);
+    const tagStart = tagStarts[0];
+    if(typeof tagStart !== "number"){ return; }
+    seeks.push({name: "Seek", type: "m", isEnd: false});
+    switch(tagName){
+      case "Info": seeks.push({name: "SeekID", type: "b", data: new Buffer([0x15, 0x49, 0xA9, 0x66]) }); break;
+      case "Tracks": seeks.push({name: "SeekID", type: "b", data: new Buffer([0x16, 0x54, 0xAE, 0x6B]) }); break;
+      case "Cues": seeks.push({name: "SeekID", type: "b", data: new Buffer([0x1C, 0x53, 0xBB, 0x6B]) }); break;
+    }
+    seeks.push({name: "SeekPosition", type: "u", data: createUIntBuffer(tagStart +  sizeDiff)});
+    seeks.push({name: "Seek", type: "m", isEnd: true});
+  });
+  return seeks;
+}
+
+function create_seek_from_clusters(clusterPtrs: number[], sizeDiff: number): EBML.EBMLElementBuffer[] {
   const seeks: EBML.EBMLElementBuffer[] = [];
   clusterPtrs.forEach((start)=>{
     seeks.push({name: "Seek", type: "m", isEnd: false});
@@ -212,7 +237,8 @@ function create_cue(cueInfos: {CueTrack: number; CueClusterPosition: number; Cue
   return cues;
 }
 
-export function insertTag(_metadata: EBML.EBMLElementBuffer[], tagName: string, children: EBML.EBMLElementBuffer[]): void {
+function insertTag(_metadata: EBML.EBMLElementBuffer[], tagName: string, children: EBML.EBMLElementBuffer[], insertHead: boolean = false): void {
+  // find the tagname from _metadata
   let idx = -1;
   for(let i=0; i<_metadata.length; i++){
     const elm = _metadata[i];
@@ -224,6 +250,12 @@ export function insertTag(_metadata: EBML.EBMLElementBuffer[], tagName: string, 
   if(idx >= 0){
     // insert [<CuePoint />] to <Cues />
     Array.prototype.splice.apply(_metadata, [<any>idx+1, 0].concat(children));
+  }else if(insertHead){
+    (<EBML.EBMLElementBuffer[]>[]).concat(
+      [{name: tagName, type: "m", isEnd: false}],
+      children,
+      [{name: tagName, type: "m", isEnd: true}],
+    ).reverse().forEach((elm)=>{ _metadata.unshift(elm); });
   }else{
     // metadata 末尾に <Cues /> を追加
     // insert <Cues />

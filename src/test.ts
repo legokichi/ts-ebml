@@ -140,16 +140,10 @@ function convert_to_seekable_test(file: string){
     const reader = new EBMLReader();
     reader.logging = true;
 
-    let segmentOffset = 0;
     let metadataElms: EBML.EBMLElementDetail[] = [];
     let metadataSize = 0;
     let last_duration = 0;
-    const cluster_ptrs: number[] = [];
-
-    reader.addListener("segment_offset", (offset)=>{
-      assert.ok(offset > 0);
-      segmentOffset = offset;
-    });
+    const cue_points: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[] = [];
 
     reader.addListener("metadata", ({data, metadataSize: size})=>{
       assert.ok(data.length > 0, "metadata.length:"+data.length);
@@ -166,10 +160,6 @@ function convert_to_seekable_test(file: string){
       last_duration = duration;
     });
 
-    reader.addListener("cluster_ptr", (ptr)=>{
-      cluster_ptrs.push(ptr);
-    });
-
     reader.addListener("cluster", (ev)=>{
       // cluster chunk test
       const {data, timecode} = ev;
@@ -178,6 +168,10 @@ function convert_to_seekable_test(file: string){
       const assertion = data.every((elm)=> elm.name === "Cluster" || elm.name === "Timecode" || elm.name === "SimpleBlock");
       assert.ok(assertion, "element check");
     });
+
+    reader.addListener("cue_info", ({CueTrack, CueClusterPosition, CueTime})=>{
+      cue_points.push({CueTrack, CueClusterPosition, CueTime});
+    })
     
     const res = await fetch(file);
     const webm_buf = await res.arrayBuffer();
@@ -191,7 +185,7 @@ function convert_to_seekable_test(file: string){
 
     console.info("convert to seekable file");
 
-    const refinedMetadataBuf = tools.putRefinedMetaData(metadataElms, {segmentOffset, clusterPtrs: cluster_ptrs, duration: last_duration});
+    const refinedMetadataBuf = tools.putRefinedMetaData(metadataElms, {cueInfos: cue_points, duration: last_duration});
     const body = webm_buf.slice(metadataSize);
 
     assert.ok(refinedMetadataBuf.byteLength - metadataSize > 0);

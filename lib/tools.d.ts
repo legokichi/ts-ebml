@@ -47,7 +47,6 @@ export declare function putRefinedMetaData(metadata: EBML.EBMLElementDetail[], i
         CueTime: number;
     }[];
 }): ArrayBuffer;
-export declare function insertTag(_metadata: EBML.EBMLElementBuffer[], tagName: string, children: EBML.EBMLElementBuffer[]): void;
 export declare function concat(list: Buffer[]): Buffer;
 export declare function encodeValueToBuffer(elm: EBML.MasterElement): EBML.MasterElement;
 export declare function encodeValueToBuffer(elm: EBML.ChildElementsValue): EBML.ChildElementBuffer;

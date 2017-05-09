@@ -13,7 +13,6 @@ async function main() {
   let metadataSize = 0;
   let webM = new Blob([], {type: "video/webm"});
   let last_duration = 0;
-  const cluster_ptrs: number[] = [];
   const cue_points: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[] = [];
 
 
@@ -31,10 +30,6 @@ async function main() {
 
   reader.addListener("duration", ({timecodeScale, duration})=>{
     last_duration = duration;
-  });
-
-  reader.addListener("cluster_ptr", (ptr)=>{
-    cluster_ptrs.push(ptr);
   });
 
   reader.addListener("cue_info", ({CueTrack, CueClusterPosition, CueTime})=>{
@@ -68,8 +63,7 @@ async function main() {
 
   const infos = [
     {duration: last_duration, title: "add-duration(seekable but slow)"},
-    {duration: last_duration, clusterPtrs: cluster_ptrs, title: "add duration and seekhead (seekable fast but not valid)"},
-    {duration: last_duration, clusterPtrs: cluster_ptrs, cueInfos: cue_points, title: "add duration, seekhead and cues (valid seekable file)"},
+    {duration: last_duration, cueInfos: cue_points, title: "add duration, seekhead and cues (valid seekable file)"},
   ];
   for(let info of infos){
     const refinedMetadataBuf = tools.putRefinedMetaData(metadataElms, info);
