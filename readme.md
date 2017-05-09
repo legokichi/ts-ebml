@@ -99,20 +99,15 @@ async function main(){
   const elms = new Decoder().decode(webm_buf);
   
   let metadataElms: EBML.EBMLElementDetail[] = [];
-  let segmentOffset = 0;
   let metadataSize = 0;
   let last_duration = 0;
-  const cluster_ptrs: number[] = [];
+  const cue_points = [];
   const reader = new EBMLReader();
   reader.logging = true;
 
   reader.addListener("metadata", ({data, metadataSize: size})=>{
     metadataElms = data;
     metadataSize = size;
-  });
-
-  reader.addListener("cluster_ptr", (ptr)=>{
-    cluster_ptrs.push(ptr);
   });
 
   reader.addListener("cue_info", ({CueTrack, CueClusterPosition, CueTime})=>{
@@ -126,7 +121,7 @@ async function main(){
   elms.forEach((elm)=>{ reader.read(elm); });
   reader.stop();
 
-  const refinedMetadataBuf = tools.putRefinedMetaData(metadataElms, {duration: last_duration, clusterPtrs: cluster_ptrs, cueInfos: cue_points});
+  const refinedMetadataBuf = tools.putRefinedMetaData(metadataElms, {duration: last_duration, cueInfos: cue_points});
   const body = webm_buf.slice(metadataSize);
 
   const raw_webM = new Blob([webm_buf], {type: "video/webm"});
