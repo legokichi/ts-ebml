@@ -15,45 +15,70 @@ export default class EBMLReader extends EventEmitter {
     private lastClusterTimecode;
     private lastClusterPosition;
     private deltaDuration;
-    private timecodeScale;
-    private metadataSize;
+    timecodeScale: number;
+    metadataSize: number;
+    metadatas: EBML.EBMLElementDetail[];
     private currentTrack;
     private trackTypes;
     private trackDefaultDuration;
     private _duration;
     private first_video_simpleblock_of_cluster_is_loaded;
     private ended;
+    /**
+     * usefull for thumbnail creation.
+     */
     use_webp: boolean;
     use_duration_every_simpleblock: boolean;
     logging: boolean;
+    /**
+     * usefull for recording chunks.
+     */
     use_segment_info: boolean;
+    /** see: https://bugs.chromium.org/p/chromium/issues/detail?id=606000#c22 */
     drop_default_duration: boolean;
+    cues: {
+        CueTrack: number;
+        CueClusterPosition: number;
+        CueTime: number;
+    }[];
     constructor();
+    /**
+     * emit final state.
+     */
     stop(): void;
+    /**
+     * emit chunk info
+     */
     private emit_segment_info();
     read(elm: EBML.EBMLElementDetail): void;
     /**
      * DefaultDuration が定義されている場合は最後のフレームのdurationも考慮する
      * 単位 timecodeScale
      */
-    private readonly duration;
+    readonly duration: number;
     /**
+     * @deprecated
      * emit on every segment
      * https://www.matroska.org/technical/specs/notes.html#Position_References
     */
     addListener(event: "segment_offset", listener: (ev: number) => void): this;
-    /** emit on every cluster element start.
-     Offset byte from __file start__. It is not an offset from the Segment element. */
+    /**
+     * @deprecated
+     * emit on every cluster element start.
+     * Offset byte from __file start__. It is not an offset from the Segment element.
+     */
     addListener(event: "cluster_ptr", listener: (ev: number) => void): this;
-    /** emit on every cue point */
+    /** @deprecated
+     * emit on every cue point for cluster to create seekable webm file from MediaRecorder
+     * */
     addListener(event: "cue_info", listener: (ev: CueInfo) => void): this;
-    /** latest EBML > Info > TimecodeScale and EBML > Info > Duration */
+    /** latest EBML > Info > TimecodeScale and EBML > Info > Duration to create seekable webm file from MediaRecorder */
     addListener(event: "duration", listener: (ev: DurationInfo) => void): this;
-    /** EBML header without Cluster Element */
+    /** EBML header without Cluster Element for recording metadata chunk */
     addListener(event: "metadata", listener: (ev: SegmentInfo & {
         metadataSize: number;
     }) => void): this;
-    /** emit every Cluster Element and its children */
+    /** emit every Cluster Element and its children for recording chunk */
     addListener(event: "cluster", listener: (ev: SegmentInfo & {
         timecode: number;
     }) => void): this;

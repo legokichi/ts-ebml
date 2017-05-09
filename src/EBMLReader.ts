@@ -12,15 +12,16 @@ export default class EBMLReader extends EventEmitter {
   private metadataloaded: boolean;
 
   private stack: (EBML.MasterElement & EBML.ElementDetail)[];
-  private chunks: EBML.EBMLElementBufferValue[];
+  private chunks: EBML.EBMLElementDetail[];
 
   private segmentOffset: number;
   private lastSimpleBlockVideoTrackTimecode: number;
   private lastClusterTimecode: number;
   private lastClusterPosition: number;
   private deltaDuration: number;
-  private timecodeScale: number;
-  private metadataSize: number;
+  timecodeScale: number;
+  metadataSize: number;
+  metadatas: EBML.EBMLElementDetail[];
 
   private currentTrack: {TrackNumber: number, TrackType: number, DefaultDuration: (number | null) };
   private trackTypes: number[]; // equals { [trackID: number]: number };
@@ -30,11 +31,21 @@ export default class EBMLReader extends EventEmitter {
   private first_video_simpleblock_of_cluster_is_loaded: boolean;
 
   private ended: boolean;
+  
+  /**
+   * usefull for thumbnail creation.
+   */
   use_webp: boolean;
   use_duration_every_simpleblock: boolean; // heavy
   logging: boolean;
+  /**
+   * usefull for recording chunks.
+   */
   use_segment_info: boolean;
+  /** see: https://bugs.chromium.org/p/chromium/issues/detail?id=606000#c22 */
   drop_default_duration: boolean;
+
+  cues: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[];
 
   constructor(){
     super();
@@ -49,7 +60,8 @@ export default class EBMLReader extends EventEmitter {
     this.deltaDuration = 0;
     this.timecodeScale = 0;
     this.metadataSize = 0;
-
+    this.metadatas = [];
+    this.cues = [];
 
     this.currentTrack = {TrackNumber: -1, TrackType: -1, DefaultDuration: null};
     this.trackTypes = [];
@@ -65,6 +77,9 @@ export default class EBMLReader extends EventEmitter {
     this.use_segment_info = true;
     this.drop_default_duration = true;
   }
+  /**
+   * emit final state.
+   */
   stop(){
     this.ended = true;
     this.emit_segment_info();
@@ -72,14 +87,19 @@ export default class EBMLReader extends EventEmitter {
       // Valid only for chrome
       console.groupEnd(); // </Cluster>
       console.groupEnd(); // </Segment>
+      console.groupEnd(); // ?
     }
   }
+  /**
+   * emit chunk info
+   */
   private emit_segment_info(){
     if(!this.use_segment_info){ return; }
     const data = this.chunks;
     this.chunks = [];
     if(!this.metadataloaded){
       this.metadataloaded = true;
+      this.metadatas = data;
       this.emit("metadata", {data, metadataSize: this.metadataSize});
     }else{
       const timecode = this.lastClusterTimecode;
@@ -107,7 +127,8 @@ export default class EBMLReader extends EventEmitter {
           parent.dataEnd = elm.dataEnd;
           parent.dataSize = elm.dataEnd - parent.dataStart;
           parent.unknownSize = false;
-          this.chunks.push({name: parent.name, type: parent.type, isEnd: true});
+          const o = Object.assign({}, parent, {name: parent.name, type: parent.type, isEnd: true});
+          this.chunks.push(o);
         }
         this.stack.push(elm);
       }
@@ -148,6 +169,7 @@ export default class EBMLReader extends EventEmitter {
     }else if(elm.type === "u" && elm.name === "Timecode"){
       this.lastClusterTimecode = elm.value;
       const trackNumber = this.trackTypes.indexOf(1);
+      this.cues.push({CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
       this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
     }else if(elm.type === "u" && elm.name === "TimecodeScale"){
       this.timecodeScale = elm.value;
@@ -162,15 +184,15 @@ export default class EBMLReader extends EventEmitter {
     }else if(elm.type === "u" && elm.name === "TrackNumber"){
       this.currentTrack.TrackNumber = elm.value;
     }else if(elm.type === "u" && elm.name === "DefaultDuration"){
-      // this.currentTrack.DefaultDuration = elm.value;
       // media source api は DefaultDuration を計算するとバグる。
-      // https://bugs.chromium.org/p/chromium/issues/detail?id=606000
-      // opus,vp9
+      // https://bugs.chromium.org/p/chromium/issues/detail?id=606000#c22
       // chrome 58 ではこれを回避するために DefaultDuration 要素を抜き取った。
       // chrome 58 以前でもこのタグを抜き取ることで回避できる
       if(this.drop_default_duration){
         console.warn("DefaultDuration detected!, remove it");
         drop = true;
+      }else{
+        this.currentTrack.DefaultDuration = elm.value;
       }
     }else if(elm.name === "unknown"){
       console.warn(elm);
@@ -185,7 +207,7 @@ export default class EBMLReader extends EventEmitter {
    * DefaultDuration が定義されている場合は最後のフレームのdurationも考慮する
    * 単位 timecodeScale
    */
-  private get duration(){
+  get duration(){
     const videoTrackNum = this.trackTypes.indexOf(1); // find first video track
     if(videoTrackNum < 0){ return 0; }
     const defaultDuration = this.trackDefaultDuration[videoTrackNum];
@@ -197,20 +219,26 @@ export default class EBMLReader extends EventEmitter {
     return Math.floor(duration);
   }
   /**
+   * @deprecated
    * emit on every segment
    * https://www.matroska.org/technical/specs/notes.html#Position_References
   */
   addListener(event: "segment_offset", listener: (ev: number )=> void): this;
-  /** emit on every cluster element start.
-   Offset byte from __file start__. It is not an offset from the Segment element. */
+  /**
+   * @deprecated
+   * emit on every cluster element start.
+   * Offset byte from __file start__. It is not an offset from the Segment element.
+   */
   addListener(event: "cluster_ptr", listener: (ev: number )=> void): this;
-  /** emit on every cue point */
+  /** @deprecated
+   * emit on every cue point for cluster to create seekable webm file from MediaRecorder
+   * */
   addListener(event: "cue_info", listener: (ev: CueInfo )=> void): this;
-  /** latest EBML > Info > TimecodeScale and EBML > Info > Duration */
+  /** latest EBML > Info > TimecodeScale and EBML > Info > Duration to create seekable webm file from MediaRecorder */
   addListener(event: "duration", listener: (ev: DurationInfo )=> void): this;
-  /** EBML header without Cluster Element */
+  /** EBML header without Cluster Element for recording metadata chunk */
   addListener(event: "metadata", listener: (ev: SegmentInfo & {metadataSize: number})=> void): this;
-  /** emit every Cluster Element and its children */
+  /** emit every Cluster Element and its children for recording chunk */
   addListener(event: "cluster", listener: (ev: SegmentInfo & {timecode: number})=> void): this;
   /** for thumbnail */
   addListener(event: "webp", listener: (ev: ThumbnailInfo)=> void): this;
@@ -233,6 +261,7 @@ export function put(elm: EBML.EBMLElementDetail){
       console.group(elm.name+":"+elm.tagStart);
     }
   }else if(elm.type === "b"){
+    // for debug
     //if(elm.name === "SimpleBlock"){
       //const o = EBML.tools.ebmlBlock(elm.value);
       //console.log(elm.name, elm.type, o.trackNumber, o.timecode);

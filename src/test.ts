@@ -105,7 +105,7 @@ const MEDIA_RECORDER_WEBM_FILE_LIST = [
 ];
 
 MEDIA_RECORDER_WEBM_FILE_LIST.forEach((file)=>{
-  QUnit.test("create_webp"+file, create_webp_test(file));
+  QUnit.test("create_webp_test:"+file, create_webp_test(file));
 });
 
 function create_webp_test(file: string){
@@ -115,68 +115,36 @@ function create_webp_test(file: string){
     const webm_buf = await res.arrayBuffer();
     const elms = new Decoder().decode(webm_buf);
     const WebPs = tools.WebPFrameFilter(elms);
-    return WebPs.reduce((prm, WebP)=> prm.then(async ()=>{
+
+    for(const WebP of WebPs){
       const src = URL.createObjectURL(WebP);
       try{
         const img = await fetchImage(src);
-        assert.ok(img.width > 0, "webp.width:"+img.width);
+        assert.ok(img.width > 0 && img.height > 0, "size:"+img.width +"x"+img.height);
       }catch(err){
         assert.notOk(err, "webp load failre");
       }
       URL.revokeObjectURL(src);
-    }), Promise.resolve(void 0));
+    }
   };
 }
 
 
 
 MEDIA_RECORDER_WEBM_FILE_LIST.forEach((file)=>{
-  QUnit.test("convert_to_seekable_from_media_recorder_webm"+file, convert_to_seekable_test(file));
+  QUnit.test("create_convert_to_seekable_test:"+file, create_convert_to_seekable_test(file));
 });
 
-function convert_to_seekable_test(file: string){
+function create_convert_to_seekable_test(file: string){
   return async (assert: Assert)=>{
     const decoder = new Decoder();
     const reader = new EBMLReader();
-    reader.logging = true;
+    //reader.logging = true;
 
-    let metadataElms: EBML.EBMLElementDetail[] = [];
-    let metadataSize = 0;
-    let last_duration = 0;
-    const cue_points: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[] = [];
-
-    reader.addListener("metadata", ({data, metadataSize: size})=>{
-      assert.ok(data.length > 0, "metadata.length:"+data.length);
-      assert.ok(data[0].name === "EBML");
-
-      metadataElms = data;
-      metadataSize = size;
-    });
-
-    reader.addListener("duration", ({timecodeScale, duration})=>{
-      const d = duration * timecodeScale / 1000 / 1000 / 1000;
-      assert.ok(Number.isFinite(d), "duration:"+d);
-
-      last_duration = duration;
-    });
-
-    reader.addListener("cluster", (ev)=>{
-      // cluster chunk test
-      const {data, timecode} = ev;
-      assert.ok(Number.isFinite(timecode), "cluster.timecode:"+timecode);
-      assert.ok(data.length > 0, "cluster.length:"+data.length);
-      const assertion = data.every((elm)=> elm.name === "Cluster" || elm.name === "Timecode" || elm.name === "SimpleBlock");
-      assert.ok(assertion, "element check");
-    });
-
-    reader.addListener("cue_info", ({CueTrack, CueClusterPosition, CueTime})=>{
-      cue_points.push({CueTrack, CueClusterPosition, CueTime});
-    })
-    
     const res = await fetch(file);
     const webm_buf = await res.arrayBuffer();
 
-    console.info("put unseekable original ebml tree");
+    console.info("analasis unseekable original ebml tree");
 
     const elms = decoder.decode(webm_buf);
     elms.forEach((elm)=>{ reader.read(elm); });
@@ -185,11 +153,16 @@ function convert_to_seekable_test(file: string){
 
     console.info("convert to seekable file");
 
-    const refinedMetadataBuf = tools.putRefinedMetaData(metadataElms, {cueInfos: cue_points, duration: last_duration});
-    const body = webm_buf.slice(metadataSize);
+    assert.ok(reader.metadatas[0].name === "EBML");
+    assert.ok(reader.metadatas.length > 0);
+    const sec = reader.duration * reader.timecodeScale / 1000 / 1000 / 1000;
+    assert.ok(7 < sec && sec < 10);
 
-    assert.ok(refinedMetadataBuf.byteLength - metadataSize > 0);
-    assert.ok(webm_buf.byteLength === (metadataSize + body.byteLength));
+    const refinedMetadataBuf = tools.putRefinedMetaData(reader.metadatas, reader);
+    const body = webm_buf.slice(reader.metadataSize);
+
+    assert.ok(refinedMetadataBuf.byteLength - reader.metadataSize > 0);
+    assert.ok(webm_buf.byteLength === (reader.metadataSize + body.byteLength));
 
 
     console.info("check duration");
@@ -207,14 +180,69 @@ function convert_to_seekable_test(file: string){
       assert.notOk(err);
     }
 
-    console.info("put seekable ebml tree");
+    if(reader.logging){
+      // for debug
+      console.info("put seekable ebml tree");
+      
+      const refinedBuf = await readAsArrayBuffer(refinedWebM);
+      const refinedElms = new Decoder().decode(refinedBuf);
+      const _reader = new EBMLReader();
+      _reader.logging = true;
+      refinedElms.forEach((elm)=> _reader.read(elm) );
+      _reader.stop();
+    }
+  };
+}
+
+MEDIA_RECORDER_WEBM_FILE_LIST.forEach((file)=>{
+  QUnit.test("create_recorder_helper_test:"+file, create_recorder_helper_test(file));
+});
+
+function create_recorder_helper_test(file: string){
+  return async (assert: Assert)=>{
+    const decoder = new Decoder();
+    const reader = new EBMLReader();
     
-    const refinedBuf = await readAsArrayBuffer(refinedWebM);
-    const refinedElms = new Decoder().decode(refinedBuf);
-    const _reader = new EBMLReader();
-    _reader.logging = true;
-    refinedElms.forEach((elm)=> _reader.read(elm) );
-    _reader.stop();
+    let last_sec = 0;
+    reader.addListener("duration", ({timecodeScale, duration})=>{
+      const sec = duration * timecodeScale / 1000 / 1000 / 1000;
+      assert.ok(Number.isFinite(sec), "duration:"+sec+"sec");
+      assert.ok(sec > last_sec);
+      last_sec = sec;
+    });
+
+    let metadata_loaded = false;
+    reader.addListener("metadata", ({metadataSize, data})=>{
+      assert.ok(metadataSize > 0);
+      assert.ok(data.length > 0);
+      assert.ok(data[0].name === "EBML");
+      metadata_loaded = true;
+    });
+
+    let cluster_num = 0;
+    let last_timecode = -1;
+    reader.addListener("cluster", (ev)=>{
+      // cluster chunk test
+      const {data, timecode} = ev;
+      assert.ok(Number.isFinite(timecode), "cluster.timecode:"+timecode);
+      assert.ok(data.length > 0, "cluster.length:"+data.length);
+      const assertion = data.every((elm)=> elm.name === "Cluster" || elm.name === "Timecode" || elm.name === "SimpleBlock");
+      assert.ok(assertion, "element check");
+      assert.ok(timecode > last_timecode);
+      cluster_num += 1;
+      last_timecode = timecode;
+    });
+
+    const res = await fetch(file);
+    const webm_buf = await res.arrayBuffer();
+    const elms = decoder.decode(webm_buf);
+    elms.forEach((elm)=>{ reader.read(elm); });
+    reader.stop();
+
+    assert.ok(last_sec > 0);
+    assert.ok(metadata_loaded);
+    assert.ok(cluster_num > 0);
+    assert.ok(last_timecode > 0);
   };
 }
 

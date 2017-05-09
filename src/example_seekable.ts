@@ -8,33 +8,10 @@ async function main() {
   reader.logging = true;
 
   let tasks = Promise.resolve(void 0);
-  let segmentOffset = 0;
-  let metadataElms: EBML.EBMLElementDetail[] = [];
-  let metadataSize = 0;
   let webM = new Blob([], {type: "video/webm"});
-  let last_duration = 0;
-  const cue_points: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[] = [];
-
 
   const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
   const rec = new MediaRecorder(stream, { mimeType: 'video/webm; codecs="vp8, opus"'});
-
-  reader.addListener("segment_offset", (offset)=>{
-    segmentOffset = offset;
-  });
-
-  reader.addListener("metadata", ({data, metadataSize: size})=>{
-      metadataElms = data;
-      metadataSize = size;
-    });
-
-  reader.addListener("duration", ({timecodeScale, duration})=>{
-    last_duration = duration;
-  });
-
-  reader.addListener("cue_info", ({CueTrack, CueClusterPosition, CueTime})=>{
-    cue_points.push({CueTrack, CueClusterPosition, CueTime});
-  })
 
   rec.ondataavailable = (ev: BlobEvent)=>{
     const chunk = ev.data;
@@ -59,19 +36,21 @@ async function main() {
   const raw_video = document.createElement("video");
   raw_video.src = URL.createObjectURL(webM);
   raw_video.controls = true;
+
   put(raw_video, "media-recorder-original(not seekable)");
 
   const infos = [
-    {duration: last_duration, title: "add-duration(seekable but slow)"},
-    {duration: last_duration, cueInfos: cue_points, title: "add duration, seekhead and cues (valid seekable file)"},
+    {duration: reader.duration, title: "add-duration(seekable but slow)"},
+    {duration: reader.duration, cues: reader.cues, title: "add duration and cues (valid seekable file)"},
   ];
   for(let info of infos){
-    const refinedMetadataBuf = tools.putRefinedMetaData(metadataElms, info);
+    const refinedMetadataBuf = tools.putRefinedMetaData(reader.metadatas, info);
     const webMBuf = await readAsArrayBuffer(webM);
-    const body = webMBuf.slice(metadataSize);
+    const body = webMBuf.slice(reader.metadataSize);
     const refinedWebM = new Blob([refinedMetadataBuf, body], {type: webM.type});
 
     // logging
+    /*
     console.group(info.title);
     const refinedBuf = await readAsArrayBuffer(refinedWebM);
     const _reader = new EBMLReader();
@@ -79,7 +58,7 @@ async function main() {
     new Decoder().decode(refinedBuf).forEach((elm)=> _reader.read(elm) );
     _reader.stop();
     console.groupEnd();
-
+    */
 
     const refined_video = document.createElement("video");
     refined_video.src = URL.createObjectURL(refinedWebM);
