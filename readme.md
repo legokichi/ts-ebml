@@ -47,6 +47,7 @@ fetch('media/test.webm')
 
 * get WebP frame from MediaRecorder WebM VP8 Stream
 * create seekable webm from media-recoder
+* create playable webm to media-stream-api from media-recorder
 
 see `src/test.ts` and `src/example_seekable.ts`
 
@@ -63,13 +64,16 @@ npm run test  # build test
 npm run example # build example
 ```
 
-## tools
+## debugging tools
 
 * https://www.matroska.org/downloads/mkvalidator.html
 * https://mkvtoolnix.download/doc/mkvinfo.html
 * https://github.com/Matroska-Org/matroska-test-files
 * `MOZ_LOG_FILE="log.txt" MOZ_LOG="MediaDemuxer:5" /Applications/FirefoxNightly.app/Contents/MacOS/firefox-bin`
 * `MOZ_LOG_FILE="log.txt" MOZ_LOG="MediaDemuxer:5" /Applications/Firefox.app/Contents/MacOS/firefox-bin`
+* chrome://media-internals/
+* chrome://webrtc-internals/
+
 
 # license
 
@@ -79,9 +83,12 @@ MIT
 # related works
 
 * https://github.com/antimatter15/js-ebml
+* https://bitbucket.org/desmaj/libvpx.js/src/1ea3218282b6eb129061341831d23409dd539054/webm.js
 * https://github.com/themasch/node-ebml
 * https://github.com/oeuillot/node-matroska
 * https://github.com/Matroska-Org/libebml/
+* https://github.com/Matroska-Org/foundation-source
+* https://github.com/webmproject/libwebm
 * https://chromium.googlesource.com/webm/libvpx/+/master/third_party/libwebm
 * https://github.com/mozilla/gecko-dev/tree/master/dom/media/webm
-* https://bitbucket.org/desmaj/libvpx.js/src/1ea3218282b6eb129061341831d23409dd539054/webm.js
+
