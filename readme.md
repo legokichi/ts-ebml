@@ -68,6 +68,8 @@ npm run example # build example
 * https://www.matroska.org/downloads/mkvalidator.html
 * https://mkvtoolnix.download/doc/mkvinfo.html
 * https://github.com/Matroska-Org/matroska-test-files
+* `MOZ_LOG_FILE="log.txt" MOZ_LOG="MediaDemuxer:5" /Applications/FirefoxNightly.app/Contents/MacOS/firefox-bin`
+* `MOZ_LOG_FILE="log.txt" MOZ_LOG="MediaDemuxer:5" /Applications/Firefox.app/Contents/MacOS/firefox-bin`
 
 # license
 
