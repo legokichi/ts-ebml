@@ -35,13 +35,14 @@ async function main() {
 
   rec.stop();
   
-  const count = 0;
+  let count = 0;
   while(webM.size === 0){
     if(count > 10){
       alert("MediaRecorder did not record anything");
       throw new Error("MediaRecorder did not record anything");
     }
     await sleep(1*1000); // wait dataavailable event
+    count++;
   }
 
   rec.removeEventListener("dataavailable", ondataavailable);

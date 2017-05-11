@@ -372,6 +372,7 @@ declare class MediaRecorder extends EventTarget {
   ondataavailable?: (ev: BlobEvent)=> void;
   onerror?: (ev: ErrorEvent)=> void;
   addEventListener(event: "dataavailable", callback: (ev: BlobEvent)=> any);
+  requestData(): Blob;
 }
 
 
