@@ -11,17 +11,17 @@ export default class EBMLReader extends EventEmitter {
     private stack;
     private chunks;
     private segmentOffset;
-    private lastSimpleBlockVideoTrackTimecode;
+    private last2SimpleBlockVideoTrackTimecode;
+    private last2SimpleBlockAudioTrackTimecode;
     private lastClusterTimecode;
     private lastClusterPosition;
-    private deltaDuration;
     timecodeScale: number;
     metadataSize: number;
     metadatas: EBML.EBMLElementDetail[];
     private currentTrack;
     private trackTypes;
     private trackDefaultDuration;
-    private _duration;
+    private trackCodecDelay;
     private first_video_simpleblock_of_cluster_is_loaded;
     private ended;
     /**
@@ -54,6 +54,12 @@ export default class EBMLReader extends EventEmitter {
     /**
      * DefaultDuration が定義されている場合は最後のフレームのdurationも考慮する
      * 単位 timecodeScale
+     *
+     * !!! if you need duration with seconds !!!
+     * ```js
+     * const nanosec = reader.duration * reader.timecodeScale;
+     * const sec = nanosec / 1000 / 1000 / 1000;
+     * ```
      */
     readonly duration: number;
     /**

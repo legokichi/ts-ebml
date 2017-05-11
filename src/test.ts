@@ -25,14 +25,47 @@ const WEBM_FILE_LIST = [
 
 QUnit.module("ts-EBML");
 
-WEBM_FILE_LIST.forEach((file)=>{
-  QUnit.test("encoder-decoder"+file, encoder_decoder_test(file));
+
+QUnit.test("encoder-decoder", async (assert: Assert)=>{
+  const file = "../matroska-test-files/test_files/test1.mkv";
+  const res = await fetch(file);
+  const buf = await res.arrayBuffer();
+  const elms = new Decoder().decode(buf);
+  const buf2 = new Encoder().encode(elms);
+  const elms2 = new Decoder().decode(buf2);
+  type D = EBML.EBMLElementDetail;
+  const tests = [
+    {index: 0, test: (elm: D)=>{ assert.ok(elm.name === "EBML" && elm.type === "m" && elm.isEnd === false); } },
+    {index: 4, test: (elm: D)=>{ assert.ok(elm.name === "EBML" && elm.type === "m" && elm.isEnd === true); } },
+    {index: 5, test: (elm: D)=>{ assert.ok(elm.name === "Segment" && elm.type === "m" && elm.isEnd === false); } },
+    {index: 24, test: (elm: D)=>{ assert.ok(elm.name === "Info" && elm.type === "m" && elm.isEnd === false); } },
+    {index: 25, test: (elm: D)=>{ assert.ok(elm.name === "Duration" && elm.type === "f" && elm.value === 87336); } },
+    {index: 26, test: (elm: D)=>{ assert.ok(elm.name === "MuxingApp" && elm.type === "8" && elm.value === "libebml2 v0.10.0 + libmatroska2 v0.10.1"); } },
+    {index: 28, test: (elm: D)=>{
+      assert.ok(elm.name === "DateUTC" && elm.type === "d" && typeof elm.value === "string");
+      assert.ok(elm.type === "d" && new Date(new Date("2001-01-01T00:00:00.000Z").getTime()+(Number(elm.value)/1000/1000)).getTime() === new Date("2010-08-21T07:23:03.000Z").getTime()); // toIOSString
+    } },
+    {index: 29, test: (elm: D)=>{
+      assert.ok(elm.name === "SegmentUID" && elm.type === "b");
+      if(elm.type === "b"){
+        const buf = new Uint8Array(new Buffer([0x92, 0x2d, 0x19, 0x32, 0x0f, 0x1e, 0x13, 0xc5, 0xb5, 0x05, 0x63, 0x0a, 0xaf, 0xd8, 0x53, 0x36]));
+        const buf2 = new Uint8Array(elm.value);
+        assert.ok(buf.every((val, i)=> buf2[i] === val));
+      }
+    } },
+  ];
+  for(const test of tests){
+    test.test(elms2[test.index]);
+  }
+
 });
 
-function encoder_decoder_test(file: string){
+WEBM_FILE_LIST.forEach((file)=>{
+  QUnit.test("encoder-decoder:"+file, create_encoder_decoder_test(file));
+});
+
+function create_encoder_decoder_test(file: string){
   return async (assert: Assert)=>{
-    const decoder = new Decoder();
-    const encoder = new Encoder();
     const res = await fetch(file);
     const buf = await res.arrayBuffer();
     const elms = new Decoder().decode(buf);
@@ -75,6 +108,7 @@ QUnit.test("handwrite-encoder", async (assert: Assert)=>{
       {name: "Info", type: "m", isEnd: false},
         {name: "TimecodeScale", type: "u", value: 1000000},
       {name: "Info", type: "m", isEnd: true},
+        {name: "Duration", type: "f", value: 0.0},
       {name: "Cluster", type: "m", unknownSize: true, isEnd: false},
         {name: "Timecode", type: "u", value: 1},
         {name: "SimpleBlock", type: "b", value: new Buffer(1024)},
@@ -101,7 +135,21 @@ QUnit.module("EBMLReader");
 
 const MEDIA_RECORDER_WEBM_FILE_LIST = [
   "./chrome57.webm",
+  // last2timecode(video, audio): ((7.493s, 7.552s), (7.493s, 7.552s))
+  // Chrome57: 7.612s ~= 7.611s = 7.552s + (7.552s - 7.493s) // ???
+  // Firefox53: 7.552s = 7.552s + (7.552s - 7.552s) // shit!
+  // Reader: 7.611s = 7.552s + (7.552s - 7.493s)
   "./firefox55nightly.webm",
+  // last2timecode(video, audio): ((8.567s, 8.590s), (8.626s, 8.646s)), CodecDelay(audio): 6.500ms
+  // Chrome57: 8.659s ~= 8.6595s = 8.646s + (8.646s - 8.626s) - 6.500ms
+  // Firefox53: 8.666s = 8.646s + (8.646s - 8.626s)
+  // Reader: 8.6595s = 8.646s + (8.646s - 8.626s) - 6.500ms
+  "./firefox53.webm",
+  // Chrome57: 10.019s, Firefox53: 10.026s, Reader: 9.967s
+  // last2timecode(video, audio): ((9.932s, 9.967s), (9.986s, 10.006s)), CodecDelay(audio): 6.500ms
+  // Chrome57: 10.019s ~= 10.0195s = 10.006s + (10.006s - 9.986s) - 6.500ms
+  // Firefox53: 10.026s = 10.006s + (10.006s - 9.986s)
+  // Reader: 10.0195s = 10.006s + (10.006s - 9.986s) - 6.500ms
 ];
 
 MEDIA_RECORDER_WEBM_FILE_LIST.forEach((file)=>{
@@ -156,7 +204,7 @@ function create_convert_to_seekable_test(file: string){
     assert.ok(reader.metadatas[0].name === "EBML");
     assert.ok(reader.metadatas.length > 0);
     const sec = reader.duration * reader.timecodeScale / 1000 / 1000 / 1000;
-    assert.ok(7 < sec && sec < 10);
+    assert.ok(7 < sec && sec < 11);
 
     const refinedMetadataBuf = tools.putRefinedMetaData(reader.metadatas, reader);
     const body = webm_buf.slice(reader.metadataSize);
@@ -173,9 +221,18 @@ function create_convert_to_seekable_test(file: string){
     try{
       const raw_video = await fetchVideo(URL.createObjectURL(raw_webM));
       const refined_video = await fetchVideo(URL.createObjectURL(refinedWebM));
-
-      assert.ok(! Number.isFinite(raw_video.duration), "media recorder webm duration is not finite");
+      if(!/Firefox/.test(navigator.userAgent)){
+        assert.ok(! Number.isFinite(raw_video.duration), "media recorder webm duration is not finite");
+      }
       assert.ok(  Number.isFinite(refined_video.duration), "refined webm duration is finite");
+      
+      await sleep(100);
+      const wait = new Promise((resolve, reject)=>{raw_video.onseeked=resolve;raw_video.onerror=reject});
+      raw_video.currentTime = 7*24*60*60;
+      await wait;
+      
+      // duration sec is different each browsers
+      assert.ok(Math.abs(raw_video.duration - refined_video.duration) < 0.1);
     }catch(err){
       assert.notOk(err);
     }

@@ -15,19 +15,19 @@ export default class EBMLReader extends EventEmitter {
   private chunks: EBML.EBMLElementDetail[];
 
   private segmentOffset: number;
-  private lastSimpleBlockVideoTrackTimecode: number;
+  private last2SimpleBlockVideoTrackTimecode: [number, number];
+  private last2SimpleBlockAudioTrackTimecode: [number, number];
   private lastClusterTimecode: number;
   private lastClusterPosition: number;
-  private deltaDuration: number;
   timecodeScale: number;
   metadataSize: number;
   metadatas: EBML.EBMLElementDetail[];
 
-  private currentTrack: {TrackNumber: number, TrackType: number, DefaultDuration: (number | null) };
+  private currentTrack: {TrackNumber: number, TrackType: number, DefaultDuration: (number | null), CodecDelay: (number | null) };
   private trackTypes: number[]; // equals { [trackID: number]: number };
   private trackDefaultDuration: (number | null)[];
+  private trackCodecDelay: (number | null)[];
 
-  private _duration: number;
   private first_video_simpleblock_of_cluster_is_loaded: boolean;
 
   private ended: boolean;
@@ -54,20 +54,19 @@ export default class EBMLReader extends EventEmitter {
     
     this.stack = [];
     this.segmentOffset = 0;
-    this.lastSimpleBlockVideoTrackTimecode = 0;
+    this.last2SimpleBlockVideoTrackTimecode = [0, 0];
+    this.last2SimpleBlockAudioTrackTimecode = [0, 0];
     this.lastClusterTimecode = 0;
     this.lastClusterPosition = 0;
-    this.deltaDuration = 0;
     this.timecodeScale = 0;
     this.metadataSize = 0;
     this.metadatas = [];
     this.cues = [];
 
-    this.currentTrack = {TrackNumber: -1, TrackType: -1, DefaultDuration: null};
+    this.currentTrack = {TrackNumber: -1, TrackType: -1, DefaultDuration: null, CodecDelay: null};
     this.trackTypes = [];
     this.trackDefaultDuration = [];
-
-    this._duration = 0;
+    this.trackCodecDelay = [];
 
     this.ended = false;
 
@@ -142,15 +141,12 @@ export default class EBMLReader extends EventEmitter {
     }else if(elm.type === "b" && elm.name === "SimpleBlock"){
       const {timecode, trackNumber, frames} = tools.ebmlBlock(elm.data);
       if(this.trackTypes[trackNumber] === 1){ // trackType === 1 => video track
-        // https://bugs.chromium.org/p/chromium/issues/detail?id=606000#c22
-        // default duration がないときに使う delta
-        this.deltaDuration = timecode - this.lastSimpleBlockVideoTrackTimecode;
-        this.lastSimpleBlockVideoTrackTimecode = timecode;
-        // デバグ処理ここまで
-        this._duration = this.lastClusterTimecode + timecode;
-        if(this.use_duration_every_simpleblock){
-          this.emit("duration", {timecodeScale: this.timecodeScale, duration: this.duration});
-        }
+        this.last2SimpleBlockVideoTrackTimecode = [this.last2SimpleBlockVideoTrackTimecode[1], timecode];
+      }else if(this.trackTypes[trackNumber] === 2){ // trackType === 2 => audio track
+        this.last2SimpleBlockAudioTrackTimecode = [this.last2SimpleBlockAudioTrackTimecode[1], timecode];
+      }
+      if(this.use_duration_every_simpleblock){
+        this.emit("duration", {timecodeScale: this.timecodeScale, duration: this.duration});
       }
       if(this.use_webp){
         frames.forEach((frame)=>{
@@ -177,12 +173,15 @@ export default class EBMLReader extends EventEmitter {
       if(elm.isEnd){
         this.trackTypes[this.currentTrack.TrackNumber] = this.currentTrack.TrackType;
         this.trackDefaultDuration[this.currentTrack.TrackNumber] = this.currentTrack.DefaultDuration;
+        this.trackCodecDelay[this.currentTrack.TrackNumber] = this.currentTrack.CodecDelay;
       }
-      this.currentTrack = {TrackNumber: -1, TrackType: -1, DefaultDuration: null };
+      this.currentTrack = {TrackNumber: -1, TrackType: -1, DefaultDuration: null, CodecDelay: null };
     }else if(elm.type === "u" && elm.name === "TrackType"){
       this.currentTrack.TrackType = elm.value;
     }else if(elm.type === "u" && elm.name === "TrackNumber"){
       this.currentTrack.TrackNumber = elm.value;
+    }else if(elm.type === "u" && elm.name === "CodecDelay"){
+      this.currentTrack.CodecDelay = elm.value;
     }else if(elm.type === "u" && elm.name === "DefaultDuration"){
       // media source api は DefaultDuration を計算するとバグる。
       // https://bugs.chromium.org/p/chromium/issues/detail?id=606000#c22
@@ -206,15 +205,54 @@ export default class EBMLReader extends EventEmitter {
   /**
    * DefaultDuration が定義されている場合は最後のフレームのdurationも考慮する
    * 単位 timecodeScale
+   * 
+   * !!! if you need duration with seconds !!!
+   * ```js
+   * const nanosec = reader.duration * reader.timecodeScale;
+   * const sec = nanosec / 1000 / 1000 / 1000;
+   * ```
    */
   get duration(){
     const videoTrackNum = this.trackTypes.indexOf(1); // find first video track
     if(videoTrackNum < 0){ return 0; }
-    const defaultDuration = this.trackDefaultDuration[videoTrackNum];
-    if(typeof defaultDuration !== "number"){ return this._duration; }
     // defaultDuration は 生の nano sec
+    let defaultDuration = this.trackDefaultDuration[videoTrackNum];
+    if(typeof defaultDuration !== "number"){
+      // https://bugs.chromium.org/p/chromium/issues/detail?id=606000#c22
+      // default duration がないときに使う delta
+      if(this.last2SimpleBlockAudioTrackTimecode[1] > this.last2SimpleBlockVideoTrackTimecode[1]){
+        // audio diff
+        defaultDuration = (this.last2SimpleBlockAudioTrackTimecode[1] - this.last2SimpleBlockAudioTrackTimecode[0]) * this.timecodeScale;
+      }else{
+        // video diff
+        defaultDuration = (this.last2SimpleBlockVideoTrackTimecode[1] - this.last2SimpleBlockVideoTrackTimecode[0]) * this.timecodeScale;
+      }
+    }
+    // nanoseconds
+    let codecDelay = 0;
+    if(this.last2SimpleBlockAudioTrackTimecode[1] > this.last2SimpleBlockVideoTrackTimecode[1]){
+      // audio
+      const delay = this.trackCodecDelay[this.trackTypes.indexOf(2)]; // 2 => audio
+      if(typeof delay === "number"){
+        codecDelay = delay;
+      }
+    }else{
+      // video
+      const delay = this.trackCodecDelay[this.trackTypes.indexOf(1)]; // 1 => video
+      if(typeof delay === "number"){
+        codecDelay = delay;
+      }
+    }
+    let lastTimecode = 0;
+    if(this.last2SimpleBlockAudioTrackTimecode[1] > this.last2SimpleBlockVideoTrackTimecode[1]){
+      // audio
+      lastTimecode = this.last2SimpleBlockAudioTrackTimecode[1];
+    }else{
+      // video
+      lastTimecode = this.last2SimpleBlockVideoTrackTimecode[1];
+    }
     // this._duration は timecodescale 考慮されている
-    const duration_nanosec = (this._duration * this.timecodeScale) + defaultDuration;
+    const duration_nanosec = ((this.lastClusterTimecode + lastTimecode) * this.timecodeScale) + defaultDuration - codecDelay;
     const duration = duration_nanosec / this.timecodeScale;
     return Math.floor(duration);
   }

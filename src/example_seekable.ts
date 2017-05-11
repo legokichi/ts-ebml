@@ -13,9 +13,10 @@ async function main() {
   const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
   const rec = new MediaRecorder(stream, { mimeType: 'video/webm; codecs="vp8, opus"'});
 
-  rec.ondataavailable = (ev: BlobEvent)=>{
+  const ondataavailable = (ev: BlobEvent)=>{
     const chunk = ev.data;
     webM = new Blob([webM, chunk], {type: chunk.type});
+    console.log(chunk.size, webM.size);
     const task = async ()=>{
       const buf = await readAsArrayBuffer(chunk);
       const elms = decoder.decode(buf);
@@ -24,33 +25,51 @@ async function main() {
     tasks = tasks.then(()=> task() );
   };
 
-  rec.start(100);
+  rec.addEventListener("dataavailable", ondataavailable);
+
+  // if set timeslice, bug occur on firefox: https://bugzilla.mozilla.org/show_bug.cgi?id=1272371
+  // rec.start(100);
+  rec.start();
 
   await sleep(10 * 1000);
 
   rec.stop();
-  rec.ondataavailable = undefined;
+  
+  const count = 0;
+  while(webM.size === 0){
+    if(count > 10){
+      alert("MediaRecorder did not record anything");
+      throw new Error("MediaRecorder did not record anything");
+    }
+    await sleep(1*1000); // wait dataavailable event
+  }
+
+  rec.removeEventListener("dataavailable", ondataavailable);
   rec.stream.getTracks().map((track) => { track.stop(); });
+
+  await tasks; // wait data processing
   reader.stop();
+  
 
   const raw_video = document.createElement("video");
   raw_video.src = URL.createObjectURL(webM);
   raw_video.controls = true;
 
-  put(raw_video, "media-recorder-original(not seekable)");
+  put(raw_video, "media-recorder original(not seekable)");
 
   const infos = [
-    {duration: reader.duration, title: "add-duration(seekable but slow)"},
+    {duration: reader.duration, title: "add duration only (seekable but slow)"},
+    {cues: reader.cues, title: "add cues only (seekable file)"},
     {duration: reader.duration, cues: reader.cues, title: "add duration and cues (valid seekable file)"},
   ];
-  for(let info of infos){
+  for(const info of infos){
     const refinedMetadataBuf = tools.putRefinedMetaData(reader.metadatas, info);
     const webMBuf = await readAsArrayBuffer(webM);
     const body = webMBuf.slice(reader.metadataSize);
     const refinedWebM = new Blob([refinedMetadataBuf, body], {type: webM.type});
 
     // logging
-    /*
+
     console.group(info.title);
     const refinedBuf = await readAsArrayBuffer(refinedWebM);
     const _reader = new EBMLReader();
@@ -58,7 +77,7 @@ async function main() {
     new Decoder().decode(refinedBuf).forEach((elm)=> _reader.read(elm) );
     _reader.stop();
     console.groupEnd();
-    */
+
 
     const refined_video = document.createElement("video");
     refined_video.src = URL.createObjectURL(refinedWebM);
@@ -104,6 +123,7 @@ declare class MediaRecorder extends EventTarget {
   ondataavailable?: (ev: BlobEvent)=> void;
   onerror?: (ev: ErrorEvent)=> void;
   addEventListener(event: "dataavailable", callback: (ev: BlobEvent)=> any);
+  requestData(): Blob;
 }
 
 
