@@ -167,6 +167,7 @@ export default class EBMLReader extends EventEmitter {
       const trackNumber = this.trackTypes.indexOf(1);
       this.cues.push({CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
       this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
+      this.emit("cue", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
     }else if(elm.type === "u" && elm.name === "TimecodeScale"){
       this.timecodeScale = elm.value;
     }else if(elm.type === "m" && elm.name === "TrackEntry"){
@@ -272,6 +273,8 @@ export default class EBMLReader extends EventEmitter {
    * emit on every cue point for cluster to create seekable webm file from MediaRecorder
    * */
   addListener(event: "cue_info", listener: (ev: CueInfo )=> void): this;
+  /** emit on every cue point for cluster to create seekable webm file from MediaRecorder */
+  addListener(event: "cue", listener: (ev: CueInfo )=> void): this;
   /** latest EBML > Info > TimecodeScale and EBML > Info > Duration to create seekable webm file from MediaRecorder */
   addListener(event: "duration", listener: (ev: DurationInfo )=> void): this;
   /** EBML header without Cluster Element for recording metadata chunk */
