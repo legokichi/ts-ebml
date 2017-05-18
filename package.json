@@ -1,6 +1,6 @@
 {
   "name": "ts-ebml",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "ebml decoder and encoder",
   "scripts": {
     "setup": "npm install -g http-server;",

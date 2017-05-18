@@ -11,7 +11,7 @@ It is a fork of https://github.com/themasch/node-ebml
 npm install ts-ebml --save
 ```
 
-# example
+# usage
 
 ## node
 
@@ -50,6 +50,46 @@ fetch('media/test.webm')
 * create playable webm to media-stream-api from media-recorder
 
 see `src/test.ts` and `src/example_seekable.ts`
+
+# stable API
+
+```ts
+class Decoder {
+  constructor();
+  decode(chunk: ArrayBuffer): EBMLElementDetail[];
+}
+
+class Encoder {
+  constructor();
+  encode(elms: EBMLElementBuffer[]): ArrayBuffer;
+}
+
+type EBMLElementBuffer = MasterElement | ChildElementBuffer;
+type EBMLElementDetail = (MasterElement | ChildElementValue) & ElementDetail;
+
+type MasterElement = {
+  name: string;
+  type: "m";
+  isEnd: boolean;
+  unknownSize?: boolean;
+};
+type ChildElementBuffer = {
+  name: string;
+  type: "u" | "i" | "f" | "s" | "8" | "b" | "d";
+  data: Buffer;
+};
+type ChildElementValue = ChildElementBuffer & {
+  value: number|string|Buffer;
+};
+type ElementDetail = {
+  tagStart: number;
+  tagEnd: number;
+  sizeStart: number;
+  sizeEnd: number;
+  dataStart: number;
+  dataEnd: number;
+};
+```
 
 # develop
 
