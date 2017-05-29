@@ -89,6 +89,12 @@ type ElementDetail = {
   dataStart: number;
   dataEnd: number;
 };
+namespace tools {
+  export function readVint(buffer: Buffer, start: number): null | ({length: number; value: number; });
+  export function writeVint(val: number): Buffer;
+  export function readBlock(buf: ArrayBuffer): EBML.SimpleBlock;
+  export function convertEBMLDateToJSDate(int64str: string | Date): Date;
+}
 ```
 
 # develop

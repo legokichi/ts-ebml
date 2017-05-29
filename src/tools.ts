@@ -353,3 +353,8 @@ export function createFloatBuffer(value: number, bytes: 4|8 = 8): Buffer {
     throw new Error("float type bits must 4bytes or 8bytes");
   }
 }
+
+export function convertEBMLDateToJSDate(int64str: string | Date): Date {
+  if(int64str instanceof Date){ return int64str; }
+  return new Date(new Date("2001-01-01T00:00:00.000Z").getTime() +  (Number(int64str)/1000/1000));
+}
