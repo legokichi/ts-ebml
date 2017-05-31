@@ -142,7 +142,6 @@ export function putRefinedMetaData(
   const segmentSize = payload[0].tagStart - ebmlSize;
   const segmentOffset = ebmlSize + segmentSize
   let newPayloadSize = payloadSize;
-  console.log(metadata, info.cues);
   // We need the size to be stable between two refinements in order for our offsets to be correct
   // Bound the number of possible refinements so we can't go infinate if something goes wrong
   let i;
