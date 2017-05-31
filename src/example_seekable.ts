@@ -31,7 +31,7 @@ async function main() {
   // rec.start(100);
   rec.start();
 
-  await sleep(10 * 1000);
+  await sleep(120 * 1000);
 
   rec.stop();
   
@@ -59,8 +59,8 @@ async function main() {
   put(raw_video, "media-recorder original(not seekable)");
 
   const infos = [
-    {duration: reader.duration, title: "add duration only (seekable but slow)"},
-    {cues: reader.cues, title: "add cues only (seekable file)"},
+    //{duration: reader.duration, title: "add duration only (seekable but slow)"},
+    //{cues: reader.cues, title: "add cues only (seekable file)"},
     {duration: reader.duration, cues: reader.cues, title: "add duration and cues (valid seekable file)"},
   ];
   for(const info of infos){

@@ -59,3 +59,4 @@ export declare function encodeValueToBuffer(elm: EBML.ChildElementsValue): EBML.
 export declare function createUIntBuffer(value: number): Buffer;
 export declare function createIntBuffer(value: number): Buffer;
 export declare function createFloatBuffer(value: number, bytes?: 4 | 8): Buffer;
+export declare function convertEBMLDateToJSDate(int64str: string | Date): Date;

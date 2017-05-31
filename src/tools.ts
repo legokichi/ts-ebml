@@ -121,25 +121,42 @@ export function putRefinedMetaData(
       throw new Error("this metadata is not streaming webm file");
     }
   }
-  // [EBML][size]...[Segment][size][Info][size][Duration][size]...[Cluster]
-  //                |              |                              + originalPayloadOffsetEnd
-  //                |              +
-  //                +
+  // *0    *4    *5  *36      *40   *48=segmentOffset              *185=originalPayloadOffsetEnd
+  // |     |     |   |        |     |                              |
+  // [EBML][size]....[Segment][size][Info][size][Duration][size]...[Cluster]
+  // |               |        |     |                              |
+  // |               +segmentSiz(12)+                              |
+  // +-ebmlSize(36)--+        |     +-payloadSize(137)-------------+-offsetEndDiff-+
+  //                 |        |     |  +-newPayloadSize(??)------------------------+
+  //                 +newSegmentSize---+                                           |
+  //                 [Segment][newSize][Info][size][Duration][size]...[size][value][Cluster]
+  //                                |  |                                           |
+  //                                |  *??=newSegmentOffset                        *??=newPayloadOffsetEnd
+  //                                +--+
+  //                                 \offsetDiff
+  if(!(payload[payload.length-1].dataEnd > 0)){ throw new Error("metadata dataEnd has wrong number"); }
   const originalPayloadOffsetEnd = payload[payload.length-1].dataEnd;
-  const ebmlSize = new Encoder().encode(ebml).byteLength;
-  const payloadSize = new Encoder().encode(payload).byteLength;
+  const ebmlSize = ebml[ebml.length-1].dataEnd;
+  const payloadSize = payload[payload.length-1].dataEnd - payload[0].tagStart;
   const segmentTag = new Buffer([0x18, 0x53, 0x80, 0x67]); // Segment
-  let prevPayloadSize = payloadSize;
+  const segmentSize = payload[0].tagStart - ebmlSize;
+  const segmentOffset = ebmlSize + segmentSize
+  let newPayloadSize = payloadSize;
+  console.log(metadata, info.cues);
   // We need the size to be stable between two refinements in order for our offsets to be correct
   // Bound the number of possible refinements so we can't go infinate if something goes wrong
   let i;
   for(i = 1; i < 20; i++) {
-    const segmentSize = segmentTag.byteLength + writeVint(prevPayloadSize).byteLength;
-    const sizeDiff = ebmlSize + segmentSize + prevPayloadSize - originalPayloadOffsetEnd;
-    const segmentOffset = ebmlSize + segmentSize;
-    const refined = refineMetadata(payload, sizeDiff - segmentOffset, info);
-    const refinedSize = new Encoder().encode(refined).byteLength; // 一旦 seekhead を作って自身のサイズを調べる
-    if(refinedSize === prevPayloadSize) {
+    const newSize = new Buffer('01ffffffffffffff', 'hex').byteLength; // Segmentの最後の位置は無数の Cluster 依存なので。 writeVint(newPayloadSize).byteLength ではない。
+    const newSegmentSize = segmentTag.byteLength + newSize;
+    const newPayloadOffsetEnd = ebmlSize + newSegmentSize + newPayloadSize;
+    const offsetEndDiff = newPayloadOffsetEnd - originalPayloadOffsetEnd;
+    const newSegmentOffset = ebmlSize + newSegmentSize;
+    const offsetDiff = newSegmentOffset - segmentOffset;
+    const sizeDiff = offsetDiff + offsetEndDiff;
+    const refined = refineMetadata(payload, sizeDiff, info);
+    const newNewRefinedSize = new Encoder().encode(refined).byteLength; // 一旦 seekhead を作って自身のサイズを調べる
+    if(newNewRefinedSize === newPayloadSize) {
       // Size is stable
       return new Encoder().encode(
         (<EBML.EBMLElementBuffer[]>[]).concat(
@@ -149,7 +166,7 @@ export function putRefinedMetaData(
         )
       );
     }
-    prevPayloadSize = refinedSize;
+    newPayloadSize = newNewRefinedSize;
   }
   throw new Error("unable to refine metadata, stable size could not be found in " + i + " iterations!");
 }
