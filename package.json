@@ -18,7 +18,7 @@
     "test": "tsc; espower lib/test.js > lib/test.tmp; mv -f lib/test.tmp lib/test.js; browserify lib/test.js -o test/test.js",
     "example": "tsc; browserify lib/example_seekable.js -o test/example_seekable.js",
     "examples": "tsc; for file in `find lib -name 'example_*.js' -type f -printf '%f\\n'`; do browserify lib/$file -o test/$file; done",
-    "examples_bsd": "tsc; for file in `find lib -name 'example_*.js' -type f -print0 | xargs -0 basename`; do browserify lib/$file -o test/$file; done",
+    "examples_bsd": "tsc; for file in `find lib -name 'example_*.js' -type f -print`; do browserify lib/$(basename $file) -o test/$(basename $file); done",
     "check": "tsc -w --noEmit -p ./",
     "lint": "tslint -c ./tslint.json --project ./tsconfig.json --type-check",
     "doc": "typedoc --mode modules --out doc --disableOutputCheck"
