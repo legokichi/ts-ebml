@@ -113,6 +113,7 @@ npm run example # build example
 ## debugging tools
 
 * https://www.matroska.org/downloads/mkvalidator.html
+* https://www.matroska.org/downloads/mkclean.html
 * https://mkvtoolnix.download/doc/mkvinfo.html
 * https://github.com/Matroska-Org/matroska-test-files
 * `MOZ_LOG_FILE="log.txt" MOZ_LOG="MediaDemuxer:5" /Applications/FirefoxNightly.app/Contents/MacOS/firefox-bin`
@@ -124,6 +125,39 @@ npm run example # build example
 # license
 
 MIT
+
+
+# related issues
+
+## media recorder seekable webm
+
+### chrome
+
+* MediaRecorder output should have Cues element - https://bugs.chromium.org/p/chromium/issues/detail?id=561606
+* Videos created with MediaRecorder API are not seekable / scrubbable - https://bugs.chromium.org/p/chromium/issues/detail?id=569840
+* Audio not heard on playback - https://bugs.chromium.org/p/chromium/issues/detail?id=575748
+* No duration or seeking cue for opus audio produced with mediarecoder - https://bugs.chromium.org/p/chromium/issues/detail?id=599134
+* MediaRecorder: consider producing seekable WebM files - https://bugs.chromium.org/p/chromium/issues/detail?id=642012
+
+### firefox
+
+* Seeking in WebM files with no Cues element is not supported - https://bugzilla.mozilla.org/show_bug.cgi?id=657791
+* Recorder video clips result can't replay /seekable on firefox - https://bugzilla.mozilla.org/show_bug.cgi?id=969290
+
+## media recorder media source gap
+
+### chrome
+
+* MediaSource api not able to play webm video recorded from MediaRecorder - https://bugs.chromium.org/p/chromium/issues/detail?id=606000
+* Video playback freezes using MediaSource API (MSE) - https://bugs.chromium.org/p/chromium/issues/detail?id=678269
+* MediaSource API: Appending chunks to a SourceBuffer creates gaps and playback stops - https://bugs.chromium.org/p/chromium/issues/detail?id=688490
+* Playback of video segments freezes with errors in media-internals - https://bugs.chromium.org/p/chromium/issues/detail?id=711829
+
+## others
+
+### firefox
+
+* Webm video recorded with MediaRecorder cannot be played more than once - https://bugzilla.mozilla.org/show_bug.cgi?id=1272371
 
 
 # related works
