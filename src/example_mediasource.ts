@@ -15,7 +15,12 @@ async function main(){
   const devices = await navigator.mediaDevices.enumerateDevices();
   console.table(devices);
   
-  const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+  const stream = await (
+    navigator.mediaDevices.getUserMedia instanceof Function ? navigator.mediaDevices.getUserMedia({video: true, audio: true}) :
+    navigator.getUserMedia instanceof Function ? new Promise((resolve, reject)=> navigator.getUserMedia({video: true, audio: true}, resolve, reject)) :
+    navigator["webkitGetUserMedia"] instanceof Function ? new Promise<MediaStream>((resolve, reject)=> navigator["webkitGetUserMedia"]({video: true, audio: true}, resolve, reject)) :
+    Promise.reject<MediaStream>(new Error("cannot use usermedia"))
+  );
   
   if(logging){
   	stream.addEventListener("active", (ev)=>{ console.log(ev.type); });

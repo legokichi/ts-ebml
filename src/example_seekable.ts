@@ -10,13 +10,21 @@ async function main() {
   let tasks = Promise.resolve(void 0);
   let webM = new Blob([], {type: "video/webm"});
 
-  const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  console.table(devices);
+
+  const stream = await (
+    navigator.mediaDevices.getUserMedia instanceof Function ? navigator.mediaDevices.getUserMedia({video: true, audio: true}) :
+    navigator.getUserMedia instanceof Function ? new Promise((resolve, reject)=> navigator.getUserMedia({video: true, audio: true}, resolve, reject)) :
+    navigator["webkitGetUserMedia"] instanceof Function ? new Promise<MediaStream>((resolve, reject)=> navigator["webkitGetUserMedia"]({video: true, audio: true}, resolve, reject)) :
+    Promise.reject<MediaStream>(new Error("cannot use usermedia"))
+  );
+
   const rec = new MediaRecorder(stream, { mimeType: 'video/webm; codecs="vp8, opus"'});
 
   const ondataavailable = (ev: BlobEvent)=>{
     const chunk = ev.data;
     webM = new Blob([webM, chunk], {type: chunk.type});
-    console.log(chunk.size, webM.size);
     const task = async ()=>{
       const buf = await readAsArrayBuffer(chunk);
       const elms = decoder.decode(buf);
@@ -31,7 +39,7 @@ async function main() {
   // rec.start(100);
   rec.start();
 
-  await sleep(120 * 1000);
+  await sleep(60 * 1000);
 
   rec.stop();
   
