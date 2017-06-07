@@ -69,6 +69,7 @@
         "src/EBMLReader.ts",
         "src/index.ts",
         "src/test.ts",
+        "src/example_mediasource.ts",
         "src/example_seekable.ts"
     ],
     "exclude": [
