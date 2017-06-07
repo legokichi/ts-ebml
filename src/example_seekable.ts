@@ -112,6 +112,15 @@ interface BlobEvent extends Event {
   data: Blob;
 }
 
+interface MediaRecorderEventMap {
+  "dataavailable": BlobEvent;
+  "pause": Event;
+  "resume": Event;
+  "start": Event;
+  "stop": Event;
+  "error": Event;
+}
+
 declare class MediaRecorder extends EventTarget {
   constructor(stream: MediaStream, opt: any);
   start(timeslice?: number): void;
@@ -123,10 +132,9 @@ declare class MediaRecorder extends EventTarget {
   audioBitsPerSecond: number;
   ondataavailable?: (ev: BlobEvent)=> void;
   onerror?: (ev: ErrorEvent)=> void;
-  addEventListener(event: "dataavailable", callback: (ev: BlobEvent)=> any);
+  addEventListener<K extends keyof MediaRecorderEventMap>(type: K, listener: (this: MediaStream, ev: MediaRecorderEventMap[K]) => any, useCapture?: boolean): void;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
   requestData(): Blob;
 }
-
-
 
 main();
