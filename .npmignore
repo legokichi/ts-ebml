@@ -1,7 +1,8 @@
-dist/
-node_modules/
-test/
 *.webm
 *.log
+dist/
 matroska-test-files/
+mkclean-0.8.6/
 mkvalidator-osx-0.4.0/
+node_modules/
+test/
