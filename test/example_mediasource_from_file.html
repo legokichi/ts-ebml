@@ -1,0 +1,188 @@
+<script src="../dist/EBML.js"></script>
+<script src="../dist/EBMLReader.js"></script>
+<script>
+const main = async(function* main(){
+  const logging = true;
+  let tasks = Promise.resolve(void 0);
+
+  const webmBuf = yield fetch("chrome52.fish.refined.webm").then((res)=> res.arrayBuffer());
+  const mimeType = 'video/webm; codecs="vp8, opus"';
+
+  const ms = new MediaSource();
+  if(logging){
+    ms.addEventListener('sourceopen', (ev)=>{ console.log(ev.type); });
+    ms.addEventListener('sourceended', (ev)=>{ console.log(ev.type); });
+    ms.addEventListener('sourceclose', (ev)=>{ console.log(ev.type); });
+    ms.sourceBuffers.addEventListener('addsourcebuffer', (ev)=>{ console.log(ev.type); });
+    ms.sourceBuffers.addEventListener('removesourcebuffer', (ev)=>{ console.log(ev.type); });
+  }
+
+  const video = document.createElement("video");
+  if(logging){
+    video.addEventListener('loadstart', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('progress', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('loadedmetadata', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('loadeddata', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('canplay', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('canplaythrough', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('playing', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('waiting', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('seeking', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('seeked', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('ended', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('emptied', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('stalled', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('timeupdate', (ev)=>{ console.log(ev.type); }); // annoying
+    video.addEventListener('durationchange', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('ratechange', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('play', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('pause', (ev)=>{ console.log(ev.type); });
+    video.addEventListener('error', (ev)=>{ console.warn(ev.type, ev); });
+  }
+  video.volume = 0;
+  video.controls = true;
+  video.autoplay = true;
+  document.body.appendChild(video);
+
+  yield new Promise((resolve, reject)=>{
+    ms.addEventListener('sourceopen', ()=> resolve(), {once: true});
+    //video.srcObject = ms;
+    video.src = URL.createObjectURL(ms);
+  });
+  
+  const sb = ms.addSourceBuffer(mimeType);
+  if(logging){
+    sb.addEventListener('updatestart', (ev)=>{ console.log(ev.type); }); // annoying
+    sb.addEventListener('update', (ev)=>{ console.log(ev.type); }); // annoying
+    sb.addEventListener('updateend', (ev)=>{ console.log(ev.type); }); // annoying
+    sb.addEventListener('error', (ev)=>{ console.error(ev.type, ev); });
+    sb.addEventListener('abort', (ev)=>{ console.log(ev.type); });
+  }
+
+  const appendBuffer = async(function* appendBuffer(buf){
+    console.info("appendBuffer", buf.byteLength);
+
+    yield new Promise((resolve, reject)=>{
+      sb.addEventListener('updateend', ()=> resolve(), {once: true});
+      sb.addEventListener("error", (ev)=> reject(ev), {once: true});
+      sb.appendBuffer(buf);
+    });
+
+
+    if(logging){
+      console.log("timestampOffset", sb.timestampOffset);
+      console.log("appendWindowStart", sb.appendWindowStart);
+      console.log("appendWindowEnd", sb.appendWindowEnd);
+      for(let i=0; i<sb.buffered.length; i++){
+        console.log("buffered", i, sb.buffered.start(i), sb.buffered.end(i));
+      }
+      for(let i=0; i<video.seekable.length; i++){
+        console.log("seekable", i, video.seekable.start(i), video.seekable.end(i));
+      }
+      console.log("webkitAudioDecodedByteCount", video.webkitAudioDecodedByteCount);
+      console.log("webkitVideoDecodedByteCount", video.webkitVideoDecodedByteCount);
+      console.log("webkitDecodedFrameCount", video.webkitDecodedFrameCount);
+      console.log("webkitDroppedFrameCount", video.webkitDroppedFrameCount);
+    }
+
+    if (video.buffered.length > 1) {
+      console.warn("MSE buffered has a gap!");
+      //throw new Error("MSE buffered has a gap!");
+    }
+  });
+
+  // refine video
+  const reader = new EBMLReader.default();
+  const clusters = [];
+  let metadata = null;
+  reader.addListener("metadata", ({metadataSize, data})=>{
+    const buf = webmBuf.slice(data[0].tagStart, data[data.length-1].dataEnd);
+    metadata = {buf, elms: data};
+  });
+  reader.addListener("cluster", ({timecode, data})=>{
+    const cl_timecode = timecode;
+    let dataEnd = Infinity;
+    for(let i=1; i<10; i++){
+      const end = data[data.length-i];
+      if(end.type === "m" && end.isEnd){ continue; }
+      dataEnd = data[data.length-i].dataEnd;
+      break;
+    }
+    const cluster = webmBuf.slice(data[0].tagStart, dataEnd);
+    clusters.push({buf: cluster, elms: data, timecode});
+  });
+  const elms = new EBML.Decoder().decode(webmBuf);
+  elms.forEach((elm)=>{ reader.read(elm); });
+  reader.stop();
+
+  console.log(metadata, clusters);
+  const chunks = [];
+  for(let i=0; i<clusters.length; i++){
+    const {timecode, elms} = clusters[i];
+    const timecode_next = clusters[i+1] != null ? clusters[i+1].timecode : reader.duration;
+    const videos = elms.filter((elm)=>{
+      if(elm.name !== "SimpleBlock"){ return false; }
+      const {timecode, trackNumber} = EBML.tools.ebmlBlock(elm.value);
+      if(reader.trackTypes[trackNumber] !== 1){ return false; }
+      return true;
+    });
+    const defaultDuration = (timecode_next - timecode)/videos.length;
+    for(let i=0; i<videos.length; i++){
+      const elm = videos[i];
+      const trackNumberSeg = EBML.tools.readVint(elm.value, 0);
+      const trackNumber = trackNumberSeg.value;
+      //elm.value.writeInt16BE(Math.round(i*defaultDuration), trackNumberSeg.length); // refine video simpleblock timecode
+    }
+    elms.forEach((elm)=> chunks.push(elm));
+  }
+
+  const webmBuf2 = new EBML.Encoder().encode(metadata.elms.concat(chunks));
+  const webM = new Blob([webmBuf2], {type: mimeType});
+  console.log(URL.createObjectURL(webM));
+  yield appendBuffer(webmBuf2);
+
+  video.autoplay = true;
+  video.addEventListener("waiting", ()=>{
+    if(video.paused){ return; }
+    if(video.buffered.length === 1){ return; }
+    video.currentTime += 3;
+  });
+
+  console.info("stop");
+  if(sb.updating){ sb.abort(); }
+  if(ms.readyState === "open"){ ms.endOfStream(); }
+  yield video.pause();
+});
+
+
+function sleep(ms){
+  return new Promise(resolve =>
+    setTimeout((()=>resolve(ms)), ms));
+}
+
+
+function readAsArrayBuffer(blob) {
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.addEventListener("loadend", ()=> resolve(reader.result), {once: true});
+    reader.addEventListener("error", ()=> reject(reader.error), {once: true});
+    reader.readAsArrayBuffer(blob);
+  });
+}
+
+
+function async(generatorFunc){
+  return function (arg) {
+    const generator = generatorFunc(arg);
+    return next(null);
+    function next(arg) {
+      const result = generator.next(arg);
+      if(result.done){ return result.value; }
+      else if(result.value instanceof Promise){ return result.value.then(next); }
+      else{ return Promise.resolve(result.value); }
+    }
+  }
+}
+
+main().catch(console.error);
+</script>
