@@ -119,7 +119,7 @@ npm run example # build example
 * `MOZ_LOG_FILE="log.txt" MOZ_LOG="MediaDemuxer:5" /Applications/Firefox.app/Contents/MacOS/firefox-bin`
 * chrome://media-internals/
 * chrome://webrtc-internals/
-
+* ./out/gn/Chromium.app/Contents/MacOS/Chromium  -vmodule="*video*=0,*ffmpeg*=1,*media*=1"  https://webrtc.github.io/samples/src/content/getusermedia/record/
 
 # license
 
@@ -134,7 +134,6 @@ MIT
 
 * MediaRecorder output should have Cues element - https://bugs.chromium.org/p/chromium/issues/detail?id=561606
 * Videos created with MediaRecorder API are not seekable / scrubbable - https://bugs.chromium.org/p/chromium/issues/detail?id=569840
-* Audio not heard on playback - https://bugs.chromium.org/p/chromium/issues/detail?id=575748
 * No duration or seeking cue for opus audio produced with mediarecoder - https://bugs.chromium.org/p/chromium/issues/detail?id=599134
 * MediaRecorder: consider producing seekable WebM files - https://bugs.chromium.org/p/chromium/issues/detail?id=642012
 
@@ -153,6 +152,10 @@ MIT
 * Playback of video segments freezes with errors in media-internals - https://bugs.chromium.org/p/chromium/issues/detail?id=711829
 
 ## others
+
+### chrome
+
+* Regression: Playback of mediaStream recording shows blank video - https://bugs.chromium.org/p/chromium/issues/detail?id=657532
 
 ### firefox
 
