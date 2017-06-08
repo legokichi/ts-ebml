@@ -154,6 +154,10 @@ MIT
 
 ## others
 
+### chrome
+
+* Regression: Playback of mediaStream recording shows blank video - https://bugs.chromium.org/p/chromium/issues/detail?id=657532
+
 ### firefox
 
 * Webm video recorded with MediaRecorder cannot be played more than once - https://bugzilla.mozilla.org/show_bug.cgi?id=1272371
