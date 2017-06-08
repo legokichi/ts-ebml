@@ -147,7 +147,6 @@ MIT
 
 ### chrome
 
-* Audio not heard on playback - https://bugs.chromium.org/p/chromium/issues/detail?id=575748
 * MediaSource api not able to play webm video recorded from MediaRecorder - https://bugs.chromium.org/p/chromium/issues/detail?id=606000
 * Video playback freezes using MediaSource API (MSE) - https://bugs.chromium.org/p/chromium/issues/detail?id=678269
 * MediaSource API: Appending chunks to a SourceBuffer creates gaps and playback stops - https://bugs.chromium.org/p/chromium/issues/detail?id=688490
