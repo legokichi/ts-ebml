@@ -252,7 +252,7 @@ export default class EBMLReader extends EventEmitter {
       // video
       lastTimecode = this.last2SimpleBlockVideoTrackTimecode[1];
     }
-    // this._duration は timecodescale 考慮されている
+    // convert to timecodescale
     const duration_nanosec = ((this.lastClusterTimecode + lastTimecode) * this.timecodeScale) + defaultDuration - codecDelay;
     const duration = duration_nanosec / this.timecodeScale;
     return Math.floor(duration);
