@@ -135,7 +135,6 @@ MIT
 
 * MediaRecorder output should have Cues element - https://bugs.chromium.org/p/chromium/issues/detail?id=561606
 * Videos created with MediaRecorder API are not seekable / scrubbable - https://bugs.chromium.org/p/chromium/issues/detail?id=569840
-* Audio not heard on playback - https://bugs.chromium.org/p/chromium/issues/detail?id=575748
 * No duration or seeking cue for opus audio produced with mediarecoder - https://bugs.chromium.org/p/chromium/issues/detail?id=599134
 * MediaRecorder: consider producing seekable WebM files - https://bugs.chromium.org/p/chromium/issues/detail?id=642012
 
@@ -148,6 +147,7 @@ MIT
 
 ### chrome
 
+* Audio not heard on playback - https://bugs.chromium.org/p/chromium/issues/detail?id=575748
 * MediaSource api not able to play webm video recorded from MediaRecorder - https://bugs.chromium.org/p/chromium/issues/detail?id=606000
 * Video playback freezes using MediaSource API (MSE) - https://bugs.chromium.org/p/chromium/issues/detail?id=678269
 * MediaSource API: Appending chunks to a SourceBuffer creates gaps and playback stops - https://bugs.chromium.org/p/chromium/issues/detail?id=688490
