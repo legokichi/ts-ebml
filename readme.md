@@ -21,8 +21,7 @@ const fs = require('fs');
 
 const decoder = new ebml.Decoder();
 
-fs.readFile('media/test.webm', (err, buf)=>{
-  if (err){ throw err; }
+fs.createReadStream('media/test.webm').on('data', (buf)=>{
   const ebmlElms = decoder.decode(buf);
   console.log(ebmlElms);
 });
