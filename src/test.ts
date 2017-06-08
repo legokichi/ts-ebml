@@ -43,7 +43,8 @@ QUnit.test("encoder-decoder", async (assert: Assert)=>{
     {index: 26, test: (elm: D)=>{ assert.ok(elm.name === "MuxingApp" && elm.type === "8" && elm.value === "libebml2 v0.10.0 + libmatroska2 v0.10.1"); } },
     {index: 28, test: (elm: D)=>{
       assert.ok(elm.name === "DateUTC" && elm.type === "d" && typeof elm.value === "string");
-      assert.ok(elm.type === "d" && new Date(new Date("2001-01-01T00:00:00.000Z").getTime()+(Number(elm.value)/1000/1000)).getTime() === new Date("2010-08-21T07:23:03.000Z").getTime()); // toIOSString
+      assert.ok(elm.type === "d" && new Date(new Date("2001-01-01T00:00:00.000Z").getTime()+(Number(elm.value)/1000/1000)).getTime() === new Date("2010-08-21T07:23:03.000Z").getTime()); // toISOString
+      assert.ok(elm.type === "d" && tools.convertEBMLDateToJSDate(elm.value).getDate() === new Date("2010-08-21T07:23:03.000Z").getTime());
     } },
     {index: 29, test: (elm: D)=>{
       assert.ok(elm.name === "SegmentUID" && elm.type === "b");
