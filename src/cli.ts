@@ -1,3 +1,4 @@
+#!/usr/bin/env node --harmony
 import {Decoder, tools} from './';
 import com = require('commander');
 import fs = require('fs');
