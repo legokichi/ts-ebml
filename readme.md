@@ -120,7 +120,7 @@ npm run example # build example
 * `MOZ_LOG_FILE="log.txt" MOZ_LOG="MediaDemuxer:5" /Applications/Firefox.app/Contents/MacOS/firefox-bin`
 * chrome://media-internals/
 * chrome://webrtc-internals/
-
+* ./out/gn/Chromium.app/Contents/MacOS/Chromium  -vmodule="*video*=0,*ffmpeg*=1,*media*=1"  https://webrtc.github.io/samples/src/content/getusermedia/record/
 
 # license
 
