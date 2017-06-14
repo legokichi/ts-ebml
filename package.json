@@ -1,6 +1,6 @@
 {
   "name": "ts-ebml",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "ebml decoder and encoder",
   "scripts": {
     "setup": "npm install -g http-server;",
@@ -55,15 +55,15 @@
     "@types/power-assert-formatter": "^1.4.28",
     "@types/qunit": "^2.0.31",
     "browserify": "^13.1.0",
-    "empower": "^1.2.1",
+    "empower": "^1.2.3",
     "espower-cli": "^1.1.0",
-    "power-assert": "^1.4.1",
+    "power-assert": "^1.4.4",
     "power-assert-formatter": "^1.4.1",
     "qunit-tap": "^1.5.1",
     "qunitjs": "^2.0.1",
     "tslint": "^3.15.1",
     "typedoc": "^0.5.3",
-    "typescript": "^2.0.3",
+    "typescript": "^2.4.0",
     "watchify": "^3.7.0"
   },
   "bin": "./lib/cli.js",
