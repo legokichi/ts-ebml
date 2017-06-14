@@ -10,14 +10,14 @@ import EBMLReader from './EBMLReader';
 
 async function main(){
   const logging = true;
-  let tasks = Promise.resolve(void 0);
+  let tasks: Promise<void> = Promise.resolve(void 0);
   
   const devices = await navigator.mediaDevices.enumerateDevices();
   console.table(devices);
   
-  const stream = await (
+  const stream: MediaStream = await (
     navigator.mediaDevices.getUserMedia instanceof Function ? navigator.mediaDevices.getUserMedia({video: true, audio: true}) :
-    navigator.getUserMedia instanceof Function ? new Promise((resolve, reject)=> navigator.getUserMedia({video: true, audio: true}, resolve, reject)) :
+    navigator.getUserMedia instanceof Function ? new Promise<MediaStream>((resolve, reject)=> navigator.getUserMedia({video: true, audio: true}, resolve, reject)) :
     navigator["webkitGetUserMedia"] instanceof Function ? new Promise<MediaStream>((resolve, reject)=> navigator["webkitGetUserMedia"]({video: true, audio: true}, resolve, reject)) :
     Promise.reject<MediaStream>(new Error("cannot use usermedia"))
   );
