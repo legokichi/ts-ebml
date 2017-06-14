@@ -19,6 +19,7 @@ export default class EBMLReader extends EventEmitter {
   private last2SimpleBlockAudioTrackTimecode: [number, number];
   private lastClusterTimecode: number;
   private lastClusterPosition: number;
+  private firstVideoBlockRead: boolean;
   timecodeScale: number;
   metadataSize: number;
   metadatas: EBML.EBMLElementDetail[];
@@ -62,6 +63,7 @@ export default class EBMLReader extends EventEmitter {
     this.metadataSize = 0;
     this.metadatas = [];
     this.cues = [];
+    this.firstVideoBlockRead = false;
 
     this.currentTrack = {TrackNumber: -1, TrackType: -1, DefaultDuration: null, CodecDelay: null};
     this.trackTypes = [];
@@ -141,6 +143,13 @@ export default class EBMLReader extends EventEmitter {
     }else if(elm.type === "b" && elm.name === "SimpleBlock"){
       const {timecode, trackNumber, frames} = tools.ebmlBlock(elm.data);
       if(this.trackTypes[trackNumber] === 1){ // trackType === 1 => video track
+        if(!this.firstVideoBlockRead){
+          this.firstVideoBlockRead = true;
+          const CueTime = this.lastClusterTimecode + timecode;
+          this.cues.push({CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
+          this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
+          this.emit("cue", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
+        }
         this.last2SimpleBlockVideoTrackTimecode = [this.last2SimpleBlockVideoTrackTimecode[1], timecode];
       }else if(this.trackTypes[trackNumber] === 2){ // trackType === 2 => audio track
         this.last2SimpleBlockAudioTrackTimecode = [this.last2SimpleBlockAudioTrackTimecode[1], timecode];
@@ -159,15 +168,12 @@ export default class EBMLReader extends EventEmitter {
         });
       }
     }else if(elm.type === "m" && elm.name === "Cluster" && elm.isEnd === false){
+      this.firstVideoBlockRead = false;
       this.emit_segment_info();
       this.emit("cluster_ptr", elm.tagStart);
       this.lastClusterPosition = elm.tagStart;
     }else if(elm.type === "u" && elm.name === "Timecode"){
       this.lastClusterTimecode = elm.value;
-      const trackNumber = this.trackTypes.indexOf(1);
-      this.cues.push({CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
-      this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
-      this.emit("cue", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
     }else if(elm.type === "u" && elm.name === "TimecodeScale"){
       this.timecodeScale = elm.value;
     }else if(elm.type === "m" && elm.name === "TrackEntry"){
