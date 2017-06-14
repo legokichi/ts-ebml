@@ -49,6 +49,7 @@ export default class EBMLDecoder {
   }
 
   private readChunk(chunk: ArrayBuffer): void {
+    // 読みかけの(読めなかった) this._buffer と 新しい chunk を合わせて読み直す
     this._buffer = tools.concat([this._buffer, new Buffer(chunk)]);
     while (this._cursor < this._buffer.length) {
       // console.log(this._cursor, this._total, this._tag_stack);
@@ -208,7 +209,9 @@ export default class EBMLDecoder {
         // Unsigned Integer - Big-endian, any size from 1 to 8 octets
       case "i": tagObj.value = data.readIntBE(0, data.length); break;
         // Signed Integer - Big-endian, any size from 1 to 8 octets
-      case "f": tagObj.value = data.readFloatBE(0); break;
+      case "f": tagObj.value = tagObj.dataSize === 4 ? data.readFloatBE(0) :
+                               tagObj.dataSize === 8 ? data.readDoubleBE(0) :
+                               (console.warn(`cannot read ${tagObj.dataSize} octets float. failback to 0`), 0); break;
         // Float - Big-endian, defined for 4 and 8 octets (32, 64 bits)
       case "s": tagObj.value = data.toString("ascii"); break; // ascii
         //  Printable ASCII (0x20 to 0x7E), zero-padded when needed
