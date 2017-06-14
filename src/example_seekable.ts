@@ -2,7 +2,30 @@ import * as EBML from './';
 import {Decoder, Encoder, tools} from './';
 import EBMLReader from './EBMLReader';
 
-async function main() {
+async function main(){
+  await main_from_file();
+  //await main_from_recorder();
+}
+
+async function main_from_file() {
+  const decoder = new Decoder();
+  const reader = new EBMLReader();
+  reader.logging = true;
+  reader.drop_default_duration = false;
+  const webMBuf = await fetch("./chrome57.webm").then(res=> res.arrayBuffer());
+  const elms = decoder.decode(webMBuf);
+  elms.forEach((elm)=>{ reader.read(elm); });
+  reader.stop();
+  const refinedMetadataBuf = tools.putRefinedMetaData(reader.metadatas, reader);
+  const body = webMBuf.slice(reader.metadataSize);
+  const refinedWebM = new Blob([refinedMetadataBuf, body], {type: "video/webm"});
+  const refined_video = document.createElement("video");
+  refined_video.src = URL.createObjectURL(refinedWebM);
+  refined_video.controls = true;
+  document.body.appendChild(refined_video);
+}
+
+async function main_from_recorder() {
   const decoder = new Decoder();
   const reader = new EBMLReader();
   reader.logging = true;
