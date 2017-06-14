@@ -1,7 +1,7 @@
 import {Int64BE, Uint64BE} from "int64-buffer";
 import * as EBML from "./EBML";
 import Encoder from "./EBMLEncoder";
-
+import Decoder from "./EBMLDecoder";
 
 export const Buffer: typeof global.Buffer = require("buffer/").Buffer;
 
@@ -124,34 +124,33 @@ export function putRefinedMetaData(
   // *0    *4    *5  *36      *40   *48=segmentOffset              *185=originalPayloadOffsetEnd
   // |     |     |   |        |     |                              |
   // [EBML][size]....[Segment][size][Info][size][Duration][size]...[Cluster]
-  // |               |        |     |                              |
+  // |               |        |^inf |                              |
   // |               +segmentSiz(12)+                              |
-  // +-ebmlSize(36)--+        |     +-payloadSize(137)-------------+-offsetEndDiff-+
-  //                 |        |     |  +-newPayloadSize(??)------------------------+
-  //                 +newSegmentSize---+                                           |
-  //                 [Segment][newSize][Info][size][Duration][size]...[size][value][Cluster]
-  //                                |  |                                           |
-  //                                |  *??=newSegmentOffset                        *??=newPayloadOffsetEnd
-  //                                +--+
-  //                                 \offsetDiff
+  // +-ebmlSize(36)--+        |     +-payloadSize(137)-------------+offsetEndDiff+
+  //                 |        |     +-newPayloadSize(??)-------------------------+
+  //                 |        |     |                                            |
+  //                 [Segment][size][Info][size][Duration][size]....[size][value][Cluster]
+  //                           ^                                                 |
+  //                           |                                                 *??=newPayloadOffsetEnd
+  //                           inf
   if(!(payload[payload.length-1].dataEnd > 0)){ throw new Error("metadata dataEnd has wrong number"); }
-  const originalPayloadOffsetEnd = payload[payload.length-1].dataEnd;
-  const ebmlSize = ebml[ebml.length-1].dataEnd;
-  const payloadSize = payload[payload.length-1].dataEnd - payload[0].tagStart;
-  const segmentTag = new Buffer([0x18, 0x53, 0x80, 0x67]); // Segment
+  const originalPayloadOffsetEnd = payload[payload.length-1].dataEnd; // = first cluster ptr
+  const ebmlSize = ebml[ebml.length-1].dataEnd; // = first segment ptr
+  const refinedEBMLSize = new Encoder().encode(ebml).byteLength;
+  const offsetDiff = refinedEBMLSize - ebmlSize;
+  const payloadSize = originalPayloadOffsetEnd - payload[0].tagStart;
   const segmentSize = payload[0].tagStart - ebmlSize;
-  const segmentOffset = ebmlSize + segmentSize
+  const segmentOffset = payload[0].tagStart;
+  const segmentTagBuf = new Buffer([0x18, 0x53, 0x80, 0x67]); // Segment
+  const segmentSizeBuf = new Buffer('01ffffffffffffff', 'hex'); // Segmentの最後の位置は無数の Cluster 依存なので。 writeVint(newPayloadSize).byteLength ではなく、 infinity.
+  const _segmentSize = segmentTagBuf.byteLength + segmentSizeBuf.byteLength; // == segmentSize
   let newPayloadSize = payloadSize;
   // We need the size to be stable between two refinements in order for our offsets to be correct
   // Bound the number of possible refinements so we can't go infinate if something goes wrong
   let i;
   for(i = 1; i < 20; i++) {
-    const newSize = new Buffer('01ffffffffffffff', 'hex').byteLength; // Segmentの最後の位置は無数の Cluster 依存なので。 writeVint(newPayloadSize).byteLength ではない。
-    const newSegmentSize = segmentTag.byteLength + newSize;
-    const newPayloadOffsetEnd = ebmlSize + newSegmentSize + newPayloadSize;
+    const newPayloadOffsetEnd = ebmlSize + _segmentSize + newPayloadSize;
     const offsetEndDiff = newPayloadOffsetEnd - originalPayloadOffsetEnd;
-    const newSegmentOffset = ebmlSize + newSegmentSize;
-    const offsetDiff = newSegmentOffset - segmentOffset;
     const sizeDiff = offsetDiff + offsetEndDiff;
     const refined = refineMetadata(payload, sizeDiff, info);
     const newNewRefinedSize = new Encoder().encode(refined).byteLength; // 一旦 seekhead を作って自身のサイズを調べる
@@ -208,8 +207,17 @@ function refineMetadata(
     console.warn("append cluster pointers to seekhead is deprecated. please use cues");
     seekhead_children = create_seek_from_clusters(clusterPtrs, sizeDiff);
   }
-  // i cannot calcurate ptr diff because i am tired.
-  // seekhead_children = seekhead_children.concat(create_seekhead(_metadata, sizeDiff))
+  // remove seek info
+  /*
+  _metadata = _metadata.filter((elm)=> !(
+    elm.name === "Seek" ||
+    elm.name === "SeekID" ||
+    elm.name === "SeekPosition") );
+  */
+  // working on progress
+  //seekhead_children = seekhead_children.concat(create_seekhead(_metadata));
+  
+
   insertTag(_metadata, "SeekHead", seekhead_children, true);
 
   return _metadata;
