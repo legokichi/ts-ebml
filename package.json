@@ -1,6 +1,6 @@
 {
   "name": "ts-ebml",
-  "version": "1.7.2",
+  "version": "1.8.0",
   "description": "ebml decoder and encoder",
   "scripts": {
     "setup": "npm install -g http-server;",
@@ -10,7 +10,7 @@
     "mkdir": "mkdir lib dist 2>/dev/null",
     "clean": "rm -rf lib/* dist/* test/*.js; mkdir -p dist",
     "build": "npm run clean   && tsc    -p .; npm run browserify; npm run reader",
-    "start": "http-server . -s & tsc -w -p .& npm run watchify",
+    "start": "http-server . -s & tsc -w -p .& watchify lib/example_seekable.js -o test/example_seekable.js",
     "stop": "killall -- node */tsc -w -p",
     "browserify": "browserify lib/index.js --standalone EBML -o dist/EBML.js",
     "watchify": "watchify lib/index.js --standalone EBML -o dist/EBMl.js -v",
