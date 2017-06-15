@@ -19,7 +19,6 @@ const {args} = com;
 
 if(args.length < 1){ process.exit(); }
 
-console.log(com)
 if(com.seekable){
   const decoder = new Decoder();
   const reader = new EBMLReader();

@@ -1,6 +1,7 @@
 *.webm
 *.log
 .DS_Store
+log.txt*
 dist/
 matroska-test-files/
 mkclean-0.8.6/
