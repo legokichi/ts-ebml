@@ -59,7 +59,7 @@ export default class EBMLReader extends EventEmitter {
     this.last2SimpleBlockAudioTrackTimecode = [0, 0];
     this.lastClusterTimecode = 0;
     this.lastClusterPosition = 0;
-    this.timecodeScale = 0;
+    this.timecodeScale = 1000000; // webm default TimecodeScale is 1ms
     this.metadataSize = 0;
     this.metadatas = [];
     this.cues = [];
