@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import {Decoder, tools} from './';
+import {Decoder, Encoder, tools} from './';
 import EBMLReader from "./EBMLReader";
 import com = require('commander');
 import fs = require('fs');
@@ -9,7 +9,7 @@ com
   .version(version)
   .usage("[options] <*.webm>")
   .option('-s, --seekable', 'try convert MediaRecorder WebM to seekable WebM and write buffer stdout, like `ts-ebml -s not_seekable.webm | cat > seekable.webm`')
-  .option('-k, --keyframe', 'put keyframe buffers in riff subchunk stream (4 byte "VPn " + 4byte little endian coded size (+ 1 byte when odd size))')
+  .option('-k, --keyframe', 'TimecodeScale & Timecode & SimpleBlock(VideoTrack && keyframe) ebml elements pass filter for thumbnails(Random Access Points)')
   //.option('-b, --bbq-sauce', 'Add bbq sauce')
   //.option('-c, --cheese [type]', 'Add the specified type of cheese [marble]', 'marble')
   .arguments('<*.webm>')
@@ -52,18 +52,18 @@ if(com.seekable){
         TrackNumber = elm.value;
       }else if(elm.type === "s" && elm.name === "CodecID"){
         CodecID = elm.value;
+      }else if(elm.type === "u" && elm.name === "TimecodeScale"){
+        process.stdout.write(new Buffer(new Encoder().encode([elm])));
+      }else if(elm.type === "u" && elm.name === "Timecode"){
+        process.stdout.write(new Buffer(new Encoder().encode([elm])));
+      }else if(elm.type === "b" && elm.name === "SimpleBlock"){
+        const o = tools.ebmlBlock(elm.data);
+        const {TrackType:type, CodecID:id} = trackTypes[o.trackNumber];
+        // 1 means video
+        if(type === 1 && o.keyframe && (id === "V_VP9" || id === "V_VP8") ){
+          process.stdout.write(new Buffer(new Encoder().encode([elm])));
+        }
       }
-      if(elm.type !== "b" || elm.name !== "SimpleBlock"){ return; }
-      const o = tools.ebmlBlock(elm.data);
-      const {TrackType:type, CodecID:id} = trackTypes[o.trackNumber];
-      if(type !== 1){ return; } // 1 means video
-      if(!o.keyframe){ return; }
-      if(!(id === "V_VP9" || id === "V_VP8")){ return; }
-      const name = id.slice(2);
-      o.frames.forEach((frame)=>{
-        const buf = tools.createRIFFChunk(name, frame);
-        process.stdout.write(new Buffer(buf.buffer));
-      });
     });
   });
 }else{
