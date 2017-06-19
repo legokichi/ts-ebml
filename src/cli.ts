@@ -9,7 +9,7 @@ com
   .version(version)
   .usage("[options] <*.webm>")
   .option('-s, --seekable', 'try convert MediaRecorder WebM to seekable WebM and write buffer stdout, like `ts-ebml -s not_seekable.webm | cat > seekable.webm`')
-  //.option('-P, --pineapple', 'Add pineapple')
+  .option('-k, --keyframe', 'put keyframe buffers in riff subchunk stream (4 byte "VPn " + 4byte little endian coded size (+ 1 byte when odd size))')
   //.option('-b, --bbq-sauce', 'Add bbq sauce')
   //.option('-c, --cheese [type]', 'Add the specified type of cheese [marble]', 'marble')
   .arguments('<*.webm>')
@@ -32,6 +32,40 @@ if(com.seekable){
   const body = buf.slice(reader.metadataSize);
   const refined = new Buffer(tools.concat([new Buffer(refinedMetadataBuf), body]).buffer);
   process.stdout.write(refined);
+}else if(com.keyframe){
+  const decoder = new Decoder();
+  let TrackType = -1;
+  let TrackNumber = -1;
+  let CodecID = "";
+  const trackTypes: {[TrackNumber: number]: {TrackType: number, CodecID: string }} = {};
+  fs.createReadStream(args[0]).on('data', (buf)=>{
+    const ebmlElms = decoder.decode(buf);
+    ebmlElms.forEach((elm)=>{
+      if(elm.type === "m" && elm.name === "TrackEntry" && elm.isEnd){
+        trackTypes[TrackNumber] = {TrackType, CodecID};
+        TrackType = -1;
+        TrackNumber = -1;
+        CodecID = "";
+      }else if(elm.type === "u" && elm.name === "TrackType"){
+        TrackType = elm.value;
+      }else if(elm.type === "u" && elm.name === "TrackNumber"){
+        TrackNumber = elm.value;
+      }else if(elm.type === "s" && elm.name === "CodecID"){
+        CodecID = elm.value;
+      }
+      if(elm.type !== "b" || elm.name !== "SimpleBlock"){ return; }
+      const o = tools.ebmlBlock(elm.data);
+      const {TrackType:type, CodecID:id} = trackTypes[o.trackNumber];
+      if(type !== 1){ return; } // 1 means video
+      if(!o.keyframe){ return; }
+      if(!(id === "V_VP9" || id === "V_VP8")){ return; }
+      const name = id.slice(2);
+      o.frames.forEach((frame)=>{
+        const buf = tools.createRIFFChunk(name, frame);
+        process.stdout.write(new Buffer(buf.buffer));
+      });
+    });
+  });
 }else{
   const decoder = new Decoder();
   fs.createReadStream(args[0]).on('data', (buf)=>{

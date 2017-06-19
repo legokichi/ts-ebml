@@ -181,8 +181,9 @@ export default class EBMLReader extends EventEmitter {
         this.trackTypes[this.currentTrack.TrackNumber] = this.currentTrack.TrackType;
         this.trackDefaultDuration[this.currentTrack.TrackNumber] = this.currentTrack.DefaultDuration;
         this.trackCodecDelay[this.currentTrack.TrackNumber] = this.currentTrack.CodecDelay;
+      }else{
+        this.currentTrack = {TrackNumber: -1, TrackType: -1, DefaultDuration: null, CodecDelay: null };
       }
-      this.currentTrack = {TrackNumber: -1, TrackType: -1, DefaultDuration: null, CodecDelay: null };
     }else if(elm.type === "u" && elm.name === "TrackType"){
       this.currentTrack.TrackType = elm.value;
     }else if(elm.type === "u" && elm.name === "TrackNumber"){
