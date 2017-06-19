@@ -4,8 +4,8 @@
 log.txt*
 dist/
 matroska-test-files/
-mkclean-0.8.6/
-mkvalidator-osx-0.4.0/
+mkclean-*/
+mkvalidator-*/
 node_modules/
 test/
 test/.DS_Store

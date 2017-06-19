@@ -140,6 +140,8 @@ npm run example # build example
 * ./out/gn/Chromium.app/Contents/MacOS/Chromium  -vmodule="*video*=0,*ffmpeg*=1,*media*=1"  https://webrtc.github.io/samples/src/content/getusermedia/record/
 * `ffmpeg -i not_seekable.webm -c copy seekable.webm`
 * `mkclean --doctype 4 --keep-cues --optimize not_seekable.webm seekable.webm`
+* `webm_info -a foo.webm` - https://chromium.googlesource.com/webm/libwebm
+
 
 # license
 
