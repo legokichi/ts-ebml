@@ -41,9 +41,9 @@
   },
   "homepage": "https://github.com/legokichi/ts-ebml#readme",
   "dependencies": {
-    "buffer": "5.0.4",
-    "commander": "^2.9.0",
-    "ebml": "^2.2.0",
+    "buffer": "^5.0.4",
+    "commander": "^2.11.0",
+    "ebml": "^2.2.1",
     "ebml-block": "^1.1.0",
     "events": "^1.1.1",
     "int64-buffer": "^0.1.9",
