@@ -11,6 +11,7 @@ async function main_from_file() {
   const decoder = new Decoder();
   const reader = new EBMLReader();
   reader.logging = true;
+  reader.logGroup = "Raw WebM file";
   reader.drop_default_duration = false;
   const webMBuf = await fetch("./chrome57.webm").then(res=> res.arrayBuffer());
   const elms = decoder.decode(webMBuf);
@@ -23,6 +24,16 @@ async function main_from_file() {
   refined_video.src = URL.createObjectURL(refinedWebM);
   refined_video.controls = true;
   document.body.appendChild(refined_video);
+
+  // Log the refined WebM file structure.
+  const refinedDecoder = new Decoder();
+  const refinedReader = new EBMLReader();  
+  refinedReader.logging = true;
+  refinedReader.logGroup = "Refined WebM file";
+  const refinedBuf = await readAsArrayBuffer(refinedWebM);
+  const refinedElms = refinedDecoder.decode(refinedBuf);
+  refinedElms.forEach((elm)=>{ refinedReader.read(elm); });
+  refinedReader.stop();  
 }
 
 async function main_from_recorder() {
