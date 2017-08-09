@@ -78,19 +78,23 @@ export default class EBMLReader extends EventEmitter {
     this.use_segment_info = true;
     this.drop_default_duration = true;
   }
+  
   /**
    * emit final state.
    */
-  stop(){
+  stop() {
     this.ended = true;
     this.emit_segment_info();
-    if(this.logging){
-      // Valid only for chrome
-      console.groupEnd(); // </Cluster>
-      console.groupEnd(); // </Segment>
-      console.groupEnd(); // ?
+
+    // clean up any unclosed Master Elements at the end of the stream.
+    while (this.stack.length) {
+      this.stack.pop();
+      if (this.logging) {
+        console.groupEnd();
+      }
     }
   }
+
   /**
    * emit chunk info
    */
@@ -125,6 +129,13 @@ export default class EBMLReader extends EventEmitter {
         if(parent != null && parent.level >= elm.level){
           // 閉じタグなしでレベルが下がったら閉じタグを挿入
           this.stack.pop();
+
+          // From http://w3c.github.io/media-source/webm-byte-stream-format.html#webm-media-segments
+          // This fixes logging for webm streams with Cluster of unknown length and no Cluster closing elements.
+          if (this.logging){
+            console.groupEnd();
+          }
+
           parent.dataEnd = elm.dataEnd;
           parent.dataSize = elm.dataEnd - parent.dataStart;
           parent.unknownSize = false;
