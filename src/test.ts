@@ -207,7 +207,7 @@ function create_convert_to_seekable_test(file: string){
     const sec = reader.duration * reader.timecodeScale / 1000 / 1000 / 1000;
     assert.ok(7 < sec && sec < 11);
 
-    const refinedMetadataBuf = tools.putRefinedMetaData(reader.metadatas, reader);
+    const refinedMetadataBuf = tools.makeMetadataSeekable(reader.metadatas, reader.duration, reader.cues);
     const body = webm_buf.slice(reader.metadataSize);
 
     assert.ok(refinedMetadataBuf.byteLength - reader.metadataSize > 0);

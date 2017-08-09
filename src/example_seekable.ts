@@ -16,7 +16,7 @@ async function main_from_file() {
   const elms = decoder.decode(webMBuf);
   elms.forEach((elm)=>{ reader.read(elm); });
   reader.stop();
-  const refinedMetadataBuf = tools.putRefinedMetaData(reader.metadatas, reader);
+  const refinedMetadataBuf = tools.makeMetadataSeekable(reader.metadatas, reader.duration, reader.cues);
   const body = webMBuf.slice(reader.metadataSize);
   const refinedWebM = new Blob([refinedMetadataBuf, body], {type: "video/webm"});
   const refined_video = document.createElement("video");
@@ -95,7 +95,7 @@ async function main_from_recorder() {
     {duration: reader.duration, cues: reader.cues, title: "add duration and cues (valid seekable file)"},
   ];
   for(const info of infos){
-    const refinedMetadataBuf = tools.putRefinedMetaData(reader.metadatas, info);
+    const refinedMetadataBuf = tools.makeMetadataSeekable(reader.metadatas, reader.duration, reader.cues);
     const webMBuf = await readAsArrayBuffer(webM);
     const body = webMBuf.slice(reader.metadataSize);
     const refinedWebM = new Blob([refinedMetadataBuf, body], {type: webM.type});
