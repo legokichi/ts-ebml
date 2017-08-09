@@ -39,6 +39,8 @@ export default class EBMLReader extends EventEmitter {
   use_webp: boolean;
   use_duration_every_simpleblock: boolean; // heavy
   logging: boolean;
+  logGroup: string = "";
+  private hasLoggingStarted: boolean = false;
   /**
    * usefull for recording chunks.
    */
@@ -73,6 +75,7 @@ export default class EBMLReader extends EventEmitter {
     this.ended = false;
 
     this.logging = false;
+
     this.use_duration_every_simpleblock = false;
     this.use_webp = false;
     this.use_segment_info = true;
@@ -92,6 +95,11 @@ export default class EBMLReader extends EventEmitter {
       if (this.logging) {
         console.groupEnd();
       }
+    }
+
+    // close main group if set, logging is enabled, and has actually logged anything.
+    if  (this.logging && this.hasLoggingStarted && this.logGroup) {
+      console.groupEnd();
     }
   }
 
@@ -219,7 +227,7 @@ export default class EBMLReader extends EventEmitter {
       this.metadataSize = elm.dataEnd;
     }
     if(!drop){ this.chunks.push(elm); }
-    if(this.logging){ put(elm); }
+    if(this.logging){ this.put(elm); }
   }
   /**
    * DefaultDuration が定義されている場合は最後のフレームのdurationも考慮する
@@ -304,32 +312,37 @@ export default class EBMLReader extends EventEmitter {
   addListener(event: string, listener: (ev: any)=> void): this {
     return super.addListener(event, listener);
   }
+
+  put(elm: EBML.EBMLElementDetail) {
+    if (!this.hasLoggingStarted) {
+      this.hasLoggingStarted = true;
+      if  (this.logging && this.logGroup) {
+        console.groupCollapsed(this.logGroup);
+      }
+    }
+    if(elm.type === "m"){
+      if(elm.isEnd){
+        console.groupEnd();
+      }else{
+        console.group(elm.name+":"+elm.tagStart);
+      }
+    }else if(elm.type === "b"){
+      // for debug
+      //if(elm.name === "SimpleBlock"){
+        //const o = EBML.tools.ebmlBlock(elm.value);
+        //console.log(elm.name, elm.type, o.trackNumber, o.timecode);
+      //}else{
+        console.log(elm.name, elm.type);
+      //}
+    }else{
+      console.log(elm.name, elm.tagStart, elm.type, elm.value);
+    }
+  }
 }
 /** CueClusterPosition: Offset byte from __file start__. It is not an offset from the Segment element. */
 export interface CueInfo {CueTrack: number; CueClusterPosition: number; CueTime: number; };
 export interface SegmentInfo {data: EBML.EBMLElementDetail[];};
 export interface DurationInfo {duration: number; timecodeScale: number;};
 export interface ThumbnailInfo {webp: Blob; currentTime: number;};
-
-
-export function put(elm: EBML.EBMLElementDetail){
-  if(elm.type === "m"){
-    if(elm.isEnd){
-      console.groupEnd();
-    }else{
-      console.group(elm.name+":"+elm.tagStart);
-    }
-  }else if(elm.type === "b"){
-    // for debug
-    //if(elm.name === "SimpleBlock"){
-      //const o = EBML.tools.ebmlBlock(elm.value);
-      //console.log(elm.name, elm.type, o.trackNumber, o.timecode);
-    //}else{
-      console.log(elm.name, elm.type);
-    //}
-  }else{
-    console.log(elm.name, elm.tagStart, elm.type, elm.value);
-  }
-}
 
 
