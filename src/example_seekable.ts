@@ -116,7 +116,12 @@ async function main_from_recorder(duration: number, codec: string) {
   raw_video.src = URL.createObjectURL(webM);
   raw_video.controls = true;
 
+  const rawVideoButton = document.createElement("button");
+  rawVideoButton.textContent = "Download Raw Video";
+  rawVideoButton.addEventListener("click", () => { saveData(webM, "raw.webm") });  
   put(raw_video, "Raw WebM Stream (not seekable)");
+  document.body.appendChild(document.createElement("br"));
+  document.body.appendChild(rawVideoButton);
 
   const infos = [
     //{duration: reader.duration, title: "add duration only (seekable but slow)"},
@@ -140,7 +145,12 @@ async function main_from_recorder(duration: number, codec: string) {
     const refined_video = document.createElement("video");
     refined_video.src = URL.createObjectURL(refinedWebM);
     refined_video.controls = true;
+    const refinedVideoButton = document.createElement("button");
+    refinedVideoButton.textContent = "Download Refined Video";
+    refinedVideoButton.addEventListener("click", () => { saveData(refinedWebM, "refined.webm") });
     put(refined_video, info.title);
+    document.body.appendChild(document.createElement("br"));
+    document.body.appendChild(refinedVideoButton);
   }
 }
 
@@ -163,6 +173,19 @@ function readAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
 function sleep(ms: number): Promise<any>{
   return new Promise((resolve)=> setTimeout(resolve, ms) );
 }
+
+var saveData = (function () {
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.setAttribute("style", "display: none");
+    return function (blob, fileName) {
+        var url = window.URL.createObjectURL(blob);
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
+}());
 
 // MediaRecorder API
 interface BlobEvent extends Event {
