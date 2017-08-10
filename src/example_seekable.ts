@@ -3,8 +3,25 @@ import {Decoder, Encoder, tools} from './';
 import EBMLReader from './EBMLReader';
 
 async function main(){
-  await main_from_file();
-  //await main_from_recorder();
+  const params = new URLSearchParams(location.search);
+
+  let recorder = false;
+  let duration = 60;  
+  let codec = "vp8";
+
+  if (params.has("type") && params.get("type") == "recorder")
+    recorder = true;
+
+  if (params.has("duration"))
+    duration = parseInt(params.get("duration") || "60");  
+
+  if (params.has("codec"))
+    codec = params.get("codec") || "vp8"; 
+
+  if (recorder)
+    await main_from_recorder(duration, codec);
+  else
+    await main_from_file();
 }
 
 async function main_from_file() {
@@ -36,10 +53,11 @@ async function main_from_file() {
   refinedReader.stop();  
 }
 
-async function main_from_recorder() {
+async function main_from_recorder(duration: number, codec: string) {
   const decoder = new Decoder();
   const reader = new EBMLReader();
   reader.logging = true;
+  reader.logGroup = "Raw WebM Stream (not seekable)";
 
   let tasks: Promise<void> = Promise.resolve(void 0);
   let webM = new Blob([], {type: "video/webm"});
@@ -54,7 +72,7 @@ async function main_from_recorder() {
     Promise.reject<MediaStream>(new Error("cannot use usermedia"))
   );
 
-  const rec = new MediaRecorder(stream, { mimeType: 'video/webm; codecs="vp8, opus"'});
+  const rec = new MediaRecorder(stream, { mimeType: `video/webm; codecs="${codec}, opus"`});
 
   const ondataavailable = (ev: BlobEvent)=>{
     const chunk = ev.data;
@@ -73,7 +91,7 @@ async function main_from_recorder() {
   // rec.start(100);
   rec.start();
 
-  await sleep(60 * 1000);
+  await sleep(duration * 1000);
 
   rec.stop();
   
@@ -98,12 +116,12 @@ async function main_from_recorder() {
   raw_video.src = URL.createObjectURL(webM);
   raw_video.controls = true;
 
-  put(raw_video, "media-recorder original(not seekable)");
+  put(raw_video, "Raw WebM Stream (not seekable)");
 
   const infos = [
     //{duration: reader.duration, title: "add duration only (seekable but slow)"},
     //{cues: reader.cues, title: "add cues only (seekable file)"},
-    {duration: reader.duration, cues: reader.cues, title: "add duration and cues (valid seekable file)"},
+    {duration: reader.duration, cues: reader.cues, title: "Refined WebM stream (seekable)"},
   ];
   for(const info of infos){
     const refinedMetadataBuf = tools.makeMetadataSeekable(reader.metadatas, reader.duration, reader.cues);
@@ -112,15 +130,12 @@ async function main_from_recorder() {
     const refinedWebM = new Blob([refinedMetadataBuf, body], {type: webM.type});
 
     // logging
-
-    console.group(info.title);
     const refinedBuf = await readAsArrayBuffer(refinedWebM);
     const _reader = new EBMLReader();
     _reader.logging = true;
+    _reader.logGroup = info.title;
     new Decoder().decode(refinedBuf).forEach((elm)=> _reader.read(elm) );
     _reader.stop();
-    console.groupEnd();
-
 
     const refined_video = document.createElement("video");
     refined_video.src = URL.createObjectURL(refinedWebM);
