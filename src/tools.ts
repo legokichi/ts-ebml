@@ -1,14 +1,18 @@
+/// <reference types="node"/>
 import {Int64BE, Uint64BE} from "int64-buffer";
 import * as EBML from "./EBML";
 import Encoder from "./EBMLEncoder";
 import Decoder from "./EBMLDecoder";
+import _Buffer = require("buffer/");
+import _tools = require("ebml/lib/ebml/tools");
+import _block = require("ebml-block");
 
-export const Buffer: typeof global.Buffer = require("buffer/").Buffer;
+export const Buffer: typeof global.Buffer = _Buffer.Buffer;
 
-export const readVint: (buffer: Buffer, start: number)=> null | ({length: number; value: number; }) = require("ebml/lib/ebml/tools").readVint;
-export const writeVint: (val: number)=> Buffer = require("ebml/lib/ebml/tools").writeVint;
+export const readVint: (buffer: Buffer, start: number)=> null | ({length: number; value: number; }) = _tools.readVint;
+export const writeVint: (val: number)=> Buffer = _tools.writeVint;
 
-export const ebmlBlock: (buf: Buffer)=> EBML.SimpleBlock = require("ebml-block");
+export const ebmlBlock: (buf: Buffer)=> EBML.SimpleBlock = _block;
 export function readBlock(buf: ArrayBuffer): EBML.SimpleBlock {
   return ebmlBlock(new Buffer(buf));
 }
@@ -674,7 +678,7 @@ export function encodeValueToBuffer(elm: EBML.EBMLElementValue): EBML.EBMLElemen
     case "s": data = new Buffer(elm.value, 'ascii'); break;
     case "8": data = new Buffer(elm.value, 'utf8'); break;
     case "b": data = elm.value; break;
-    case "d": data = new Int64BE(elm.value).toBuffer(); break;
+    case "d": data = new Int64BE(elm.value.getTime().toString()).toBuffer(); break;
   }
   return Object.assign({}, elm, {data});
 }
@@ -725,7 +729,7 @@ export function createFloatBuffer(value: number, bytes: 4|8 = 8): Buffer {
   }
 }
 
-export function convertEBMLDateToJSDate(int64str: string | Date): Date {
+export function convertEBMLDateToJSDate(int64str: number | string | Date): Date {
   if(int64str instanceof Date){ return int64str; }
   return new Date(new Date("2001-01-01T00:00:00.000Z").getTime() +  (Number(int64str)/1000/1000));
 }

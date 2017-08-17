@@ -1,10 +1,10 @@
 import * as EBML from "./EBML";
 import * as tools from "./tools";
+import {Buffer, readVint, ebmlBlock} from "./tools";
+import {Int64BE} from "int64-buffer";
+import schema = require("matroska/lib/schema");
+const {byEbmlID}: {byEbmlID: { [key: number]: EBML.Schema } } = schema;
 
-const Buffer: typeof global.Buffer = require("buffer/").Buffer;
-
-const {byEbmlID}: {byEbmlID: { [key: number]: EBML.Schema } } = require("matroska/lib/schema");
-const writeVint: (val: number)=> Buffer = require("ebml/lib/ebml/tools").writeVint;
 
 
 interface DataTree {

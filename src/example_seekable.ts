@@ -1,6 +1,5 @@
 import * as EBML from './';
-import {Decoder, Encoder, tools} from './';
-import EBMLReader from './EBMLReader';
+import {Decoder, Encoder, tools, Reader} from './';
 
 async function main(){
   const params = new URLSearchParams(location.search);
@@ -20,17 +19,19 @@ async function main(){
 
   if (recorder)
     await main_from_recorder(duration, codec);
-  else
-    await main_from_file();
+  else{
+    const file = params.has("file") ? params.get("file") as string : "./chrome57.webm";
+    await main_from_file(file);
+  }
 }
 
-async function main_from_file() {
+async function main_from_file(file: string) {
   const decoder = new Decoder();
-  const reader = new EBMLReader();
+  const reader = new Reader();
   reader.logging = true;
   reader.logGroup = "Raw WebM file";
   reader.drop_default_duration = false;
-  const webMBuf = await fetch("./chrome57.webm").then(res=> res.arrayBuffer());
+  const webMBuf = await fetch(file).then(res=> res.arrayBuffer());
   const elms = decoder.decode(webMBuf);
   elms.forEach((elm)=>{ reader.read(elm); });
   reader.stop();
@@ -44,7 +45,7 @@ async function main_from_file() {
 
   // Log the refined WebM file structure.
   const refinedDecoder = new Decoder();
-  const refinedReader = new EBMLReader();  
+  const refinedReader = new Reader();  
   refinedReader.logging = true;
   refinedReader.logGroup = "Refined WebM file";
   const refinedBuf = await readAsArrayBuffer(refinedWebM);
@@ -55,7 +56,7 @@ async function main_from_file() {
 
 async function main_from_recorder(duration: number, codec: string) {
   const decoder = new Decoder();
-  const reader = new EBMLReader();
+  const reader = new Reader();
   reader.logging = true;
   reader.logGroup = "Raw WebM Stream (not seekable)";
 
@@ -136,7 +137,7 @@ async function main_from_recorder(duration: number, codec: string) {
 
     // logging
     const refinedBuf = await readAsArrayBuffer(refinedWebM);
-    const _reader = new EBMLReader();
+    const _reader = new Reader();
     _reader.logging = true;
     _reader.logGroup = info.title;
     new Decoder().decode(refinedBuf).forEach((elm)=> _reader.read(elm) );

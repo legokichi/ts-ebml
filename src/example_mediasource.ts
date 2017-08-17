@@ -5,8 +5,7 @@
  */
 
 import * as EBML from './';
-import {Decoder, Encoder, tools} from './';
-import EBMLReader from './EBMLReader';
+import {Decoder, Encoder, Reader, tools} from './';
 
 async function main(){
   const logging = true;
@@ -116,7 +115,7 @@ async function main(){
   document.body.appendChild(button);
 
   const decoder = new Decoder();
-  const reader = new EBMLReader();
+  const reader = new Reader();
   reader.drop_default_duration = true;
   reader.addListener("metadata", (ev)=>{
     tasks = tasks.then(async ()=>{

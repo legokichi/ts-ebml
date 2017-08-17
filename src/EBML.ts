@@ -1,3 +1,4 @@
+import {Buffer} from "./tools";
 export type ChildElementsValue = NumberElement | StringElement | BinaryElement | DateElement;
 export type EBMLElementValue = MasterElement | ChildElementsValue;
 export type ChildElementBuffer = ChildElement & {data: Buffer};
@@ -45,7 +46,7 @@ export interface DateElement extends ChildElementValue {
    * Date - signed 8 octets integer in nanoseconds with 0 indicating the precise
    * beginning of the millennium (at 2001-01-01T00:00:00,000000000 UTC)
    */
-  value: string; 
+  value: Date; 
 }
 
 

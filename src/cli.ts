@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-import {Decoder, Encoder, tools} from './';
-import EBMLReader from "./EBMLReader";
+/// <reference types="node"/>
+/// <reference types="commander"/>
+import {Decoder, Encoder, Reader, tools} from'./';
 import com = require('commander');
 import fs = require('fs');
-const version: string = require("../package.json").version;
+const version = require("../package.json").version;
 
 com
   .version(version)
@@ -21,7 +22,7 @@ if(args.length < 1){ process.exit(); }
 
 if(com.seekable){
   const decoder = new Decoder();
-  const reader = new EBMLReader();
+  const reader = new Reader();
   reader.logging = false;
   reader.drop_default_duration = false;
   const buf = fs.readFileSync(args[0]);
@@ -37,7 +38,7 @@ if(com.seekable){
   let TrackType = -1;
   let TrackNumber = -1;
   let CodecID = "";
-  const trackTypes: {[TrackNumber: number]: {TrackType: number, CodecID: string }} = {};
+  const trackTypes = {} as {[TrackNumber: number]: {TrackType: number, CodecID: string }};
   fs.createReadStream(args[0]).on('data', (buf)=>{
     const ebmlElms = decoder.decode(buf);
     ebmlElms.forEach((elm)=>{

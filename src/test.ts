@@ -1,12 +1,13 @@
-import EBML, {Decoder, Encoder} from "./";
+/// <reference types="qunit"/>
+import EBML, {Decoder, Encoder, Reader} from "./";
 import {tools} from "./";
-import EBMLReader, {CueInfo} from './EBMLReader';
 
-const Buffer: typeof global.Buffer = require("buffer/").Buffer;
-const QUnit     = <QUnit>require('qunitjs');
-const empower   = <Function>require('empower');
-const formatter = <Function>require('power-assert-formatter');
-const qunitTap  = <Function>require("qunit-tap");
+const Buffer = tools.Buffer;
+import QUnit     = require('qunitjs');
+import empower   = require('empower');
+import formatter = require('power-assert-formatter');
+import qunitTap  = require("qunit-tap");
+
 
 QUnit.config.autostart = true;
 empower(QUnit.assert, formatter(), { destructive: true });
@@ -42,9 +43,8 @@ QUnit.test("encoder-decoder", async (assert: Assert)=>{
     {index: 25, test: (elm: D)=>{ assert.ok(elm.name === "Duration" && elm.type === "f" && elm.value === 87336); } },
     {index: 26, test: (elm: D)=>{ assert.ok(elm.name === "MuxingApp" && elm.type === "8" && elm.value === "libebml2 v0.10.0 + libmatroska2 v0.10.1"); } },
     {index: 28, test: (elm: D)=>{
-      assert.ok(elm.name === "DateUTC" && elm.type === "d" && typeof elm.value === "string");
-      assert.ok(elm.type === "d" && new Date(new Date("2001-01-01T00:00:00.000Z").getTime()+(Number(elm.value)/1000/1000)).getTime() === new Date("2010-08-21T07:23:03.000Z").getTime()); // toISOString
-      assert.ok(elm.type === "d" && tools.convertEBMLDateToJSDate(elm.value).getTime() === new Date("2010-08-21T07:23:03.000Z").getTime());
+      assert.ok(elm.name === "DateUTC" && elm.type === "d" && elm.value instanceof Date);
+      assert.ok(elm.type === "d" && tools.convertEBMLDateToJSDate(elm.value).getTime() === new Date("2010-08-21T07:23:03.000Z").getTime()); // toISOString
     } },
     {index: 29, test: (elm: D)=>{
       assert.ok(elm.name === "SegmentUID" && elm.type === "b");
@@ -132,7 +132,7 @@ QUnit.test("handwrite-encoder", async (assert: Assert)=>{
 
 
 
-QUnit.module("EBMLReader");
+QUnit.module("Reader");
 
 const MEDIA_RECORDER_WEBM_FILE_LIST = [
   "./chrome57.webm",
@@ -187,7 +187,7 @@ MEDIA_RECORDER_WEBM_FILE_LIST.forEach((file)=>{
 function create_convert_to_seekable_test(file: string){
   return async (assert: Assert)=>{
     const decoder = new Decoder();
-    const reader = new EBMLReader();
+    const reader = new Reader();
     //reader.logging = true;
 
     const res = await fetch(file);
@@ -244,7 +244,7 @@ function create_convert_to_seekable_test(file: string){
       
       const refinedBuf = await readAsArrayBuffer(refinedWebM);
       const refinedElms = new Decoder().decode(refinedBuf);
-      const _reader = new EBMLReader();
+      const _reader = new Reader();
       _reader.logging = true;
       refinedElms.forEach((elm)=> _reader.read(elm) );
       _reader.stop();
@@ -259,7 +259,7 @@ MEDIA_RECORDER_WEBM_FILE_LIST.forEach((file)=>{
 function create_recorder_helper_test(file: string){
   return async (assert: Assert)=>{
     const decoder = new Decoder();
-    const reader = new EBMLReader();
+    const reader = new Reader();
     
     let last_sec = 0;
     reader.addListener("duration", ({timecodeScale, duration})=>{

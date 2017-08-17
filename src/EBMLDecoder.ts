@@ -1,11 +1,9 @@
+import {Buffer, readVint, ebmlBlock, convertEBMLDateToJSDate} from "./tools";
 import {Int64BE} from "int64-buffer";
 import * as EBML from "./EBML";
 import * as tools from "./tools";
-const Buffer: typeof global.Buffer = require("buffer/").Buffer;
-
-const {byEbmlID}: {byEbmlID: { [key: number]: EBML.Schema } } = require("matroska/lib/schema");
-const readVint: (buffer: Buffer, start: number)=> null | ({length: number; value: number; }) = require("ebml/lib/ebml/tools").readVint;
-const ebmlBlock: (buf: Buffer)=> EBML.SimpleBlock = require("ebml-block");
+import schema = require("matroska/lib/schema");
+const {byEbmlID}: {byEbmlID: { [key: number]: EBML.Schema } } = schema;
 
 // https://www.matroska.org/technical/specs/index.html
 
@@ -219,7 +217,7 @@ export default class EBMLDecoder {
         //  Unicode string, zero padded when needed (RFC 2279)
       case "b": tagObj.value = data; break;
         // Binary - not interpreted by the parser
-      case "d": tagObj.value = new Int64BE(data).toString(); break;
+      case "d": tagObj.value = convertEBMLDateToJSDate(new Int64BE(data).toNumber()); break;
         // nano second; Date.UTC(2001,1,1,0,0,0,0) === 980985600000
         // Date - signed 8 octets integer in nanoseconds with 0 indicating 
         // the precise beginning of the millennium (at 2001-01-01T00:00:00,000000000 UTC)
