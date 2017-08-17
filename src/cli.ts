@@ -28,7 +28,7 @@ if(com.seekable){
   const elms = decoder.decode(buf);
   elms.forEach((elm)=>{ reader.read(elm); });
   reader.stop();
-  const refinedMetadataBuf = tools.putRefinedMetaData(reader.metadatas, reader);
+  const refinedMetadataBuf = tools.makeMetadataSeekable(reader.metadatas, reader.duration, reader.cues);
   const body = buf.slice(reader.metadataSize);
   const refined = new Buffer(tools.concat([new Buffer(refinedMetadataBuf), body]).buffer);
   process.stdout.write(refined);

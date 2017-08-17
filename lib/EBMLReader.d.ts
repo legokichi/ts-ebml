@@ -31,6 +31,8 @@ export default class EBMLReader extends EventEmitter {
     use_webp: boolean;
     use_duration_every_simpleblock: boolean;
     logging: boolean;
+    logGroup: string;
+    private hasLoggingStarted;
     /**
      * usefull for recording chunks.
      */
@@ -93,6 +95,7 @@ export default class EBMLReader extends EventEmitter {
     }) => void): this;
     /** for thumbnail */
     addListener(event: "webp", listener: (ev: ThumbnailInfo) => void): this;
+    put(elm: EBML.EBMLElementDetail): void;
 }
 /** CueClusterPosition: Offset byte from __file start__. It is not an offset from the Segment element. */
 export interface CueInfo {
@@ -111,4 +114,3 @@ export interface ThumbnailInfo {
     webp: Blob;
     currentTime: number;
 }
-export declare function put(elm: EBML.EBMLElementDetail): void;
