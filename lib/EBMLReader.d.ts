@@ -16,6 +16,7 @@ export default class EBMLReader extends EventEmitter {
     private lastClusterTimecode;
     private lastClusterPosition;
     private firstVideoBlockRead;
+    private firstAudioBlockRead;
     timecodeScale: number;
     metadataSize: number;
     metadatas: EBML.EBMLElementDetail[];
@@ -25,6 +26,12 @@ export default class EBMLReader extends EventEmitter {
     private trackCodecDelay;
     private first_video_simpleblock_of_cluster_is_loaded;
     private ended;
+    trackInfo: {
+        type: "video" | "audio" | "both";
+        trackNumber: number;
+    } | {
+        type: "nothing";
+    };
     /**
      * usefull for thumbnail creation.
      */

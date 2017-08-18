@@ -20,6 +20,7 @@ export default class EBMLReader extends EventEmitter {
   private lastClusterTimecode: number;
   private lastClusterPosition: number;
   private firstVideoBlockRead: boolean;
+  private firstAudioBlockRead: boolean;
   timecodeScale: number;
   metadataSize: number;
   metadatas: EBML.EBMLElementDetail[];
@@ -32,7 +33,7 @@ export default class EBMLReader extends EventEmitter {
   private first_video_simpleblock_of_cluster_is_loaded: boolean;
 
   private ended: boolean;
-  
+  trackInfo: { type: "video" | "audio" | "both"; trackNumber: number; } | { type: "nothing" };
   /**
    * usefull for thumbnail creation.
    */
@@ -66,12 +67,13 @@ export default class EBMLReader extends EventEmitter {
     this.metadatas = [];
     this.cues = [];
     this.firstVideoBlockRead = false;
+    this.firstAudioBlockRead = false;
 
     this.currentTrack = {TrackNumber: -1, TrackType: -1, DefaultDuration: null, CodecDelay: null};
     this.trackTypes = [];
     this.trackDefaultDuration = [];
     this.trackCodecDelay = [];
-
+    this.trackInfo = { type: "nothing" };
     this.ended = false;
 
     this.logging = false;
@@ -113,6 +115,12 @@ export default class EBMLReader extends EventEmitter {
     if(!this.metadataloaded){
       this.metadataloaded = true;
       this.metadatas = data;
+      const videoTrackNum = this.trackTypes.indexOf(1); // find first video track
+      const audioTrackNum = this.trackTypes.indexOf(2); // find first audio track
+      this.trackInfo = videoTrackNum >= 0 && audioTrackNum >= 0 ? {type: "both", trackNumber: videoTrackNum }
+                     : videoTrackNum >= 0 ? {type: "video", trackNumber: videoTrackNum }
+                     : audioTrackNum >= 0 ? {type: "audio", trackNumber: audioTrackNum }
+                     :                      {type: "nothing" };
       this.emit("metadata", {data, metadataSize: this.metadataSize});
     }else{
       const timecode = this.lastClusterTimecode;
@@ -164,13 +172,24 @@ export default class EBMLReader extends EventEmitter {
       if(this.trackTypes[trackNumber] === 1){ // trackType === 1 => video track
         if(!this.firstVideoBlockRead){
           this.firstVideoBlockRead = true;
-          const CueTime = this.lastClusterTimecode + timecode;
-          this.cues.push({CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
-          this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
-          this.emit("cue", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
+          if(this.trackInfo.type === "both" || this.trackInfo.type === "video"){
+            const CueTime = this.lastClusterTimecode + timecode;
+            this.cues.push({CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
+            this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
+            this.emit("cue", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
+          }
         }
         this.last2SimpleBlockVideoTrackTimecode = [this.last2SimpleBlockVideoTrackTimecode[1], timecode];
       }else if(this.trackTypes[trackNumber] === 2){ // trackType === 2 => audio track
+        if(!this.firstAudioBlockRead){
+          this.firstAudioBlockRead = true;
+          if(this.trackInfo.type === "audio"){
+            const CueTime = this.lastClusterTimecode + timecode;
+            this.cues.push({CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
+            this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
+            this.emit("cue", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
+          }
+        }
         this.last2SimpleBlockAudioTrackTimecode = [this.last2SimpleBlockAudioTrackTimecode[1], timecode];
       }
       if(this.use_duration_every_simpleblock){
@@ -188,6 +207,7 @@ export default class EBMLReader extends EventEmitter {
       }
     }else if(elm.type === "m" && elm.name === "Cluster" && elm.isEnd === false){
       this.firstVideoBlockRead = false;
+      this.firstAudioBlockRead = false;
       this.emit_segment_info();
       this.emit("cluster_ptr", elm.tagStart);
       this.lastClusterPosition = elm.tagStart;
@@ -240,43 +260,51 @@ export default class EBMLReader extends EventEmitter {
    * ```
    */
   get duration(){
-    const videoTrackNum = this.trackTypes.indexOf(1); // find first video track
-    if(videoTrackNum < 0){ return 0; }
-    // defaultDuration は 生の nano sec
-    let defaultDuration = this.trackDefaultDuration[videoTrackNum];
-    if(typeof defaultDuration !== "number"){
-      // https://bugs.chromium.org/p/chromium/issues/detail?id=606000#c22
-      // default duration がないときに使う delta
-      if(this.last2SimpleBlockAudioTrackTimecode[1] > this.last2SimpleBlockVideoTrackTimecode[1]){
-        // audio diff
-        defaultDuration = (this.last2SimpleBlockAudioTrackTimecode[1] - this.last2SimpleBlockAudioTrackTimecode[0]) * this.timecodeScale;
-      }else{
-        // video diff
-        defaultDuration = (this.last2SimpleBlockVideoTrackTimecode[1] - this.last2SimpleBlockVideoTrackTimecode[0]) * this.timecodeScale;
-      }
+    if(this.trackInfo.type === "nothing"){
+      console.warn("no video, no audio track");
+      return 0;
     }
+    // defaultDuration は 生の nano sec
+    let defaultDuration = 0;
     // nanoseconds
     let codecDelay = 0;
-    if(this.last2SimpleBlockAudioTrackTimecode[1] > this.last2SimpleBlockVideoTrackTimecode[1]){
-      // audio
-      const delay = this.trackCodecDelay[this.trackTypes.indexOf(2)]; // 2 => audio
-      if(typeof delay === "number"){
-        codecDelay = delay;
-      }
-    }else{
-      // video
-      const delay = this.trackCodecDelay[this.trackTypes.indexOf(1)]; // 1 => video
-      if(typeof delay === "number"){
-        codecDelay = delay;
-      }
-    }
     let lastTimecode = 0;
-    if(this.last2SimpleBlockAudioTrackTimecode[1] > this.last2SimpleBlockVideoTrackTimecode[1]){
-      // audio
-      lastTimecode = this.last2SimpleBlockAudioTrackTimecode[1];
+
+    const _defaultDuration = this.trackDefaultDuration[this.trackInfo.trackNumber];
+    if(typeof _defaultDuration === "number"){
+      defaultDuration = _defaultDuration;
     }else{
-      // video
-      lastTimecode = this.last2SimpleBlockVideoTrackTimecode[1];
+      // https://bugs.chromium.org/p/chromium/issues/detail?id=606000#c22
+      // default duration がないときに使う delta
+      if(this.trackInfo.type === "both"){
+        if(this.last2SimpleBlockAudioTrackTimecode[1] > this.last2SimpleBlockVideoTrackTimecode[1]){
+          // audio diff
+          defaultDuration = (this.last2SimpleBlockAudioTrackTimecode[1] - this.last2SimpleBlockAudioTrackTimecode[0]) * this.timecodeScale;
+          // audio delay
+          const delay = this.trackCodecDelay[this.trackTypes.indexOf(2)]; // 2 => audio
+          if(typeof delay === "number"){ codecDelay = delay; }
+          // audio timecode
+          lastTimecode = this.last2SimpleBlockAudioTrackTimecode[1];
+        }else{
+          // video diff
+          defaultDuration = (this.last2SimpleBlockVideoTrackTimecode[1] - this.last2SimpleBlockVideoTrackTimecode[0]) * this.timecodeScale;
+          // video delay
+          const delay = this.trackCodecDelay[this.trackTypes.indexOf(1)]; // 1 => video
+          if(typeof delay === "number"){ codecDelay = delay; }
+          // video timecode
+          lastTimecode = this.last2SimpleBlockVideoTrackTimecode[1];
+        }
+      }else if(this.trackInfo.type === "video"){
+        defaultDuration = (this.last2SimpleBlockVideoTrackTimecode[1] - this.last2SimpleBlockVideoTrackTimecode[0]) * this.timecodeScale;
+        const delay = this.trackCodecDelay[this.trackInfo.trackNumber]; // 2 => audio
+        if(typeof delay === "number"){ codecDelay = delay; }
+        lastTimecode = this.last2SimpleBlockVideoTrackTimecode[1];
+      }else if(this.trackInfo.type === "audio"){
+        defaultDuration = (this.last2SimpleBlockAudioTrackTimecode[1] - this.last2SimpleBlockAudioTrackTimecode[0]) * this.timecodeScale;
+        const delay = this.trackCodecDelay[this.trackInfo.trackNumber]; // 1 => video
+        if(typeof delay === "number"){ codecDelay = delay; }
+        lastTimecode = this.last2SimpleBlockAudioTrackTimecode[1];
+      }// else { not reached }
     }
     // convert to timecodescale
     const duration_nanosec = ((this.lastClusterTimecode + lastTimecode) * this.timecodeScale) + defaultDuration - codecDelay;

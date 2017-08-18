@@ -72,6 +72,7 @@ export declare function removeElement(idName: string, metadata: EBML.EBMLElement
  */
 export declare function extractElement(idName: string, metadata: EBML.EBMLElementBuffer[]): EBML.EBMLElementBuffer[];
 /**
+ * @deprecated
  * metadata に対して duration と seekhead を追加した metadata を返す
  * @param metadata - 変更前の webm における ファイル先頭から 最初の Cluster 要素までの 要素
  * @param duration - Duration (TimecodeScale)
