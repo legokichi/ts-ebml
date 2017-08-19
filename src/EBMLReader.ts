@@ -109,7 +109,6 @@ export default class EBMLReader extends EventEmitter {
    * emit chunk info
    */
   private emit_segment_info(){
-    if(!this.use_segment_info){ return; }
     const data = this.chunks;
     this.chunks = [];
     if(!this.metadataloaded){
@@ -121,8 +120,10 @@ export default class EBMLReader extends EventEmitter {
                      : videoTrackNum >= 0 ? {type: "video", trackNumber: videoTrackNum }
                      : audioTrackNum >= 0 ? {type: "audio", trackNumber: audioTrackNum }
                      :                      {type: "nothing" };
+      if(!this.use_segment_info){ return; }
       this.emit("metadata", {data, metadataSize: this.metadataSize});
     }else{
+      if(!this.use_segment_info){ return; }
       const timecode = this.lastClusterTimecode;
       const duration = this.duration;
       const timecodeScale = this.timecodeScale;
