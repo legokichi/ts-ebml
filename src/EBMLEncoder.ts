@@ -39,6 +39,8 @@ export default class EBMLEncoder {
         this.endTag(elm);
       }
     }else{
+      // ensure that we are working with an internal `Buffer` instance
+      elm.data = Buffer.from(elm.data);
       this.writeTag(elm);
     }
     return this.flush();
