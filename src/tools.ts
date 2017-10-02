@@ -648,23 +648,8 @@ function insertTag(_metadata: EBML.EBMLElementBuffer[], tagName: string, childre
 }
 
 
-// alter Buffer.concat - https://github.com/feross/buffer/issues/154
 export function concat(list: Buffer[]): Buffer {
-  //return Buffer.concat.apply(Buffer, list);
-  let i = 0;
-  let length = 0;
-  for (; i < list.length; ++i) {
-    length += list[i].length;
-  }
-
-  let buffer = Buffer.allocUnsafe(length);
-  let pos = 0;
-  for (i = 0; i < list.length; ++i) {
-    let buf = list[i];
-    buf.copy(buffer, pos);
-    pos += buf.length;
-  }
-  return buffer;
+  return Buffer.concat(list);
 }
 
 export function encodeValueToBuffer(elm: EBML.MasterElement): EBML.MasterElement;
