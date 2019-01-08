@@ -33,7 +33,7 @@ $ ts-ebml foo.webm
 
 ## try to convert a MediaRecorder WebM to seekable WebM
 
-```
+```console
 $ ts-ebml -s input.webm | cat > seekable.webm
 ```
 
