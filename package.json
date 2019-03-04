@@ -59,7 +59,7 @@
     "qunit-tap": "^1.5.1",
     "qunitjs": "^2.4.0",
     "tslint": "^3.15.1",
-    "typedoc": "^0.5.3",
+    "typedoc": "^0.14.2",
     "typescript": "^2.4.2",
     "watchify": "^3.7.0"
   },
