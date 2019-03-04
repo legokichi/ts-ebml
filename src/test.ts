@@ -330,7 +330,7 @@ function fetchImage(src: string): Promise<HTMLImageElement>{
     const img = new Image();
     img.src = src;
     img.onload = ()=>{ resolve(img); };
-    img.onerror = (err)=>{ reject(err.error); };
+    img.onerror = (err)=>{ reject(err); };
   });
 }
 
@@ -339,7 +339,7 @@ function readAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
     const reader = new FileReader();
     reader.readAsArrayBuffer(blob);
     reader.onloadend = ()=>{ resolve(<ArrayBuffer>reader.result); };
-    reader.onerror = (ev)=>{ reject(ev.error); };
+    reader.onerror = (ev)=>{ reject(ev); };
   });
 }
 
