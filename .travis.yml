@@ -8,7 +8,6 @@ install:
   - npm install
 
 script:
-  - npm run setup || travis_terminate 1
   - npm run init || travis_terminate 1
   - npm run build || travis_terminate 1
   - npm run lint
