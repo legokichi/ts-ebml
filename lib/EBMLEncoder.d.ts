@@ -5,10 +5,10 @@ export default class EBMLEncoder {
     private _schema;
     constructor();
     encode(elms: EBML.EBMLElementBuffer[]): ArrayBuffer;
-    private encodeChunk(elm);
-    private flush();
-    private getSchemaInfo(tagName);
-    private writeTag(elm);
-    private startTag(elm);
-    private endTag(elm);
+    private encodeChunk;
+    private flush;
+    private getSchemaInfo;
+    private writeTag;
+    private startTag;
+    private endTag;
 }

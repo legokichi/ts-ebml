@@ -1,0 +1,415 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>ts-ebml</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.js" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">ts-ebml</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1>ts-ebml</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#ts-ebml" id="ts-ebml" style="color: inherit; text-decoration: none;">
+					<h1>ts-ebml</h1>
+				</a>
+				<p>ebml encoder and decoder written in TypeScript.</p>
+				<a href="#fork-of-node-ebml" id="fork-of-node-ebml" style="color: inherit; text-decoration: none;">
+					<h1>Fork of node-ebml</h1>
+				</a>
+				<p>It is a fork of <a href="https://github.com/themasch/node-ebml">https://github.com/themasch/node-ebml</a></p>
+				<a href="#install" id="install" style="color: inherit; text-decoration: none;">
+					<h1>install</h1>
+				</a>
+				<pre><code>npm <span class="hljs-keyword">install</span> ts-ebml <span class="hljs-comment">--save</span></code></pre>
+				<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
+					<h1>usage</h1>
+				</a>
+				<a href="#show-ebml-structure-on-console" id="show-ebml-structure-on-console" style="color: inherit; text-decoration: none;">
+					<h2>show EBML structure on console</h2>
+				</a>
+				<pre><code class="language-console"><span class="hljs-meta">$</span><span class="bash"> ts-ebml foo.webm</span>
+0    m    0    EBML
+5    u    1    EBMLVersion 1
+9    u    1    EBMLReadVersion 1
+13    u    1    EBMLMaxIDLength 4
+17    u    1    EBMLMaxSizeLength 8
+21    s    1    DocType webm
+28    u    1    DocTypeVersion 2
+32    u    1    DocTypeReadVersion 2
+36    m    0    Segment
+48    m    1    Info
+53    u    2    TimecodeScale 1000000
+...</code></pre>
+				<a href="#try-to-convert-a-mediarecorder-webm-to-seekable-webm" id="try-to-convert-a-mediarecorder-webm-to-seekable-webm" style="color: inherit; text-decoration: none;">
+					<h2>try to convert a MediaRecorder WebM to seekable WebM</h2>
+				</a>
+				<pre><code class="language-console"><span class="hljs-meta">$</span><span class="bash"> ts-ebml -s input.webm | cat &gt; seekable.webm</span></code></pre>
+				<a href="#node" id="node" style="color: inherit; text-decoration: none;">
+					<h2>node</h2>
+				</a>
+				<pre><code class="language-ts"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> ebml <span class="hljs-keyword">from</span> <span class="hljs-string">'ts-ebml'</span>;
+<span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+
+<span class="hljs-keyword">const</span> decoder = <span class="hljs-keyword">new</span> ebml.Decoder();
+
+fs.createReadStream(<span class="hljs-string">'media/test.webm'</span>).on(<span class="hljs-string">'data'</span>, <span class="hljs-function">(<span class="hljs-params">buf</span>)=&gt;</span>{
+  <span class="hljs-keyword">const</span> ebmlElms = decoder.decode(buf);
+  <span class="hljs-built_in">console</span>.log(ebmlElms);
+});</code></pre>
+				<a href="#browser" id="browser" style="color: inherit; text-decoration: none;">
+					<h2>browser</h2>
+				</a>
+				<pre><code class="language-ts"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> ebml <span class="hljs-keyword">from</span> <span class="hljs-string">'ts-ebml'</span>;
+
+<span class="hljs-keyword">const</span> decoder = <span class="hljs-keyword">new</span> ebml.Decoder();
+
+fetch(<span class="hljs-string">'media/test.webm'</span>)
+  .then(<span class="hljs-function">(<span class="hljs-params">res</span>)=&gt;</span> res.arrayBuffer() )
+  .then(<span class="hljs-function">(<span class="hljs-params">buf</span>)=&gt;</span>{
+    <span class="hljs-keyword">const</span> ebmlElms = decoder.decode(buf);
+    <span class="hljs-built_in">console</span>.log(ebmlElms);
+  });</code></pre>
+				<a href="#features" id="features" style="color: inherit; text-decoration: none;">
+					<h1>features</h1>
+				</a>
+				<ul>
+					<li>get WebP frame from MediaRecorder WebM VP8 Stream</li>
+					<li>create seekable webm from media-recoder</li>
+					<li>create playable webm to media-stream-api from media-recorder</li>
+				</ul>
+				<p>see <code>src/test.ts</code> and <code>src/example_seekable.ts</code></p>
+				<a href="#stable-api" id="stable-api" style="color: inherit; text-decoration: none;">
+					<h1>stable API</h1>
+				</a>
+				<pre><code class="language-ts"><span class="hljs-keyword">class</span> Decoder {
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"></span>);
+  decode(chunk: <span class="hljs-built_in">ArrayBuffer</span>): EBMLElementDetail[];
+}
+
+<span class="hljs-keyword">class</span> Encoder {
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"></span>);
+  encode(elms: EBMLElementBuffer[]): <span class="hljs-built_in">ArrayBuffer</span>;
+}
+
+<span class="hljs-keyword">type</span> EBMLElementBuffer = MasterElement | ChildElementBuffer;
+<span class="hljs-keyword">type</span> EBMLElementDetail = (MasterElement | ChildElementValue) &amp; ElementDetail;
+
+<span class="hljs-keyword">type</span> MasterElement = {
+  name: <span class="hljs-built_in">string</span>;
+  <span class="hljs-keyword">type</span>: <span class="hljs-string">"m"</span>;
+  isEnd: <span class="hljs-built_in">boolean</span>;
+  unknownSize?: <span class="hljs-built_in">boolean</span>;
+};
+<span class="hljs-keyword">type</span> ChildElementBuffer = {
+  name: <span class="hljs-built_in">string</span>;
+  <span class="hljs-keyword">type</span>: <span class="hljs-string">"u"</span> | <span class="hljs-string">"i"</span> | <span class="hljs-string">"f"</span> | <span class="hljs-string">"s"</span> | <span class="hljs-string">"8"</span> | <span class="hljs-string">"b"</span> | <span class="hljs-string">"d"</span>;
+  data: Buffer;
+};
+<span class="hljs-keyword">type</span> ChildElementValue = ChildElementBuffer &amp; {
+  value: <span class="hljs-built_in">number</span>|<span class="hljs-built_in">string</span>|Buffer|<span class="hljs-built_in">Date</span>;
+};
+<span class="hljs-keyword">type</span> ElementDetail = {
+  tagStart: <span class="hljs-built_in">number</span>;
+  tagEnd: <span class="hljs-built_in">number</span>;
+  sizeStart: <span class="hljs-built_in">number</span>;
+  sizeEnd: <span class="hljs-built_in">number</span>;
+  dataStart: <span class="hljs-built_in">number</span>;
+  dataEnd: <span class="hljs-built_in">number</span>;
+};
+<span class="hljs-keyword">namespace</span> tools {
+  <span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">readVint</span>(<span class="hljs-params">buffer: Buffer, start: <span class="hljs-built_in">number</span></span>): <span class="hljs-title">null</span> | (<span class="hljs-params">{length: <span class="hljs-built_in">number</span>; value: <span class="hljs-built_in">number</span>; }</span>)</span>;
+  <span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">writeVint</span>(<span class="hljs-params">val: <span class="hljs-built_in">number</span></span>): <span class="hljs-title">Buffer</span></span>;
+  <span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">readBlock</span>(<span class="hljs-params">buf: <span class="hljs-built_in">ArrayBuffer</span></span>): <span class="hljs-title">EBML</span>.<span class="hljs-title">SimpleBlock</span></span>;
+}</code></pre>
+				<a href="#develop" id="develop" style="color: inherit; text-decoration: none;">
+					<h1>develop</h1>
+				</a>
+				<pre><code class="language-sh">npm run setup <span class="hljs-comment"># install cli tools</span>
+npm run init  <span class="hljs-comment"># install libraries</span>
+npm run build <span class="hljs-comment"># build js code</span>
+npm run lint  <span class="hljs-comment"># tslint</span>
+npm run doc   <span class="hljs-comment"># typedoc</span>
+npm run check <span class="hljs-comment"># type check</span>
+npm run <span class="hljs-built_in">test</span>  <span class="hljs-comment"># build test</span>
+npm run example <span class="hljs-comment"># build example</span></code></pre>
+				<a href="#debugging-tools" id="debugging-tools" style="color: inherit; text-decoration: none;">
+					<h2>debugging tools</h2>
+				</a>
+				<ul>
+					<li><a href="https://www.matroska.org/downloads/mkvalidator.html">https://www.matroska.org/downloads/mkvalidator.html</a></li>
+					<li><a href="https://www.matroska.org/downloads/mkclean.html">https://www.matroska.org/downloads/mkclean.html</a></li>
+					<li><a href="https://mkvtoolnix.download/doc/mkvinfo.html">https://mkvtoolnix.download/doc/mkvinfo.html</a></li>
+					<li><a href="https://github.com/Matroska-Org/matroska-test-files">https://github.com/Matroska-Org/matroska-test-files</a></li>
+					<li><code>MOZ_LOG_FILE=&quot;log.txt&quot; MOZ_LOG=&quot;MediaDemuxer:5&quot; /Applications/FirefoxNightly.app/Contents/MacOS/firefox-bin</code></li>
+					<li><code>MOZ_LOG_FILE=&quot;log.txt&quot; MOZ_LOG=&quot;MediaDemuxer:5&quot; /Applications/Firefox.app/Contents/MacOS/firefox-bin</code></li>
+					<li>chrome://media-internals/</li>
+					<li>chrome://webrtc-internals/</li>
+					<li>./out/gn/Chromium.app/Contents/MacOS/Chromium  -vmodule=&quot;<em>video</em>=0,<em>ffmpeg</em>=1,<em>media</em>=1&quot;  <a href="https://webrtc.github.io/samples/src/content/getusermedia/record/">https://webrtc.github.io/samples/src/content/getusermedia/record/</a></li>
+					<li><code>ffmpeg -i not_seekable.webm -c copy seekable.webm</code></li>
+					<li><code>mkclean --doctype 4 --keep-cues --optimize not_seekable.webm seekable.webm</code></li>
+					<li><code>webm_info -a foo.webm</code> - <a href="https://chromium.googlesource.com/webm/libwebm">https://chromium.googlesource.com/webm/libwebm</a></li>
+				</ul>
+				<a href="#license" id="license" style="color: inherit; text-decoration: none;">
+					<h1>license</h1>
+				</a>
+				<p>MIT</p>
+				<a href="#related-info" id="related-info" style="color: inherit; text-decoration: none;">
+					<h1>related info</h1>
+				</a>
+				<ul>
+					<li><a href="https://www.matroska.org/technical/specs/index.html">https://www.matroska.org/technical/specs/index.html</a></li>
+					<li><a href="https://www.matroska.org/technical/specs/notes.html">https://www.matroska.org/technical/specs/notes.html</a></li>
+					<li><a href="https://www.matroska.org/technical/order/index.html">https://www.matroska.org/technical/order/index.html</a></li>
+				</ul>
+				<a href="#related-issues" id="related-issues" style="color: inherit; text-decoration: none;">
+					<h1>related issues</h1>
+				</a>
+				<a href="#media-recorder-seekable-webm" id="media-recorder-seekable-webm" style="color: inherit; text-decoration: none;">
+					<h2>media recorder seekable webm</h2>
+				</a>
+				<a href="#chrome" id="chrome" style="color: inherit; text-decoration: none;">
+					<h3>chrome</h3>
+				</a>
+				<ul>
+					<li>MediaRecorder output should have Cues element - <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=561606">https://bugs.chromium.org/p/chromium/issues/detail?id=561606</a></li>
+					<li>Videos created with MediaRecorder API are not seekable / scrubbable - <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=569840">https://bugs.chromium.org/p/chromium/issues/detail?id=569840</a></li>
+					<li>No duration or seeking cue for opus audio produced with mediarecoder - <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=599134">https://bugs.chromium.org/p/chromium/issues/detail?id=599134</a></li>
+					<li>MediaRecorder: consider producing seekable WebM files - <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=642012">https://bugs.chromium.org/p/chromium/issues/detail?id=642012</a></li>
+				</ul>
+				<a href="#firefox" id="firefox" style="color: inherit; text-decoration: none;">
+					<h3>firefox</h3>
+				</a>
+				<ul>
+					<li>Seeking in WebM files with no Cues element is not supported - <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=657791">https://bugzilla.mozilla.org/show_bug.cgi?id=657791</a></li>
+					<li>Recorder video clips result can&#39;t replay /seekable on firefox - <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=969290">https://bugzilla.mozilla.org/show_bug.cgi?id=969290</a></li>
+				</ul>
+				<a href="#others" id="others" style="color: inherit; text-decoration: none;">
+					<h3>others</h3>
+				</a>
+				<ul>
+					<li>Optimizing WebM Video for Faster Streaming and Seeking - <a href="https://rigor.com/blog/2016/02/optimizing-webm-video-for-faster-streaming-and-seeking">https://rigor.com/blog/2016/02/optimizing-webm-video-for-faster-streaming-and-seeking</a></li>
+					<li>Creation of Seekable Files - <a href="https://github.com/w3c/mediacapture-record/issues/119">https://github.com/w3c/mediacapture-record/issues/119</a></li>
+				</ul>
+				<a href="#media-recorder-media-source-gap" id="media-recorder-media-source-gap" style="color: inherit; text-decoration: none;">
+					<h2>media recorder media source gap</h2>
+				</a>
+				<a href="#chrome-1" id="chrome-1" style="color: inherit; text-decoration: none;">
+					<h3>chrome</h3>
+				</a>
+				<ul>
+					<li>MediaSource api not able to play webm video recorded from MediaRecorder - <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=606000">https://bugs.chromium.org/p/chromium/issues/detail?id=606000</a></li>
+					<li>Video playback freezes using MediaSource API (MSE) - <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=678269">https://bugs.chromium.org/p/chromium/issues/detail?id=678269</a></li>
+					<li>MediaSource API: Appending chunks to a SourceBuffer creates gaps and playback stops - <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=688490">https://bugs.chromium.org/p/chromium/issues/detail?id=688490</a></li>
+					<li>Playback of video segments freezes with errors in media-internals - <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=711829">https://bugs.chromium.org/p/chromium/issues/detail?id=711829</a></li>
+				</ul>
+				<a href="#others-1" id="others-1" style="color: inherit; text-decoration: none;">
+					<h2>others</h2>
+				</a>
+				<a href="#chrome-2" id="chrome-2" style="color: inherit; text-decoration: none;">
+					<h3>chrome</h3>
+				</a>
+				<ul>
+					<li>Regression: Playback of mediaStream recording shows blank video - <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=657532">https://bugs.chromium.org/p/chromium/issues/detail?id=657532</a></li>
+				</ul>
+				<a href="#firefox-1" id="firefox-1" style="color: inherit; text-decoration: none;">
+					<h3>firefox</h3>
+				</a>
+				<ul>
+					<li>Webm video recorded with MediaRecorder cannot be played more than once - <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1272371">https://bugzilla.mozilla.org/show_bug.cgi?id=1272371</a></li>
+				</ul>
+				<a href="#related-works" id="related-works" style="color: inherit; text-decoration: none;">
+					<h1>related works</h1>
+				</a>
+				<ul>
+					<li><a href="https://github.com/antimatter15/js-ebml">https://github.com/antimatter15/js-ebml</a></li>
+					<li><a href="https://bitbucket.org/desmaj/libvpx.js/src/1ea3218282b6eb129061341831d23409dd539054/webm.js">https://bitbucket.org/desmaj/libvpx.js/src/1ea3218282b6eb129061341831d23409dd539054/webm.js</a></li>
+					<li><a href="https://github.com/themasch/node-ebml">https://github.com/themasch/node-ebml</a></li>
+					<li><a href="https://github.com/oeuillot/node-matroska">https://github.com/oeuillot/node-matroska</a></li>
+					<li><a href="https://github.com/eadle/webm-byte-stream">https://github.com/eadle/webm-byte-stream</a></li>
+					<li><a href="https://github.com/mafintosh/webm-cluster-stream">https://github.com/mafintosh/webm-cluster-stream</a></li>
+					<li><a href="https://github.com/Matroska-Org/libebml/">https://github.com/Matroska-Org/libebml/</a></li>
+					<li><a href="https://github.com/Matroska-Org/foundation-source">https://github.com/Matroska-Org/foundation-source</a></li>
+					<li><a href="https://github.com/webmproject/libwebm">https://github.com/webmproject/libwebm</a></li>
+					<li><a href="https://chromium.googlesource.com/webm/libvpx/+/master/third_party/libwebm">https://chromium.googlesource.com/webm/libvpx/+/master/third_party/libwebm</a></li>
+					<li><a href="https://github.com/mozilla/gecko-dev/tree/master/dom/media/webm">https://github.com/mozilla/gecko-dev/tree/master/dom/media/webm</a></li>
+					<li><a href="https://github.com/yellowdoge/libwebm">https://github.com/yellowdoge/libwebm</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+					<li class="label tsd-is-external">
+						<span>Internals</span>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_cli_.html">&quot;cli&quot;</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_example_mediasource_.html">&quot;example_<wbr>mediasource&quot;</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_example_seekable_.html">&quot;example_<wbr>seekable&quot;</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_index_.html">&quot;index&quot;</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_test_.html">&quot;test&quot;</a>
+					</li>
+					<li class="label tsd-is-external">
+						<span>Externals</span>
+					</li>
+					<li class=" tsd-kind-external-module tsd-is-external">
+						<a href="modules/_ebml_.html">&quot;EBML&quot;</a>
+					</li>
+					<li class=" tsd-kind-external-module tsd-is-external">
+						<a href="modules/_ebmldecoder_.html">&quot;EBMLDecoder&quot;</a>
+					</li>
+					<li class=" tsd-kind-external-module tsd-is-external">
+						<a href="modules/_ebmlencoder_.html">&quot;EBMLEncoder&quot;</a>
+					</li>
+					<li class=" tsd-kind-external-module tsd-is-external">
+						<a href="modules/_ebmlreader_.html">&quot;EBMLReader&quot;</a>
+					</li>
+					<li class=" tsd-kind-external-module tsd-is-external">
+						<a href="modules/_schema_.html">&quot;schema&quot;</a>
+					</li>
+					<li class=" tsd-kind-external-module tsd-is-external">
+						<a href="modules/_tools_.html">&quot;tools&quot;</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>

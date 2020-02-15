@@ -59,7 +59,7 @@ export default class EBMLReader extends EventEmitter {
     /**
      * emit chunk info
      */
-    private emit_segment_info();
+    private emit_segment_info;
     read(elm: EBML.EBMLElementDetail): void;
     /**
      * DefaultDuration が定義されている場合は最後のフレームのdurationも考慮する
@@ -71,7 +71,7 @@ export default class EBMLReader extends EventEmitter {
      * const sec = nanosec / 1000 / 1000 / 1000;
      * ```
      */
-    readonly duration: number;
+    get duration(): number;
     /**
      * @deprecated
      * emit on every segment

@@ -1,9 +1,8 @@
 import * as EBML from "./EBML";
 import * as tools from "./tools";
-import {Buffer, readVint, ebmlBlock} from "./tools";
-import {Int64BE} from "int64-buffer";
-import schema = require("matroska/lib/schema");
-const {byEbmlID}: {byEbmlID: { [key: number]: EBML.Schema } } = schema;
+import { Buffer } from "./tools";
+import { schema } from "./schema";
+const { byEbmlID }: { byEbmlID: { [key: number]: EBML.Schema } } = schema;
 
 
 
@@ -17,9 +16,9 @@ interface DataTree {
 export default class EBMLEncoder {
   private _buffers: Buffer[];
   private _stack: DataTree[];
-  private _schema: {[key: number]: EBML.Schema};
+  private _schema: { [key: number]: EBML.Schema };
 
-  constructor(){
+  constructor() {
     this._schema = byEbmlID;
     this._buffers = [];
     this._stack = [];
@@ -27,18 +26,18 @@ export default class EBMLEncoder {
 
   encode(elms: EBML.EBMLElementBuffer[]): ArrayBuffer {
     return tools.concat(
-      elms.reduce<Buffer[]>((lst, elm)=>
+      elms.reduce<Buffer[]>((lst, elm) =>
         lst.concat(this.encodeChunk(elm)), [])).buffer;
   }
 
   private encodeChunk(elm: EBML.EBMLElementBuffer): Buffer[] {
-    if(elm.type === "m"){
-      if(!elm.isEnd){
+    if (elm.type === "m") {
+      if (!elm.isEnd) {
         this.startTag(elm);
-      }else{
+      } else {
         this.endTag(elm);
       }
-    }else{
+    } else {
       // ensure that we are working with an internal `Buffer` instance
       elm.data = Buffer.from(elm.data);
       this.writeTag(elm);
@@ -77,7 +76,7 @@ export default class EBMLEncoder {
     /**
      * 親要素が閉じタグあり(isEnd)なら閉じタグが来るまで待つ(children queに入る)
      */
-    if(this._stack.length > 0) {
+    if (this._stack.length > 0) {
       const last = this._stack[this._stack.length - 1];
       last.children.push({
         tagId,
@@ -91,7 +90,7 @@ export default class EBMLEncoder {
     return;
   }
 
-  private startTag(elm: EBML.MasterElement){
+  private startTag(elm: EBML.MasterElement) {
     const tagName = elm.name;
     const tagId = this.getSchemaInfo(tagName);
     if (tagId == null) {
@@ -101,7 +100,7 @@ export default class EBMLEncoder {
     /**
      * 閉じタグ不定長の場合はスタックに積まずに即時バッファに書き込む
      */
-    if(elm.unknownSize){
+    if (elm.unknownSize) {
       const data = tools.encodeTag(tagId, new Buffer(0), elm.unknownSize);
       this._buffers = this._buffers.concat(data);
       return;
@@ -114,35 +113,31 @@ export default class EBMLEncoder {
       data: null
     };
 
-    if(this._stack.length > 0) {
-        this._stack[this._stack.length - 1].children.push(tag);
+    if (this._stack.length > 0) {
+      this._stack[this._stack.length - 1].children.push(tag);
     }
     this._stack.push(tag);
   }
 
-  private endTag(elm: EBML.MasterElement){
+  private endTag(elm: EBML.MasterElement) {
     const tagName = elm.name;
     const tag = this._stack.pop();
-    if(tag == null){ throw new Error("EBML structure is broken"); }
-    if(tag.elm.name !== elm.name){ throw new Error("EBML structure is broken"); }
+    if (tag == null) { throw new Error("EBML structure is broken"); }
+    if (tag.elm.name !== elm.name) { throw new Error("EBML structure is broken"); }
 
-    const childTagDataBuffers = tag.children.reduce<Buffer[]>((lst, child)=>{
-      if(child.data === null){ throw new Error("EBML structure is broken"); }
+    const childTagDataBuffers = tag.children.reduce<Buffer[]>((lst, child) => {
+      if (child.data === null) { throw new Error("EBML structure is broken"); }
       return lst.concat(child.data);
     }, []);
     const childTagDataBuffer = tools.concat(childTagDataBuffers);
-    if(tag.elm.type === "m"){
-      tag.data = tools.encodeTag(tag.tagId, childTagDataBuffer, tag.elm.unknownSize);  
-    }else{
+    if (tag.elm.type === "m") {
+      tag.data = tools.encodeTag(tag.tagId, childTagDataBuffer, tag.elm.unknownSize);
+    } else {
       tag.data = tools.encodeTag(tag.tagId, childTagDataBuffer);
     }
-  
+
     if (this._stack.length < 1) {
       this._buffers = this._buffers.concat(tag.data);
     }
   }
 }
-
-
-
-

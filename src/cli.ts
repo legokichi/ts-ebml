@@ -2,8 +2,8 @@
 /// <reference types="node"/>
 /// <reference types="commander"/>
 import {Decoder, Encoder, Reader, tools} from'./';
-import com = require('commander');
-import fs = require('fs');
+import com from 'commander';
+import fs from 'fs';
 const version = require("../package.json").version;
 
 com
