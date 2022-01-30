@@ -166,8 +166,8 @@ function readAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
     reader.readAsArrayBuffer(blob);
-    reader.onloadend = ()=>{ resolve(reader.result); };
-    reader.onerror = (ev)=>{ reject(ev.error); };
+    reader.onloadend = ()=>{ resolve(<ArrayBuffer>reader.result); };
+    reader.onerror = (ev)=>{ reject(ev); };
   });
 }
 

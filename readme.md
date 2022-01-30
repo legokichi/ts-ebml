@@ -13,7 +13,7 @@ npm install ts-ebml --save
 
 # usage
 
-## show EBML structure on conosle
+## show EBML structure on console
 
 ```console
 $ ts-ebml foo.webm
@@ -29,6 +29,12 @@ $ ts-ebml foo.webm
 48	m	1	Info
 53	u	2	TimecodeScale 1000000
 ...
+```
+
+## try to convert a MediaRecorder WebM to seekable WebM
+
+```console
+$ ts-ebml -s input.webm | cat > seekable.webm
 ```
 
 ## node
