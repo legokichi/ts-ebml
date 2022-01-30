@@ -66,6 +66,18 @@ fetch('media/test.webm')
   });
 ```
 
+Import as Ecmascript module
+
+```
+const {
+  Decoder,
+  Encoder,
+  tools,
+  Reader,
+  injectMetadata,
+} = await import('./ts-ebml.export.min.js');
+```
+
 # features
 
 * get WebP frame from MediaRecorder WebM VP8 Stream
