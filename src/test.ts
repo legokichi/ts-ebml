@@ -284,7 +284,7 @@ function create_recorder_helper_test(file: string){
       const {data, timecode} = ev;
       assert.ok(Number.isFinite(timecode), "cluster.timecode:"+timecode);
       assert.ok(data.length > 0, "cluster.length:"+data.length);
-      const assertion = data.every((elm)=> elm.name === "Cluster" || elm.name === "Timecode" || elm.name === "SimpleBlock");
+      const assertion = data.every((elm)=> elm.name === "Cluster" || elm.name === "Timecode" || elm.name === "SimpleBlock" || elm.name === "Timestamp");
       assert.ok(assertion, "element check");
       assert.ok(timecode > last_timecode);
       cluster_num += 1;
