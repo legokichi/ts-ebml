@@ -55,7 +55,7 @@ if(com.seekable){
         CodecID = elm.value;
       }else if(elm.type === "u" && elm.name === "TimecodeScale"){
         process.stdout.write(new Buffer(new Encoder().encode([elm])));
-      }else if(elm.type === "u" && (elm.name === "Timecode" || elm.name === "Timestamp")){
+      }else if(elm.type === "u" && elm.name === "Timestamp"){
         process.stdout.write(new Buffer(new Encoder().encode([elm])));
       }else if(elm.type === "b" && elm.name === "SimpleBlock"){
         const o = tools.ebmlBlock(elm.data);
