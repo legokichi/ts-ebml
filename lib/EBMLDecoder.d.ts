@@ -15,20 +15,20 @@ export default class EBMLDecoder {
     private _result;
     constructor();
     decode(chunk: ArrayBuffer): EBML.EBMLElementDetail[];
-    private readChunk(chunk);
-    private getSchemaInfo(tagNum);
+    private readChunk;
+    private getSchemaInfo;
     /**
      * vint された parsing tag
      * @return - return false when waiting for more data
      */
-    private readTag();
+    private readTag;
     /**
      * vint された現在のタグの内容の大きさを読み込む
      * @return - return false when waiting for more data
      */
-    private readSize();
+    private readSize;
     /**
      * データ読み込み
      */
-    private readContent();
+    private readContent;
 }

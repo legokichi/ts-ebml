@@ -14,15 +14,10 @@ async function main(){
   const devices = await navigator.mediaDevices.enumerateDevices();
   console.table(devices);
   
-  const stream: MediaStream = await (
-    navigator.mediaDevices.getUserMedia instanceof Function ? navigator.mediaDevices.getUserMedia({video: true, audio: true}) :
-    navigator.getUserMedia instanceof Function ? new Promise<MediaStream>((resolve, reject)=> navigator.getUserMedia({video: true, audio: true}, resolve, reject)) :
-    navigator["webkitGetUserMedia"] instanceof Function ? new Promise<MediaStream>((resolve, reject)=> navigator["webkitGetUserMedia"]({video: true, audio: true}, resolve, reject)) :
-    Promise.reject<MediaStream>(new Error("cannot use usermedia"))
-  );
+  const stream: MediaStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
   
   if(logging){
-  	stream.addEventListener("active", (ev)=>{ console.log(ev.type); });
+    stream.addEventListener("active", (ev)=>{ console.log(ev.type); });
     stream.addEventListener("inactive", (ev)=>{ console.log(ev.type); });
     stream.addEventListener("addtrack", (ev)=>{ console.log(ev.type); });
     stream.addEventListener("removetrack", (ev)=>{ console.log(ev.type); });
@@ -30,10 +25,10 @@ async function main(){
   
   const rec = new MediaRecorder(stream, {mimeType: 'video/webm; codecs="opus,vp8"'});
   if(logging){
-  	rec.addEventListener("dataavailable", (ev)=>{ console.log(ev.type); });
-  	rec.addEventListener("pause", (ev)=>{ console.log(ev.type); });
-  	rec.addEventListener("resume", (ev)=>{ console.log(ev.type); });
-  	rec.addEventListener("start", (ev)=>{ console.log(ev.type); });
+    rec.addEventListener("dataavailable", (ev)=>{ console.log(ev.type); });
+    rec.addEventListener("pause", (ev)=>{ console.log(ev.type); });
+    rec.addEventListener("resume", (ev)=>{ console.log(ev.type); });
+    rec.addEventListener("start", (ev)=>{ console.log(ev.type); });
     rec.addEventListener("stop", (ev)=>{ console.log(ev.type); });
     rec.addEventListener("error", (ev)=>{ console.error(ev.type, ev); });
   }
@@ -76,7 +71,7 @@ async function main(){
   video.autoplay = true;
   document.body.appendChild(video);
   
-  await new Promise((resolve)=>{ ms.addEventListener('sourceopen', ()=> resolve(), {once: true}); });
+  await new Promise<void>((resolve)=>{ ms.addEventListener('sourceopen', ()=> resolve(), {once: true}); });
 
   const sb = ms.addSourceBuffer(rec.mimeType);
   if(logging){
@@ -85,11 +80,11 @@ async function main(){
     sb.addEventListener('updateend', (ev)=>{ console.log(ev.type); }); // annoying
     sb.addEventListener('error', (ev)=>{ console.error(ev.type, ev); });
     sb.addEventListener('abort', (ev)=>{ console.log(ev.type); });
-	}
+  }
 
   async function stop(){
-  	console.info("stopping");
-  	if(sb.updating){ sb.abort(); }
+    console.info("stopping");
+    if(sb.updating){ sb.abort(); }
     if(ms.readyState === "open"){ ms.endOfStream(); }
     rec.stop();
     stream.getTracks().map((track)=>{ track.stop(); });
@@ -110,7 +105,7 @@ async function main(){
   button.innerHTML = "stop";
   button.addEventListener("click", ()=>{
     document.body.removeChild(button);
-  	tasks = tasks.then(stop);
+    tasks = tasks.then(stop);
   }, <any>{once: true});
   document.body.appendChild(button);
 
@@ -162,7 +157,7 @@ async function main(){
   async function appendBuffer(buf: ArrayBuffer): Promise<void>{
     sb.appendBuffer(buf);
 
-    await new Promise((resolve, reject)=>{
+    await new Promise<void>((resolve, reject)=>{
       sb.addEventListener('updateend', ()=> resolve(), {once: true});
       sb.addEventListener("error", (ev)=> reject(ev), {once: true});
     });
@@ -232,7 +227,9 @@ declare class MediaRecorder extends EventTarget {
   audioBitsPerSecond: number;
   ondataavailable?: (ev: BlobEvent)=> void;
   onerror?: (ev: ErrorEvent)=> void;
-  addEventListener<K extends keyof MediaRecorderEventMap>(type: K, listener: (this: MediaStream, ev: MediaRecorderEventMap[K]) => any, useCapture?: boolean): void;
+  addEventListener<K extends keyof MediaRecorderEventMap>(
+    type: K,
+    listener: (this: MediaStream, ev: MediaRecorderEventMap[K]) => any, useCapture?: boolean): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
   requestData(): Blob;
 }

@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { Buffer } from "./tools";
 export declare type ChildElementsValue = NumberElement | StringElement | BinaryElement | DateElement;
 export declare type EBMLElementValue = MasterElement | ChildElementsValue;
 export declare type ChildElementBuffer = ChildElement & {

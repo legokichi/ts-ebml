@@ -8,18 +8,21 @@ async function main(){
   let duration = 60;  
   let codec = "vp8";
 
-  if (params.has("type") && params.get("type") == "recorder")
+  if (params.has("type") && params.get("type") == "recorder") {
     recorder = true;
+  }
 
-  if (params.has("duration"))
+  if (params.has("duration")){
     duration = parseInt(params.get("duration") || "60");  
+  }
 
-  if (params.has("codec"))
+  if (params.has("codec")){
     codec = params.get("codec") || "vp8"; 
+  }
 
-  if (recorder)
+  if (recorder){
     await main_from_recorder(duration, codec);
-  else{
+  }else{
     const file = params.has("file") ? params.get("file") as string : "./chrome57.webm";
     await main_from_file(file);
   }
@@ -66,12 +69,7 @@ async function main_from_recorder(duration: number, codec: string) {
   const devices = await navigator.mediaDevices.enumerateDevices();
   console.table(devices);
 
-  const stream: MediaStream = await (
-    navigator.mediaDevices.getUserMedia instanceof Function ? navigator.mediaDevices.getUserMedia({video: true, audio: true}) :
-    navigator.getUserMedia instanceof Function ? new Promise<MediaStream>((resolve, reject)=> navigator.getUserMedia({video: true, audio: true}, resolve, reject)) :
-    navigator["webkitGetUserMedia"] instanceof Function ? new Promise<MediaStream>((resolve, reject)=> navigator["webkitGetUserMedia"]({video: true, audio: true}, resolve, reject)) :
-    Promise.reject<MediaStream>(new Error("cannot use usermedia"))
-  );
+  const stream: MediaStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
 
   const rec = new MediaRecorder(stream, { mimeType: `video/webm; codecs="${codec}, opus"`});
 
@@ -119,7 +117,7 @@ async function main_from_recorder(duration: number, codec: string) {
 
   const rawVideoButton = document.createElement("button");
   rawVideoButton.textContent = "Download Raw Video";
-  rawVideoButton.addEventListener("click", () => { saveData(webM, "raw.webm") });  
+  rawVideoButton.addEventListener("click", () => saveData(webM, "raw.webm"));  
   put(raw_video, "Raw WebM Stream (not seekable)");
   document.body.appendChild(document.createElement("br"));
   document.body.appendChild(rawVideoButton);
@@ -148,7 +146,7 @@ async function main_from_recorder(duration: number, codec: string) {
     refined_video.controls = true;
     const refinedVideoButton = document.createElement("button");
     refinedVideoButton.textContent = "Download Refined Video";
-    refinedVideoButton.addEventListener("click", () => { saveData(refinedWebM, "refined.webm") });
+    refinedVideoButton.addEventListener("click", () => saveData(refinedWebM, "refined.webm"));
     put(refined_video, info.title);
     document.body.appendChild(document.createElement("br"));
     document.body.appendChild(refinedVideoButton);
@@ -213,7 +211,9 @@ declare class MediaRecorder extends EventTarget {
   audioBitsPerSecond: number;
   ondataavailable?: (ev: BlobEvent)=> void;
   onerror?: (ev: ErrorEvent)=> void;
-  addEventListener<K extends keyof MediaRecorderEventMap>(type: K, listener: (this: MediaStream, ev: MediaRecorderEventMap[K]) => any, useCapture?: boolean): void;
+  addEventListener<K extends keyof MediaRecorderEventMap>(
+    type: K,
+    listener: (this: MediaStream, ev: MediaRecorderEventMap[K]) => any, useCapture?: boolean): void;
   addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
   requestData(): Blob;
 }

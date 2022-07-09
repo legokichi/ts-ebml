@@ -1,5 +1,5 @@
 /// <reference types="qunit"/>
-import EBML, {Decoder, Encoder, Reader} from "./";
+import {EBMLElementDetail, EBMLElementValue, Decoder, Encoder, Reader} from "./";
 import {tools} from "./";
 
 const Buffer = tools.Buffer;
@@ -34,7 +34,7 @@ QUnit.test("encoder-decoder", async (assert: Assert)=>{
   const elms = new Decoder().decode(buf);
   const buf2 = new Encoder().encode(elms);
   const elms2 = new Decoder().decode(buf2);
-  type D = EBML.EBMLElementDetail;
+  type D = EBMLElementDetail;
   const tests = [
     {index: 0, test: (elm: D)=>{ assert.ok(elm.name === "EBML" && elm.type === "m" && elm.isEnd === false); } },
     {index: 4, test: (elm: D)=>{ assert.ok(elm.name === "EBML" && elm.type === "m" && elm.isEnd === true); } },
@@ -44,12 +44,15 @@ QUnit.test("encoder-decoder", async (assert: Assert)=>{
     {index: 26, test: (elm: D)=>{ assert.ok(elm.name === "MuxingApp" && elm.type === "8" && elm.value === "libebml2 v0.10.0 + libmatroska2 v0.10.1"); } },
     {index: 28, test: (elm: D)=>{
       assert.ok(elm.name === "DateUTC" && elm.type === "d" && elm.value instanceof Date);
-      assert.ok(elm.type === "d" && tools.convertEBMLDateToJSDate(elm.value).getTime() === new Date("2010-08-21T07:23:03.000Z").getTime()); // toISOString
+      assert.ok(elm.type === "d" &&
+                tools.convertEBMLDateToJSDate(elm.value).getTime() === new Date("2010-08-21T07:23:03.000Z").getTime()); // toISOString
     } },
     {index: 29, test: (elm: D)=>{
       assert.ok(elm.name === "SegmentUID" && elm.type === "b");
       if(elm.type === "b"){
-        const buf = new Uint8Array(new Buffer([0x92, 0x2d, 0x19, 0x32, 0x0f, 0x1e, 0x13, 0xc5, 0xb5, 0x05, 0x63, 0x0a, 0xaf, 0xd8, 0x53, 0x36]));
+        const buf = new Uint8Array(new Buffer([
+          0x92, 0x2d, 0x19, 0x32, 0x0f, 0x1e, 0x13, 0xc5, 0xb5, 0x05, 0x63, 0x0a, 0xaf, 0xd8, 0x53, 0x36
+        ]));
         const buf2 = new Uint8Array(elm.value);
         assert.ok(buf.every((val, i)=> buf2[i] === val));
       }
@@ -93,7 +96,7 @@ function create_encoder_decoder_test(file: string){
 
 
 QUnit.test("handwrite-encoder", async (assert: Assert)=>{
-  const tagStream: EBML.EBMLElementValue[] = [
+  const tagStream: EBMLElementValue[] = [
     {name: "EBML", type: "m", isEnd: false},
       {name: "EBMLVersion", type: "u", value: 1},
       {name: "EBMLReadVersion", type: "u", value: 1},
@@ -107,11 +110,11 @@ QUnit.test("handwrite-encoder", async (assert: Assert)=>{
       {name: "SeekHead", type: "m", isEnd: false},
       {name: "SeekHead", type: "m", isEnd: true},
       {name: "Info", type: "m", isEnd: false},
-        {name: "TimecodeScale", type: "u", value: 1000000},
+        {name: "TimestampScale", type: "u", value: 1000000},
       {name: "Info", type: "m", isEnd: true},
         {name: "Duration", type: "f", value: 0.0},
       {name: "Cluster", type: "m", unknownSize: true, isEnd: false},
-        {name: "Timecode", type: "u", value: 1},
+        {name: "Timestamp", type: "u", value: 1},
         {name: "SimpleBlock", type: "b", value: new Buffer(1024)},
   ];
   const binarized = tagStream.map(tools.encodeValueToBuffer);
@@ -136,18 +139,18 @@ QUnit.module("Reader");
 
 const MEDIA_RECORDER_WEBM_FILE_LIST = [
   "./chrome57.webm",
-  // last2timecode(video, audio): ((7.493s, 7.552s), (7.493s, 7.552s))
+  // last2timestamp(video, audio): ((7.493s, 7.552s), (7.493s, 7.552s))
   // Chrome57: 7.612s ~= 7.611s = 7.552s + (7.552s - 7.493s) // ???
   // Firefox53: 7.552s = 7.552s + (7.552s - 7.552s) // shit!
   // Reader: 7.611s = 7.552s + (7.552s - 7.493s)
   "./firefox55nightly.webm",
-  // last2timecode(video, audio): ((8.567s, 8.590s), (8.626s, 8.646s)), CodecDelay(audio): 6.500ms
+  // last2timestamp(video, audio): ((8.567s, 8.590s), (8.626s, 8.646s)), CodecDelay(audio): 6.500ms
   // Chrome57: 8.659s ~= 8.6595s = 8.646s + (8.646s - 8.626s) - 6.500ms
   // Firefox53: 8.666s = 8.646s + (8.646s - 8.626s)
   // Reader: 8.6595s = 8.646s + (8.646s - 8.626s) - 6.500ms
   "./firefox53.webm",
   // Chrome57: 10.019s, Firefox53: 10.026s, Reader: 9.967s
-  // last2timecode(video, audio): ((9.932s, 9.967s), (9.986s, 10.006s)), CodecDelay(audio): 6.500ms
+  // last2timestamp(video, audio): ((9.932s, 9.967s), (9.986s, 10.006s)), CodecDelay(audio): 6.500ms
   // Chrome57: 10.019s ~= 10.0195s = 10.006s + (10.006s - 9.986s) - 6.500ms
   // Firefox53: 10.026s = 10.006s + (10.006s - 9.986s)
   // Reader: 10.0195s = 10.006s + (10.006s - 9.986s) - 6.500ms
@@ -204,7 +207,7 @@ function create_convert_to_seekable_test(file: string){
 
     assert.ok(reader.metadatas[0].name === "EBML");
     assert.ok(reader.metadatas.length > 0);
-    const sec = reader.duration * reader.timecodeScale / 1000 / 1000 / 1000;
+    const sec = reader.duration * reader.timestampScale / 1000 / 1000 / 1000;
     assert.ok(7 < sec && sec < 11);
 
     const refinedMetadataBuf = tools.makeMetadataSeekable(reader.metadatas, reader.duration, reader.cues);
@@ -228,7 +231,7 @@ function create_convert_to_seekable_test(file: string){
       assert.ok(  Number.isFinite(refined_video.duration), "refined webm duration is finite");
       
       await sleep(100);
-      const wait = new Promise((resolve, reject)=>{raw_video.onseeked=resolve;raw_video.onerror=reject});
+      const wait = new Promise((resolve, reject)=>{raw_video.onseeked=resolve;raw_video.onerror=reject;});
       raw_video.currentTime = 7*24*60*60;
       await wait;
       
@@ -262,8 +265,8 @@ function create_recorder_helper_test(file: string){
     const reader = new Reader();
     
     let last_sec = 0;
-    reader.addListener("duration", ({timecodeScale, duration})=>{
-      const sec = duration * timecodeScale / 1000 / 1000 / 1000;
+    reader.addListener("duration", ({timestampScale, duration})=>{
+      const sec = duration * timestampScale / 1000 / 1000 / 1000;
       assert.ok(Number.isFinite(sec), "duration:"+sec+"sec");
       assert.ok(sec > last_sec);
       last_sec = sec;
@@ -278,17 +281,17 @@ function create_recorder_helper_test(file: string){
     });
 
     let cluster_num = 0;
-    let last_timecode = -1;
+    let last_timestamp = -1;
     reader.addListener("cluster", (ev)=>{
       // cluster chunk test
-      const {data, timecode} = ev;
-      assert.ok(Number.isFinite(timecode), "cluster.timecode:"+timecode);
+      const {data, timestamp} = ev;
+      assert.ok(Number.isFinite(timestamp), "cluster.timestamp:"+timestamp);
       assert.ok(data.length > 0, "cluster.length:"+data.length);
-      const assertion = data.every((elm)=> elm.name === "Cluster" || elm.name === "Timecode" || elm.name === "SimpleBlock");
+      const assertion = data.every((elm)=> elm.name === "Cluster" || elm.name === "Timestamp" || elm.name === "SimpleBlock");
       assert.ok(assertion, "element check");
-      assert.ok(timecode > last_timecode);
+      assert.ok(timestamp > last_timestamp);
       cluster_num += 1;
-      last_timecode = timecode;
+      last_timestamp = timestamp;
     });
 
     const res = await fetch(file);
@@ -300,7 +303,7 @@ function create_recorder_helper_test(file: string){
     assert.ok(last_sec > 0);
     assert.ok(metadata_loaded);
     assert.ok(cluster_num > 0);
-    assert.ok(last_timecode > 0);
+    assert.ok(last_timestamp > 0);
   };
 }
 
