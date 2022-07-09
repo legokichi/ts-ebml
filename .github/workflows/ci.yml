@@ -34,9 +34,6 @@ jobs:
       - name: Doc
         run: npm run doc
 
-      - name: Check
-        run: npm run check
-
       - name: Test
         run: npm run test
 
