@@ -7,7 +7,7 @@
     "init": "npm run update && npm run mkdir && npm run build",
     "update": "npm run reset && npm update",
     "reset": "rm -rf node_modules",
-    "mkdir": "mkdir lib dist 2>/dev/null",
+    "mkdir": "mkdir -p lib dist",
     "clean": "rm -rf lib/* dist/* test/*.js && mkdir -p dist",
     "build": "npm run clean   && tsc    -p . && npm run browserify",
     "start": "http-server . -s & tsc -w -p .& watchify lib/example_seekable.js -o test/example_seekable.js",
