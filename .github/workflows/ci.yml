@@ -42,3 +42,5 @@ jobs:
 
       - name: Examples
         run: npm run examples
+
+# TODO: Run test.html in browser

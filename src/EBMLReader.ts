@@ -176,7 +176,11 @@ export default class EBMLReader extends EventEmitter {
           if(this.trackInfo.type === "both" || this.trackInfo.type === "video"){
             const CueTime = this.lastClusterTimestamp + timestamp;
             this.cues.push({CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
-            this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimestamp});
+            this.emit("cue_info", {
+                CueTrack: trackNumber,
+                CueClusterPosition: this.lastClusterPosition,
+                CueTime: this.lastClusterTimestamp
+            });
             this.emit("cue", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
           }
         }
@@ -187,7 +191,11 @@ export default class EBMLReader extends EventEmitter {
           if(this.trackInfo.type === "audio"){
             const CueTime = this.lastClusterTimestamp + timestamp;
             this.cues.push({CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
-            this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimestamp});
+            this.emit("cue_info", {
+                CueTrack: trackNumber,
+                CueClusterPosition: this.lastClusterPosition,
+                CueTime: this.lastClusterTimestamp
+            });
             this.emit("cue", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
           }
         }
@@ -280,7 +288,8 @@ export default class EBMLReader extends EventEmitter {
       if(this.trackInfo.type === "both"){
         if(this.last2SimpleBlockAudioTrackTimestamp[1] > this.last2SimpleBlockVideoTrackTimestamp[1]){
           // audio diff
-          defaultDuration = (this.last2SimpleBlockAudioTrackTimestamp[1] - this.last2SimpleBlockAudioTrackTimestamp[0]) * this.timestampScale;
+          defaultDuration = (this.last2SimpleBlockAudioTrackTimestamp[1] -
+                             this.last2SimpleBlockAudioTrackTimestamp[0]) * this.timestampScale;
           // audio delay
           const delay = this.trackCodecDelay[this.trackTypes.indexOf(2)]; // 2 => audio
           if(typeof delay === "number"){ codecDelay = delay; }
@@ -288,7 +297,8 @@ export default class EBMLReader extends EventEmitter {
           lastTimestamp = this.last2SimpleBlockAudioTrackTimestamp[1];
         }else{
           // video diff
-          defaultDuration = (this.last2SimpleBlockVideoTrackTimestamp[1] - this.last2SimpleBlockVideoTrackTimestamp[0]) * this.timestampScale;
+          defaultDuration = (this.last2SimpleBlockVideoTrackTimestamp[1] -
+                             this.last2SimpleBlockVideoTrackTimestamp[0]) * this.timestampScale;
           // video delay
           const delay = this.trackCodecDelay[this.trackTypes.indexOf(1)]; // 1 => video
           if(typeof delay === "number"){ codecDelay = delay; }
