@@ -122,13 +122,12 @@ namespace tools {
 # develop
 
 ```sh
-npm run setup # install cli tools
-npm run init  # install libraries
-npm run build # build js code
-npm run lint  # tslint
-npm run doc   # typedoc
-npm run check # type check
-npm run test  # build test
+npm run init    # install libraries
+npm run build   # build js code
+npm run lint    # tslint
+npm run doc     # typedoc
+npm run check   # type check (watch)
+npm test        # build and run tests
 npm run example # build example
 ```
 

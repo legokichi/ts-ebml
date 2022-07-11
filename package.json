@@ -3,9 +3,8 @@
   "version": "2.0.2",
   "description": "ebml decoder and encoder",
   "scripts": {
-    "setup": "playwright install",
     "init": "npm run update && npm run mkdir && npm run build",
-    "update": "npm run reset && npm update",
+    "update": "npm run reset && npm update && playwright install",
     "reset": "rm -rf node_modules",
     "mkdir": "mkdir -p lib dist",
     "clean": "rm -rf lib/* dist/* test/*.js && mkdir -p dist",
