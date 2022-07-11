@@ -35,7 +35,7 @@ jobs:
         run: npm run doc
 
       - name: Test
-        run: npm run test
+        run: npm test
 
       - name: Examples
         run: npm run examples

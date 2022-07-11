@@ -380,4 +380,4 @@ declare class MediaRecorder extends EventTarget {
 }
 
 
-
+QUnit.on('runEnd', runEnd => global.runEnd = runEnd);

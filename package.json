@@ -14,7 +14,9 @@
     "stop": "pkill -f 'http-server|tsc -w|watchify'",
     "browserify": "browserify lib/index.js --standalone EBML -o dist/EBML.js",
     "watchify": "watchify lib/index.js --standalone EBML -o dist/EBML.js -v",
-    "test": "tsc && espower lib/test.js > lib/test.tmp && mv -f lib/test.tmp lib/test.js && browserify lib/test.js -o test/test.js",
+    "build_tests": "tsc && espower lib/test.js > lib/test.tmp && mv -f lib/test.tmp lib/test.js && browserify lib/test.js -o test/test.js",
+    "run_tests": "playwright test",
+    "test": "npm run build_tests && npm run run_tests",
     "example": "tsc && browserify lib/example_seekable.js -o test/example_seekable.js",
     "examples": "tsc && for file in `find lib -name 'example_*.js' -type f -printf '%f\\n'`; do browserify lib/$file -o test/$file; done",
     "examples_bsd": "tsc && for file in `find lib -name 'example_*.js' -type f -print`; do browserify lib/$(basename $file) -o test/$(basename $file); done",
@@ -49,6 +51,7 @@
     "matroska-schema": "^1.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.23.2",
     "@types/commander": "^2.12.0",
     "@types/node": "^18.0.3",
     "@types/qunit": "^2.19.1",
@@ -70,7 +73,9 @@
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
   "browserify": {
-    "transform": ["aliasify"]
+    "transform": [
+      "aliasify"
+    ]
   },
   "aliasify": {
     "aliases": {
