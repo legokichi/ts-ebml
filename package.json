@@ -3,7 +3,7 @@
   "version": "2.0.2",
   "description": "ebml decoder and encoder",
   "scripts": {
-    "setup": "npm install -g http-server;",
+    "setup": "playwright install",
     "init": "npm run update && npm run mkdir && npm run build",
     "update": "npm run reset && npm update",
     "reset": "rm -rf node_modules",
@@ -59,6 +59,7 @@
     "browserify": "^17.0.0",
     "empower": "^1.3.1",
     "espower-cli": "^1.1.0",
+    "http-server": "^14.1.1",
     "power-assert": "^1.6.1",
     "power-assert-formatter": "^1.4.1",
     "qunit-tap": "^1.5.1",
