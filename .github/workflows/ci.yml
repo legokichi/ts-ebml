@@ -19,9 +19,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Setup
-        run: npm run setup
-
       - name: Init
         run: npm run init
 
@@ -39,5 +36,3 @@ jobs:
 
       - name: Examples
         run: npm run examples
-
-# TODO: Run test.html in browser

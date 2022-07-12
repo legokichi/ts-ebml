@@ -13,7 +13,7 @@
     "stop": "pkill -f 'http-server|tsc -w|watchify'",
     "browserify": "browserify lib/index.js --standalone EBML -o dist/EBML.js",
     "watchify": "watchify lib/index.js --standalone EBML -o dist/EBML.js -v",
-    "build_tests": "tsc && espower lib/test.js > lib/test.tmp && mv -f lib/test.tmp lib/test.js && browserify lib/test.js -o test/test.js",
+    "build_tests": "tsc && espower lib/test.js > lib/test.tmp && mv -f lib/test.tmp lib/test.js && tsc src/run_test.ts --outDir test --target esnext --moduleresolution node && mv test/run_test.js test/run_test.mjs && browserify lib/test.js -o test/test.js",
     "run_tests": "playwright test",
     "test": "npm run build_tests && npm run run_tests",
     "example": "tsc && browserify lib/example_seekable.js -o test/example_seekable.js",

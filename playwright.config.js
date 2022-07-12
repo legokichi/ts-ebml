@@ -1,6 +1,6 @@
 module.exports = {
     testDir: 'test',
-    testMatch: 'run_test.js',
+    testMatch: 'run_test.mjs',
     webServer: {
         command: 'npx http-server',
         port: 8080,

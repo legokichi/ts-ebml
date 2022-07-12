@@ -1,7 +1,5 @@
-const { test, expect } = require('@playwright/test');
-
+import { test, expect } from '@playwright/test';
 const expected_num_tests = 17;
-
 test('tests should pass', async ({ page }) => {
     const response = await page.goto('/test/test.html');
     expect(response.status()).toBe(200);
