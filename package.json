@@ -4,7 +4,7 @@
   "description": "ebml decoder and encoder",
   "scripts": {
     "init": "npm run update && npm run mkdir && npm run build",
-    "update": "npm run reset && npm update && git submodule update && playwright install",
+    "update": "npm run reset && npm update && playwright install",
     "reset": "rm -rf node_modules",
     "mkdir": "mkdir -p lib dist",
     "clean": "rm -rf lib/* dist/* test/*.js && mkdir -p dist",
