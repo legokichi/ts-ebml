@@ -3,7 +3,7 @@ import {EBMLElementDetail, EBMLElementValue, Decoder, Encoder, Reader} from "./"
 import {tools} from "./";
 
 const Buffer = tools.Buffer;
-import QUnit     = require('qunitjs');
+import QUnit     = require('qunit');
 import empower   = require('empower');
 import formatter = require('power-assert-formatter');
 import qunitTap  = require("qunit-tap");
@@ -379,5 +379,5 @@ declare class MediaRecorder extends EventTarget {
   requestData(): Blob;
 }
 
-
-QUnit.on('runEnd', runEnd => global.runEnd = runEnd);
+// @types/qunit doesn't define QUnit.on yet
+QUnit['on']('runEnd', runEnd => global.runEnd = runEnd);

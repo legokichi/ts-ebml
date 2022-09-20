@@ -62,7 +62,7 @@
     "power-assert": "^1.6.1",
     "power-assert-formatter": "^1.4.1",
     "qunit-tap": "^1.5.1",
-    "qunitjs": "^2.4.0",
+    "qunit": "^2.19.1",
     "tslint": "^5.20.1",
     "typedoc": "^0.23.15",
     "typedoc-plugin-missing-exports": "^1.0.0",
