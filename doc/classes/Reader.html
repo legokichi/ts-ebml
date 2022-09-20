@@ -23,7 +23,9 @@ So please do not use for regular WebM files.</p>
 <ul class="tsd-hierarchy">
 <li><span class="tsd-signature-type">EventEmitter</span>
 <ul class="tsd-hierarchy">
-<li><span class="target">Reader</span></li></ul></li></ul></section>
+<li><span class="target">Reader</span></li></ul></li></ul></section><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L11">EBMLReader.ts:11</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -84,19 +86,21 @@ So please do not use for regular WebM files.</p>
 <li class="tsd-signature tsd-anchor-link" id="constructor.new_Reader">new <wbr/>Reader<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a><a href="#constructor.new_Reader" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a></h4><aside class="tsd-sources">
-<p>Overrides EventEmitter.constructor</p></aside></li></ul></section></section>
+<p>Overrides EventEmitter.constructor</p>
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L54">EBMLReader.ts:54</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="chunks" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>chunks</span><a href="#chunks" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">chunks<span class="tsd-signature-symbol">:</span> <a href="../types/EBMLElementDetail.html" class="tsd-signature-type" data-tsd-kind="Type alias">EBMLElementDetail</a><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L15">EBMLReader.ts:15</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L15">EBMLReader.ts:15</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="cues" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>cues</span><a href="#cues" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">cues<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>CueClusterPosition<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>CueTime<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>CueTrack<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L52">EBMLReader.ts:52</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L52">EBMLReader.ts:52</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="currentTrack" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>current<wbr/>Track</span><a href="#currentTrack" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">current<wbr/>Track<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>CodecDelay<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>DefaultDuration<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>TrackNumber<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>TrackType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span></div>
@@ -112,138 +116,138 @@ So please do not use for regular WebM files.</p>
 <li class="tsd-parameter">
 <h5>Track<wbr/>Type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L28">EBMLReader.ts:28</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L28">EBMLReader.ts:28</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="drop_default_duration" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>drop_<wbr/>default_<wbr/>duration</span><a href="#drop_default_duration" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">drop_<wbr/>default_<wbr/>duration<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>see: <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=606000#c22">https://bugs.chromium.org/p/chromium/issues/detail?id=606000#c22</a></p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L50">EBMLReader.ts:50</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L50">EBMLReader.ts:50</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="ended" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>ended</span><a href="#ended" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">ended<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L35">EBMLReader.ts:35</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L35">EBMLReader.ts:35</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="firstAudioBlockRead" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>first<wbr/>Audio<wbr/>Block<wbr/>Read</span><a href="#firstAudioBlockRead" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">first<wbr/>Audio<wbr/>Block<wbr/>Read<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L23">EBMLReader.ts:23</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L23">EBMLReader.ts:23</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="firstVideoBlockRead" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>first<wbr/>Video<wbr/>Block<wbr/>Read</span><a href="#firstVideoBlockRead" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">first<wbr/>Video<wbr/>Block<wbr/>Read<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L22">EBMLReader.ts:22</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L22">EBMLReader.ts:22</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="first_video_simpleblock_of_cluster_is_loaded" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>first_<wbr/>video_<wbr/>simpleblock_<wbr/>of_<wbr/>cluster_<wbr/>is_<wbr/>loaded</span><a href="#first_video_simpleblock_of_cluster_is_loaded" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">first_<wbr/>video_<wbr/>simpleblock_<wbr/>of_<wbr/>cluster_<wbr/>is_<wbr/>loaded<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L33">EBMLReader.ts:33</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L33">EBMLReader.ts:33</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="hasLoggingStarted" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>has<wbr/>Logging<wbr/>Started</span><a href="#hasLoggingStarted" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">has<wbr/>Logging<wbr/>Started<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L44">EBMLReader.ts:44</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L44">EBMLReader.ts:44</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="last2SimpleBlockAudioTrackTimestamp" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>last2<wbr/>Simple<wbr/>Block<wbr/>Audio<wbr/>Track<wbr/>Timestamp</span><a href="#last2SimpleBlockAudioTrackTimestamp" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">last2<wbr/>Simple<wbr/>Block<wbr/>Audio<wbr/>Track<wbr/>Timestamp<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L19">EBMLReader.ts:19</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L19">EBMLReader.ts:19</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="last2SimpleBlockVideoTrackTimestamp" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>last2<wbr/>Simple<wbr/>Block<wbr/>Video<wbr/>Track<wbr/>Timestamp</span><a href="#last2SimpleBlockVideoTrackTimestamp" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">last2<wbr/>Simple<wbr/>Block<wbr/>Video<wbr/>Track<wbr/>Timestamp<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L18">EBMLReader.ts:18</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L18">EBMLReader.ts:18</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="lastClusterPosition" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>last<wbr/>Cluster<wbr/>Position</span><a href="#lastClusterPosition" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">last<wbr/>Cluster<wbr/>Position<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L21">EBMLReader.ts:21</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L21">EBMLReader.ts:21</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="lastClusterTimestamp" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>last<wbr/>Cluster<wbr/>Timestamp</span><a href="#lastClusterTimestamp" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">last<wbr/>Cluster<wbr/>Timestamp<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L20">EBMLReader.ts:20</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L20">EBMLReader.ts:20</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="logGroup" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>log<wbr/>Group</span><a href="#logGroup" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">log<wbr/>Group<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;&quot;</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L43">EBMLReader.ts:43</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L43">EBMLReader.ts:43</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="logging" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>logging</span><a href="#logging" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">logging<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L42">EBMLReader.ts:42</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L42">EBMLReader.ts:42</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="metadataSize" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>metadata<wbr/>Size</span><a href="#metadataSize" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">metadata<wbr/>Size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L25">EBMLReader.ts:25</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L25">EBMLReader.ts:25</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="metadataloaded" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>metadataloaded</span><a href="#metadataloaded" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">metadataloaded<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L12">EBMLReader.ts:12</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L12">EBMLReader.ts:12</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="metadatas" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>metadatas</span><a href="#metadatas" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">metadatas<span class="tsd-signature-symbol">:</span> <a href="../types/EBMLElementDetail.html" class="tsd-signature-type" data-tsd-kind="Type alias">EBMLElementDetail</a><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L26">EBMLReader.ts:26</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L26">EBMLReader.ts:26</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="segmentOffset" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>segment<wbr/>Offset</span><a href="#segmentOffset" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">segment<wbr/>Offset<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L17">EBMLReader.ts:17</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L17">EBMLReader.ts:17</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="stack" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>stack</span><a href="#stack" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">stack<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><a href="../interfaces/MasterElement.html" class="tsd-signature-type" data-tsd-kind="Interface">MasterElement</a><span class="tsd-signature-symbol"> &amp; </span><a href="../interfaces/ElementDetail.html" class="tsd-signature-type" data-tsd-kind="Interface">ElementDetail</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L14">EBMLReader.ts:14</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L14">EBMLReader.ts:14</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="timestampScale" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>timestamp<wbr/>Scale</span><a href="#timestampScale" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">timestamp<wbr/>Scale<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L24">EBMLReader.ts:24</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L24">EBMLReader.ts:24</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="trackCodecDelay" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>track<wbr/>Codec<wbr/>Delay</span><a href="#trackCodecDelay" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">track<wbr/>Codec<wbr/>Delay<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L31">EBMLReader.ts:31</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L31">EBMLReader.ts:31</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="trackDefaultDuration" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>track<wbr/>Default<wbr/>Duration</span><a href="#trackDefaultDuration" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">track<wbr/>Default<wbr/>Duration<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L30">EBMLReader.ts:30</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L30">EBMLReader.ts:30</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="trackInfo" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>track<wbr/>Info</span><a href="#trackInfo" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">track<wbr/>Info<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>trackNumber<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;both&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;audio&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;video&quot;</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;nothing&quot;</span><span class="tsd-signature-symbol"> }</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L36">EBMLReader.ts:36</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L36">EBMLReader.ts:36</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="trackTypes" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>track<wbr/>Types</span><a href="#trackTypes" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">track<wbr/>Types<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L29">EBMLReader.ts:29</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L29">EBMLReader.ts:29</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="use_duration_every_simpleblock" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>use_<wbr/>duration_<wbr/>every_<wbr/>simpleblock</span><a href="#use_duration_every_simpleblock" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">use_<wbr/>duration_<wbr/>every_<wbr/>simpleblock<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L41">EBMLReader.ts:41</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L41">EBMLReader.ts:41</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="use_segment_info" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>use_<wbr/>segment_<wbr/>info</span><a href="#use_segment_info" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">use_<wbr/>segment_<wbr/>info<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>usefull for recording chunks.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L48">EBMLReader.ts:48</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L48">EBMLReader.ts:48</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="use_webp" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>use_<wbr/>webp</span><a href="#use_webp" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">use_<wbr/>webp<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>usefull for thumbnail creation.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/ef9ef86/src/EBMLReader.ts#L40">EBMLReader.ts:40</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L40">EBMLReader.ts:40</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Accessors</h2>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="duration" class="tsd-anchor"></a>
@@ -257,7 +261,9 @@ So please do not use for regular WebM files.</p>
 <pre><code class="language-js"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">nanosec</span><span class="hl-1"> = </span><span class="hl-3">reader</span><span class="hl-1">.</span><span class="hl-3">duration</span><span class="hl-1"> * </span><span class="hl-3">reader</span><span class="hl-1">.</span><span class="hl-3">timestampScale</span><span class="hl-1">;</span><br/><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">sec</span><span class="hl-1"> = </span><span class="hl-3">nanosec</span><span class="hl-1"> / </span><span class="hl-4">1000</span><span class="hl-1"> / </span><span class="hl-4">1000</span><span class="hl-1"> / </span><span class="hl-4">1000</span><span class="hl-1">;</span>
 </code></pre>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4></li></ul></section></section>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L271">EBMLReader.ts:271</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="addListener" class="tsd-anchor"></a>
@@ -288,7 +294,9 @@ So please do not use for regular WebM files.</p>
 <h5>ev: <span class="tsd-signature-type">number</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a></h4><aside class="tsd-sources">
-<p>Overrides EventEmitter.addListener</p></aside></li>
+<p>Overrides EventEmitter.addListener</p>
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L330">EBMLReader.ts:330</a></li></ul></aside></li>
 <li class="tsd-signature tsd-anchor-link" id="addListener.addListener-2">add<wbr/>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;cluster_ptr&quot;</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>ev<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a><a href="#addListener.addListener-2" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography">
@@ -314,7 +322,9 @@ Offset byte from <strong>file start</strong>. It is not an offset from the Segme
 <h5>ev: <span class="tsd-signature-type">number</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a></h4><aside class="tsd-sources">
-<p>Overrides EventEmitter.addListener</p></aside></li>
+<p>Overrides EventEmitter.addListener</p>
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L336">EBMLReader.ts:336</a></li></ul></aside></li>
 <li class="tsd-signature tsd-anchor-link" id="addListener.addListener-3">add<wbr/>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;cue_info&quot;</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>ev<span class="tsd-signature-symbol">: </span><a href="../interfaces/_internal_.CueInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">CueInfo</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a><a href="#addListener.addListener-3" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography">
@@ -339,7 +349,9 @@ Offset byte from <strong>file start</strong>. It is not an offset from the Segme
 <h5>ev: <a href="../interfaces/_internal_.CueInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">CueInfo</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a></h4><aside class="tsd-sources">
-<p>Overrides EventEmitter.addListener</p></aside></li>
+<p>Overrides EventEmitter.addListener</p>
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L340">EBMLReader.ts:340</a></li></ul></aside></li>
 <li class="tsd-signature tsd-anchor-link" id="addListener.addListener-4">add<wbr/>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;cue&quot;</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>ev<span class="tsd-signature-symbol">: </span><a href="../interfaces/_internal_.CueInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">CueInfo</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a><a href="#addListener.addListener-4" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>emit on every cue point for cluster to create seekable webm file from MediaRecorder</p>
@@ -363,7 +375,9 @@ Offset byte from <strong>file start</strong>. It is not an offset from the Segme
 <h5>ev: <a href="../interfaces/_internal_.CueInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">CueInfo</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a></h4><aside class="tsd-sources">
-<p>Overrides EventEmitter.addListener</p></aside></li>
+<p>Overrides EventEmitter.addListener</p>
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L342">EBMLReader.ts:342</a></li></ul></aside></li>
 <li class="tsd-signature tsd-anchor-link" id="addListener.addListener-5">add<wbr/>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;duration&quot;</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>ev<span class="tsd-signature-symbol">: </span><a href="../interfaces/_internal_.DurationInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">DurationInfo</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a><a href="#addListener.addListener-5" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>latest EBML &gt; Info &gt; TimestampScale and EBML &gt; Info &gt; Duration to create seekable webm file from MediaRecorder</p>
@@ -387,7 +401,9 @@ Offset byte from <strong>file start</strong>. It is not an offset from the Segme
 <h5>ev: <a href="../interfaces/_internal_.DurationInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">DurationInfo</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a></h4><aside class="tsd-sources">
-<p>Overrides EventEmitter.addListener</p></aside></li>
+<p>Overrides EventEmitter.addListener</p>
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L344">EBMLReader.ts:344</a></li></ul></aside></li>
 <li class="tsd-signature tsd-anchor-link" id="addListener.addListener-6">add<wbr/>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;metadata&quot;</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>ev<span class="tsd-signature-symbol">: </span><a href="../interfaces/_internal_.SegmentInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">SegmentInfo</a><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-symbol">{ </span>metadataSize<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a><a href="#addListener.addListener-6" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>EBML header without Cluster Element for recording metadata chunk</p>
@@ -411,7 +427,9 @@ Offset byte from <strong>file start</strong>. It is not an offset from the Segme
 <h5>ev: <a href="../interfaces/_internal_.SegmentInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">SegmentInfo</a><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-symbol">{ </span>metadataSize<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a></h4><aside class="tsd-sources">
-<p>Overrides EventEmitter.addListener</p></aside></li>
+<p>Overrides EventEmitter.addListener</p>
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L346">EBMLReader.ts:346</a></li></ul></aside></li>
 <li class="tsd-signature tsd-anchor-link" id="addListener.addListener-7">add<wbr/>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;cluster&quot;</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>ev<span class="tsd-signature-symbol">: </span><a href="../interfaces/_internal_.SegmentInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">SegmentInfo</a><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-symbol">{ </span>timestamp<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a><a href="#addListener.addListener-7" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>emit every Cluster Element and its children for recording chunk</p>
@@ -435,7 +453,9 @@ Offset byte from <strong>file start</strong>. It is not an offset from the Segme
 <h5>ev: <a href="../interfaces/_internal_.SegmentInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">SegmentInfo</a><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-symbol">{ </span>timestamp<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a></h4><aside class="tsd-sources">
-<p>Overrides EventEmitter.addListener</p></aside></li>
+<p>Overrides EventEmitter.addListener</p>
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L348">EBMLReader.ts:348</a></li></ul></aside></li>
 <li class="tsd-signature tsd-anchor-link" id="addListener.addListener-8">add<wbr/>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;webp&quot;</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>ev<span class="tsd-signature-symbol">: </span><a href="../interfaces/_internal_.ThumbnailInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">ThumbnailInfo</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a><a href="#addListener.addListener-8" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>for thumbnail</p>
@@ -459,7 +479,9 @@ Offset byte from <strong>file start</strong>. It is not an offset from the Segme
 <h5>ev: <a href="../interfaces/_internal_.ThumbnailInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">ThumbnailInfo</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Reader.html" class="tsd-signature-type" data-tsd-kind="Class">Reader</a></h4><aside class="tsd-sources">
-<p>Overrides EventEmitter.addListener</p></aside></li></ul></section>
+<p>Overrides EventEmitter.addListener</p>
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L350">EBMLReader.ts:350</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private"><a id="emit_segment_info" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>emit_<wbr/>segment_<wbr/>info</span><a href="#emit_segment_info" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
@@ -467,7 +489,9 @@ Offset byte from <strong>file start</strong>. It is not an offset from the Segme
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>emit chunk info</p>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></section>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L111">EBMLReader.ts:111</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="put" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>put</span><a href="#put" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -478,7 +502,9 @@ Offset byte from <strong>file start</strong>. It is not an offset from the Segme
 <ul class="tsd-parameter-list">
 <li>
 <h5>elm: <a href="../types/EBMLElementDetail.html" class="tsd-signature-type" data-tsd-kind="Type alias">EBMLElementDetail</a></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></section>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L355">EBMLReader.ts:355</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="read" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>read</span><a href="#read" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -489,7 +515,9 @@ Offset byte from <strong>file start</strong>. It is not an offset from the Segme
 <ul class="tsd-parameter-list">
 <li>
 <h5>elm: <a href="../types/EBMLElementDetail.html" class="tsd-signature-type" data-tsd-kind="Type alias">EBMLElementDetail</a></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></section>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L134">EBMLReader.ts:134</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="stop" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>stop</span><a href="#stop" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -497,7 +525,9 @@ Offset byte from <strong>file start</strong>. It is not an offset from the Segme
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>emit final state.</p>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></section></section></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/davedoesdev/ts-ebml/blob/3ab26c6/src/EBMLReader.ts#L90">EBMLReader.ts:90</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -518,7 +548,7 @@ Offset byte from <strong>file start</strong>. It is not an offset from the Segme
 <ul>
 <li><a href="../index.html">ts-<wbr/>ebml</a>
 <ul>
-<li class="tsd-kind-namespace"><a href="../modules/_internal_.html">&lt;internal&gt;</a></li>
+<li class="tsd-kind-module"><a href="../modules/_internal_.html">&lt;internal&gt;</a></li>
 <li class="tsd-kind-namespace"><a href="../modules/tools.html">tools</a></li></ul></li></ul></div></details></nav>
 <nav class="tsd-navigation secondary menu-sticky">
 <ul>
