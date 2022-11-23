@@ -212,9 +212,9 @@ export default class EBMLReader extends EventEmitter {
       this.emit_segment_info();
       this.emit("cluster_ptr", elm.tagStart);
       this.lastClusterPosition = elm.tagStart;
-    }else if(elm.type === "u" && elm.name === "Timecode"){
+    }else if(elm.type === "u" && elm.name === "Timestamp"){
       this.lastClusterTimecode = elm.value;
-    }else if(elm.type === "u" && elm.name === "TimecodeScale"){
+    }else if(elm.type === "u" && elm.name === "TimestampScale"){
       this.timecodeScale = elm.value;
     }else if(elm.type === "m" && elm.name === "TrackEntry"){
       if(elm.isEnd){
