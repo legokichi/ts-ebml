@@ -195,13 +195,18 @@ export function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer {
  * convert the metadata from a streaming webm bytestream to a seekable file by inserting Duration, Seekhead and Cues
  * @param originalMetadata - orginal metadata (everything before the clusters start) from media recorder
  * @param duration - Duration (TimestampScale)
- * @param cues - cue points for clusters
+ * @param cuesInfo - cue points for clusters
+ * @param cuesOffset - extra space to leave before cue points
+ * @param cuesPosition - location for cue points (if zero, put after tracks metadata)
  */
 export function makeMetadataSeekable( 
 
   originalMetadata: EBML.EBMLElementDetail[], 
   duration: number,
-  cuesInfo: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[] )
+  cuesInfo: {CueTrack: number; CueClusterPosition: number; CueTime: number; }[],
+  cuesOffset: number = 0,
+  cuesPosition: number = 0,
+  )
 
   : ArrayBuffer {
 
@@ -256,8 +261,15 @@ export function makeMetadataSeekable(
     // SeekHead starts at 0
     let infoStart = seekHeadSize;                 // Info comes directly after SeekHead
     let tracksStart = infoStart + infoSize;       // Tracks comes directly after Info
-    let cuesStart = tracksStart + tracksSize;     // Cues starts directly after 
-    let newMetadataSize = cuesStart + cuesSize;   // total size of metadata  
+    let cuesStart;
+    let newMetadataSize;
+    if (cuesPosition) {
+      cuesStart = cuesPosition - segmentContentStartPos; // Cues position is before segment open tag
+      newMetadataSize = tracksStart + tracksSize; // Cues outside initial metadata
+    } else {
+      cuesStart = tracksStart + tracksSize; // Cues starts directly after
+      newMetadataSize = cuesStart + cuesSize; // total size of metadata
+    }
 
     // This is the offset all CueClusterPositions should be adjusted by due to the metadata size changing.
     let sizeDifference = newMetadataSize - originalMetadataSize;
@@ -301,8 +313,13 @@ export function makeMetadataSeekable(
             // EBMLReader returns CueClusterPosition with absolute byte offsets.
             // The Cues section expects them as offsets from the first level 1 element of the Segment, so we need to adjust it.
             CueClusterPosition -= segmentContentStartPos;
-            // We also need to adjust to take into account the change in metadata size from when EBMLReader read the original metadata.
-            CueClusterPosition += sizeDifference;
+            if (cuesOffset) {
+              // Leave space before cues.
+              CueClusterPosition += cuesOffset;
+            } else {
+              // We also need to adjust to take into account the change in metadata size from when EBMLReader read the original metadata.
+              CueClusterPosition += sizeDifference;
+            }
             cues.push({ name: "CueClusterPosition", type: "u", data: createUIntBuffer(CueClusterPosition) });
           cues.push({ name: "CueTrackPositions", type: "m", isEnd: true });
         cues.push({ name: "CuePoint", type: "m", isEnd: true });
@@ -336,7 +353,7 @@ export function makeMetadataSeekable(
       seekHead,
       info,
       tracks,
-      cues
+      cuesPosition ? [] : cues
     ]);
   
   let result = new Encoder().encode(finalMetadata);

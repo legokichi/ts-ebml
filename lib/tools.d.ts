@@ -36,13 +36,15 @@ export declare function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer;
  * convert the metadata from a streaming webm bytestream to a seekable file by inserting Duration, Seekhead and Cues
  * @param originalMetadata - orginal metadata (everything before the clusters start) from media recorder
  * @param duration - Duration (TimestampScale)
- * @param cues - cue points for clusters
+ * @param cuesInfo - cue points for clusters
+ * @param cuesOffset - extra space to leave before cue points
+ * @param cuesPosition - location for cue points (if zero, put after tracks metadata)
  */
 export declare function makeMetadataSeekable(originalMetadata: EBML.EBMLElementDetail[], duration: number, cuesInfo: {
     CueTrack: number;
     CueClusterPosition: number;
     CueTime: number;
-}[]): ArrayBuffer;
+}[], cuesOffset?: number, cuesPosition?: number): ArrayBuffer;
 /**
  * print all element id names in a list
 
