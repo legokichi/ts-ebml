@@ -48,7 +48,7 @@ QUnit.test("encoder-decoder", async (assert: Assert)=>{
                 tools.convertEBMLDateToJSDate(elm.value).getTime() === new Date("2010-08-21T07:23:03.000Z").getTime()); // toISOString
     } },
     {index: 29, test: (elm: D)=>{
-      assert.ok(elm.name === "SegmentUID" && elm.type === "b");
+      assert.ok(elm.name === "SegmentUUID" && elm.type === "b");
       if(elm.type === "b"){
         const buf = new Uint8Array(new Buffer([
           0x92, 0x2d, 0x19, 0x32, 0x0f, 0x1e, 0x13, 0xc5, 0xb5, 0x05, 0x63, 0x0a, 0xaf, 0xd8, 0x53, 0x36
