@@ -127,7 +127,7 @@ export default class EBMLReader extends EventEmitter {
       const timecode = this.lastClusterTimecode;
       const duration = this.duration;
       const timecodeScale = this.timecodeScale;
-      this.emit("cluster", {timecode, data});
+      this.emit("cluster", {timecode, data, timecodeScale, duration});
       this.emit("duration", {timecodeScale, duration});
     }
   }
