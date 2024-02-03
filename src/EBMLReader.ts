@@ -333,9 +333,9 @@ export default class EBMLReader extends EventEmitter {
   /** latest EBML > Info > TimecodeScale and EBML > Info > Duration to create seekable webm file from MediaRecorder */
   addListener(event: "duration", listener: (ev: DurationInfo )=> void): this;
   /** EBML header without Cluster Element for recording metadata chunk */
-  addListener(event: "metadata", listener: (ev: SegmentInfo & {metadataSize: number} & DurationInfo)=> void): this;
+  addListener(event: "metadata", listener: (ev: SegmentInfo & {metadataSize: number})=> void): this;
   /** emit every Cluster Element and its children for recording chunk */
-  addListener(event: "cluster", listener: (ev: SegmentInfo & {timecode: number})=> void): this;
+  addListener(event: "cluster", listener: (ev: SegmentInfo & {timecode: number} & DurationInfo)=> void): this;
   /** for thumbnail */
   addListener(event: "webp", listener: (ev: ThumbnailInfo)=> void): this;
   addListener(event: string, listener: (ev: any)=> void): this {

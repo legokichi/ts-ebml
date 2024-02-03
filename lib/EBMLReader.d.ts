@@ -95,11 +95,11 @@ export default class EBMLReader extends EventEmitter {
     /** EBML header without Cluster Element for recording metadata chunk */
     addListener(event: "metadata", listener: (ev: SegmentInfo & {
         metadataSize: number;
-    } & DurationInfo) => void): this;
+    }) => void): this;
     /** emit every Cluster Element and its children for recording chunk */
     addListener(event: "cluster", listener: (ev: SegmentInfo & {
         timecode: number;
-    }) => void): this;
+    } & DurationInfo) => void): this;
     /** for thumbnail */
     addListener(event: "webp", listener: (ev: ThumbnailInfo) => void): this;
     put(elm: EBML.EBMLElementDetail): void;
