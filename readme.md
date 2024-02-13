@@ -53,6 +53,22 @@ fs.createReadStream('media/test.webm').on('data', (buf)=>{
 
 ## browser
 
+```html
+<script src="./dist/ebml.min.js"></script>
+<script>
+const decoder = new ebml.Decoder();
+
+fetch('media/test.webm')
+  .then((res)=> res.arrayBuffer() )
+  .then((buf)=>{
+    const ebmlElms = decoder.decode(buf);
+    console.log(ebmlElms);
+  });  
+</script>
+```
+
+bundle
+
 ```ts
 import * as ebml from 'ts-ebml';
 
@@ -123,15 +139,11 @@ namespace tools {
 
 ```sh
 npm install
-npm install -g http-server # install cli tools
-npm run init    # update libraries
-npm run init    # install libraries
 npm run build   # build js code
 npm run lint    # tslint
 npm run doc     # typedoc
-npm run check   # type check (watch)
+npm run lint   # type check (watch)
 npm test        # build and run tests
-npm run example # build example
 ```
 
 ## debugging tools

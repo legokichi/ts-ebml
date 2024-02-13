@@ -1,11 +1,9 @@
-import {Buffer, readVint, ebmlBlock, convertEBMLDateToJSDate} from "./tools";
-import {Int64BE} from "int64-buffer";
+﻿import { toBigIntBE } from "bigint-buffer";
+import { readVint, convertEBMLDateToJSDate } from "./tools";
 import * as EBML from "./EBML";
 import * as tools from "./tools";
-import schema = require("matroska-schema");
-const {byEbmlID}: {byEbmlID: { [key: number]: EBML.Schema } } = schema;
-
-// https://www.matroska.org/technical/specs/index.html
+const schema: any = require("matroska-schema");
+const { byEbmlID }: { byEbmlID: { [key: number]: EBML.Schema } } = schema;
 
 enum State {
   STATE_TAG = 1,
@@ -14,23 +12,22 @@ enum State {
 }
 
 export default class EBMLDecoder {
-
   private _buffer: Buffer;
   private _tag_stack: EBML.EBMLElementDetail[];
   private _state: State;
   /**
-   * _buffer の先頭からの位置
+   * Position from the beginning of _buffer
    */
   private _cursor: number;
   /**
-   * 全体におけるポインタ
+   * pointer in the whole
    */
   private _total: number;
-  private _schema: {[key: number]: EBML.Schema};
+  private _schema: { [key: number]: EBML.Schema };
   private _result: EBML.EBMLElementDetail[];
 
   constructor() {
-    this._buffer = new Buffer(0);
+    this._buffer = Buffer.alloc(0);
     this._tag_stack = [];
     this._state = State.STATE_TAG;
     this._cursor = 0;
@@ -47,116 +44,135 @@ export default class EBMLDecoder {
   }
 
   private readChunk(chunk: ArrayBuffer): void {
-    // 読みかけの(読めなかった) this._buffer と 新しい chunk を合わせて読み直す
-    this._buffer = tools.concat([this._buffer, new Buffer(chunk)]);
+    // Re-read the _buffer that was unreadable and the new chunk together.
+    // console.log(this._buffer, Buffer.from(chunk));
+    this._buffer = tools.concat([this._buffer, Buffer.from(chunk)]);
     while (this._cursor < this._buffer.length) {
-      // console.log(this._cursor, this._total, this._tag_stack);
-      if(this._state === State.STATE_TAG && !this.readTag()) { break; }
-      if(this._state === State.STATE_SIZE && !this.readSize()) { break; }
-      if(this._state === State.STATE_CONTENT && !this.readContent()) { break; }
+      // console.log(this._state, this._cursor, this._total, this._tag_stack);
+      if (this._state === State.STATE_TAG && !this.readTag()) {
+        break;
+      }
+      if (this._state === State.STATE_SIZE && !this.readSize()) {
+        break;
+      }
+      if (this._state === State.STATE_CONTENT && !this.readContent()) {
+        break;
+      }
     }
   }
 
   private getSchemaInfo(tagNum: number): EBML.Schema {
-    return this._schema[tagNum] || {
-      name: "unknown",
-      level: -1,
-      type: "unknown",
-      description: "unknown"
-    };
+    if (this._schema[tagNum] != null) {
+      return this._schema[tagNum];
+    } else {
+      return {
+        name: "unknown",
+        level: -1,
+        type: "unknown",
+        description: "unknown"
+      };
+    }
   }
 
   /**
-   * vint された parsing tag
+   * parsing vint-ed tag
    * @return - return false when waiting for more data
    */
   private readTag(): boolean {
-    // tag.length が buffer の外にある
-    if(this._cursor >= this._buffer.length) { return false; }
+    // tag.length is out of the buffer
+    if (this._cursor >= this._buffer.length) {
+      return false;
+    }
 
     // read ebml id vint without first byte
     const tag = readVint(this._buffer, this._cursor);
 
-    // tag が読めなかった
-    if (tag == null) { return false; }
+    // cannot parse tag
+    if (tag == null) {
+      return false;
+    }
 
-    // >>>>>>>>>
-    // tag 識別子
+    // read tag id
+    // Hacks to avoid using parseInt
     //const tagStr = this._buffer.toString("hex", this._cursor, this._cursor + tag.length);
     //const tagNum = parseInt(tagStr, 16);
-    // 上と等価
-    const buf = this._buffer.slice(this._cursor, this._cursor + tag.length);
-    const tagNum = buf.reduce((o, v, i, arr)=> o + v * Math.pow(16, 2*(arr.length-1-i)), 0);
+    const buf = this._buffer.subarray(this._cursor, this._cursor + tag.length);
+    const tagNum = buf.reduce(
+      (o, v, i, arr) => o + v * Math.pow(16, 2 * (arr.length - 1 - i)),
+      0
+    );
 
     const schema = this.getSchemaInfo(tagNum);
-    
-    const tagObj: EBML.EBMLElementDetail = <any>{
-        EBML_ID: tagNum.toString(16),
-        schema,
-        type: schema.type,
-        name: schema.name,
-        level: schema.level,
-        tagStart: this._total,
-        tagEnd: this._total + tag.length,
-        sizeStart: this._total + tag.length,
-        sizeEnd: null,
-        dataStart: null,
-        dataEnd: null,
-        dataSize: null,
-        data: null
-    };
+
+    const tagObj: EBML.EBMLElementDetail = {
+      EBML_ID: tagNum.toString(16),
+      schema,
+      type: schema.type,
+      name: schema.name,
+      level: schema.level,
+      tagStart: this._total,
+      tagEnd: this._total + tag.length,
+      sizeStart: this._total + tag.length,
+      sizeEnd: null,
+      dataStart: null,
+      dataEnd: null,
+      dataSize: null,
+      data: null
+    } as any;
+    // +-----------+------------+--------------------+
     // | tag: vint | size: vint | data: Buffer(size) |
+    // +-----------+------------+--------------------+
 
     this._tag_stack.push(tagObj);
-    // <<<<<<<<
 
-    // ポインタを進める
+    // advance the pointer
     this._cursor += tag.length;
     this._total += tag.length;
 
-    // 読み込み状態変更
+    // change read status
     this._state = State.STATE_SIZE;
-    
+
     return true;
   }
 
   /**
-   * vint された現在のタグの内容の大きさを読み込む
+   * Reads the size of the vint-ed current tag content
    * @return - return false when waiting for more data
    */
   private readSize(): boolean {
-      // tag.length が buffer の外にある
-    if (this._cursor >= this._buffer.length) { return false; }
+    // tag.length is outside the buffer
+    if (this._cursor >= this._buffer.length) {
+      return false;
+    }
 
     // read ebml datasize vint without first byte
     const size = readVint(this._buffer, this._cursor);
 
-    // まだ読めない
-    if (size == null) { return false; }
-
-    // >>>>>>>>>
-    // current tag の data size 決定
+    // still can't read it.
+    if (size == null) {
+      return false;
+    }
+    // decide data size for current tag
     const tagObj = this._tag_stack[this._tag_stack.length - 1];
+    if (tagObj == null) {
+      return false;
+    }
 
     tagObj.sizeEnd = tagObj.sizeStart + size.length;
-
     tagObj.dataStart = tagObj.sizeEnd;
-
     tagObj.dataSize = size.value;
 
     if (size.value === -1) {
       // unknown size
       tagObj.dataEnd = -1;
-      if(tagObj.type === "m"){
+      if (tagObj.type === "m") {
         tagObj.unknownSize = true;
       }
     } else {
       tagObj.dataEnd = tagObj.sizeEnd + size.value;
     }
-    
-    // <<<<<<<<
 
-    // ポインタを進める
+    // advance the pointer
     this._cursor += size.length;
     this._total += size.length;
 
@@ -165,96 +181,142 @@ export default class EBMLDecoder {
     return true;
   }
 
-  /**
-   * データ読み込み
-   */
   private readContent(): boolean {
-
     const tagObj = this._tag_stack[this._tag_stack.length - 1];
-    
-    // master element は子要素を持つので生データはない
-    if (tagObj.type === 'm') {
+    if (tagObj == null) {
+      return false;
+    }
+
+    // master element does not have raw data buffer
+    // because it has child elements
+    if (tagObj.type === "m") {
       // console.log('content should be tags');
       tagObj.isEnd = false;
       this._result.push(tagObj);
       this._state = State.STATE_TAG;
-      // この Mastert Element は空要素か
-      if(tagObj.dataSize === 0){
-        // 即座に終了タグを追加
-        const elm = Object.assign({}, tagObj, {isEnd: true});
+      // if this Mastert Element empty
+      if (tagObj.dataSize === 0) {
+        // then add the end tag immediately
+        const elm = Object.assign({}, tagObj, { isEnd: true });
         this._result.push(elm);
-        this._tag_stack.pop(); // スタックからこのタグを捨てる
+        // pop out the tag from tag stack
+        this._tag_stack.pop();
       }
       return true;
     }
 
     // waiting for more data
-    if (this._buffer.length < this._cursor + tagObj.dataSize) { return false; }
+    if (this._buffer.length < this._cursor + tagObj.dataSize) {
+      return false;
+    }
 
-    // タグの中身の生データ
-    const data = this._buffer.slice(this._cursor, this._cursor + tagObj.dataSize);
-    
+    // raw data of tag content
+    const data = this._buffer.subarray(
+      this._cursor,
+      this._cursor + tagObj.dataSize
+    );
+
     // 読み終わったバッファを捨てて読み込んでいる部分のバッファのみ残す
-    this._buffer = this._buffer.slice(this._cursor + tagObj.dataSize);
+    this._buffer = this._buffer.subarray(this._cursor + tagObj.dataSize);
 
     tagObj.data = data;
 
-    // >>>>>>>>>
-    switch(tagObj.type){
-      //case "m": break;
-        // Master-Element - contains other EBML sub-elements of the next lower level
-      case "u": tagObj.value = data.readUIntBE(0, data.length); break;
+    switch (tagObj.type) {
+      // case "m": {
+      //   // Master-Element - contains other EBML sub-elements of the next lower level
+      //   throw new Error("never");
+      // }
+      case "u": {
         // Unsigned Integer - Big-endian, any size from 1 to 8 octets
-      case "i": tagObj.value = data.readIntBE(0, data.length); break;
+        if (data.length > 6) {
+          // feross/buffer shim can read over 7 octets
+          // but nodejs buffer only can read under 6 octets
+          // so use bigint-buffer
+          tagObj.value = Number(toBigIntBE(data));
+        } else {
+          tagObj.value = data.readUIntBE(0, data.length);
+        }
+        break;
+      }
+      case "i": {
         // Signed Integer - Big-endian, any size from 1 to 8 octets
-      case "f": tagObj.value = tagObj.dataSize === 4 ? data.readFloatBE(0) :
-                               tagObj.dataSize === 8 ? data.readDoubleBE(0) :
-                               (console.warn(`cannot read ${tagObj.dataSize} octets float. failback to 0`), 0); break;
+        tagObj.value = data.readIntBE(0, data.length);
+        break;
+      }
+      case "f": {
         // Float - Big-endian, defined for 4 and 8 octets (32, 64 bits)
-      case "s": tagObj.value = data.toString("ascii"); break; // ascii
+        if (tagObj.dataSize === 4) {
+          tagObj.value = data.readFloatBE(0);
+        } else if (tagObj.dataSize === 8) {
+          tagObj.value = data.readDoubleBE(0);
+        } else {
+          console.warn(
+            `cannot read ${tagObj.dataSize} octets float. failback to 0`
+          );
+          tagObj.value = 0;
+        }
+        break;
+      }
+      case "s": {
         //  Printable ASCII (0x20 to 0x7E), zero-padded when needed
-      case "8": tagObj.value = data.toString("utf8"); break;
+        tagObj.value = data.toString("ascii");
+        break;
+      }
+      case "8": {
         //  Unicode string, zero padded when needed (RFC 2279)
-      case "b": tagObj.value = data; break;
+        tagObj.value = data.toString("utf8");
+        break;
+      }
+      case "b": {
         // Binary - not interpreted by the parser
-      case "d": tagObj.value = convertEBMLDateToJSDate(new Int64BE(data).toNumber()); break;
+        tagObj.value = data;
+        break;
+      }
+      case "d": {
         // nano second; Date.UTC(2001,1,1,0,0,0,0) === 980985600000
-        // Date - signed 8 octets integer in nanoseconds with 0 indicating 
+        // Date - signed 8 octets integer in nanoseconds with 0 indicating
         // the precise beginning of the millennium (at 2001-01-01T00:00:00,000000000 UTC)
+        tagObj.value = convertEBMLDateToJSDate(Number(toBigIntBE(data)));
+        break;
+      }
     }
-    if(tagObj.value === null){
+    if (tagObj.value === null) {
       throw new Error("unknown tag type:" + tagObj.type);
     }
     this._result.push(tagObj);
 
-    // <<<<<<<<
-
-    // ポインタを進める
+    // advance the pointer
     this._total += tagObj.dataSize;
 
-    // タグ待ちモードに変更
+    // change state to waiting next tag
     this._state = State.STATE_TAG;
     this._cursor = 0;
-    this._tag_stack.pop(); // remove the object from the stack
+    // remove the object from the stack
+    this._tag_stack.pop();
 
     while (this._tag_stack.length > 0) {
       const topEle = this._tag_stack[this._tag_stack.length - 1];
+      if (topEle == null) {
+        return false;
+      }
       // 親が不定長サイズなので閉じタグは期待できない
-      if(topEle.dataEnd < 0){
-        this._tag_stack.pop(); // 親タグを捨てる
+      if (topEle.dataEnd < 0) {
+        // remove parent tag
+        this._tag_stack.pop();
         return true;
       }
       // 閉じタグの来るべき場所まで来たかどうか
       if (this._total < topEle.dataEnd) {
-          break;
+        break;
       }
       // 閉じタグを挿入すべきタイミングが来た
-      if(topEle.type !== "m"){ throw new Error("parent element is not master element"); }
-      const elm = Object.assign({}, topEle, {isEnd: true});
+      if (topEle.type !== "m") {
+        throw new Error("parent element is not master element");
+      }
+      const elm = Object.assign({}, topEle, { isEnd: true });
       this._result.push(elm);
       this._tag_stack.pop();
     }
-
     return true;
   }
 }

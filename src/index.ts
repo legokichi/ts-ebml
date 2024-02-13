@@ -1,15 +1,9 @@
-export * from "./EBML";
+﻿export * from "./EBML";
 import Decoder from "./EBMLDecoder";
 import Encoder from "./EBMLEncoder";
 import Reader from "./EBMLReader";
 import * as tools from "./tools";
 
-const version = <string>require("../package.json").version;
+const version = require("../package.json").version as string;
 
-export {
-  version,
-  Decoder,
-  Encoder,
-  Reader,
-  tools
-};
+export { version, Decoder, Encoder, Reader, tools };

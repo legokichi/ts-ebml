@@ -2,10 +2,11 @@
 *.log
 .DS_Store
 log.txt*
-dist/
+dist/test.js
 matroska-test-files/
 mkclean-*/
 mkvalidator-*/
 node_modules/
 test/
 test/.DS_Store
+test-results/
