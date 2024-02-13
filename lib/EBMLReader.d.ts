@@ -11,13 +11,13 @@ export default class EBMLReader extends EventEmitter {
     private stack;
     private chunks;
     private segmentOffset;
-    private last2SimpleBlockVideoTrackTimecode;
-    private last2SimpleBlockAudioTrackTimecode;
-    private lastClusterTimecode;
+    private last2SimpleBlockVideoTrackTimestamp;
+    private last2SimpleBlockAudioTrackTimestamp;
+    private lastClusterTimestamp;
     private lastClusterPosition;
     private firstVideoBlockRead;
     private firstAudioBlockRead;
-    timecodeScale: number;
+    timestampScale: number;
     metadataSize: number;
     metadatas: EBML.EBMLElementDetail[];
     private currentTrack;
@@ -59,19 +59,19 @@ export default class EBMLReader extends EventEmitter {
     /**
      * emit chunk info
      */
-    private emit_segment_info();
+    private emit_segment_info;
     read(elm: EBML.EBMLElementDetail): void;
     /**
      * DefaultDuration が定義されている場合は最後のフレームのdurationも考慮する
-     * 単位 timecodeScale
+     * 単位 timestampScale
      *
      * !!! if you need duration with seconds !!!
      * ```js
-     * const nanosec = reader.duration * reader.timecodeScale;
+     * const nanosec = reader.duration * reader.timestampScale;
      * const sec = nanosec / 1000 / 1000 / 1000;
      * ```
      */
-    readonly duration: number;
+    get duration(): number;
     /**
      * @deprecated
      * emit on every segment
@@ -90,7 +90,7 @@ export default class EBMLReader extends EventEmitter {
     addListener(event: "cue_info", listener: (ev: CueInfo) => void): this;
     /** emit on every cue point for cluster to create seekable webm file from MediaRecorder */
     addListener(event: "cue", listener: (ev: CueInfo) => void): this;
-    /** latest EBML > Info > TimecodeScale and EBML > Info > Duration to create seekable webm file from MediaRecorder */
+    /** latest EBML > Info > TimestampScale and EBML > Info > Duration to create seekable webm file from MediaRecorder */
     addListener(event: "duration", listener: (ev: DurationInfo) => void): this;
     /** EBML header without Cluster Element for recording metadata chunk */
     addListener(event: "metadata", listener: (ev: SegmentInfo & {
@@ -98,7 +98,7 @@ export default class EBMLReader extends EventEmitter {
     }) => void): this;
     /** emit every Cluster Element and its children for recording chunk */
     addListener(event: "cluster", listener: (ev: SegmentInfo & {
-        timecode: number;
+        timestamp: number;
     }) => void): this;
     /** for thumbnail */
     addListener(event: "webp", listener: (ev: ThumbnailInfo) => void): this;
@@ -115,7 +115,7 @@ export interface SegmentInfo {
 }
 export interface DurationInfo {
     duration: number;
-    timecodeScale: number;
+    timestampScale: number;
 }
 export interface ThumbnailInfo {
     webp: Blob;

@@ -124,12 +124,13 @@ namespace tools {
 ```sh
 npm install
 npm install -g http-server # install cli tools
-npm run init  # update libraries
-npm run build # build js code
-npm run lint  # tslint
-npm run doc   # typedoc
-npm run check # type check
-npm run test  # build test
+npm run init    # update libraries
+npm run init    # install libraries
+npm run build   # build js code
+npm run lint    # tslint
+npm run doc     # typedoc
+npm run check   # type check (watch)
+npm test        # build and run tests
 npm run example # build example
 ```
 
@@ -138,7 +139,7 @@ npm run example # build example
 * https://www.matroska.org/downloads/mkvalidator.html
 * https://www.matroska.org/downloads/mkclean.html
 * https://mkvtoolnix.download/doc/mkvinfo.html
-* https://github.com/Matroska-Org/matroska-test-files
+* https://github.com/ietf-wg-cellar/matroska-test-files
 * `MOZ_LOG_FILE="log.txt" MOZ_LOG="MediaDemuxer:5" /Applications/FirefoxNightly.app/Contents/MacOS/firefox-bin`
 * `MOZ_LOG_FILE="log.txt" MOZ_LOG="MediaDemuxer:5" /Applications/Firefox.app/Contents/MacOS/firefox-bin`
 * chrome://media-internals/

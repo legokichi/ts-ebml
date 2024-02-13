@@ -15,13 +15,13 @@ export default class EBMLReader extends EventEmitter {
   private chunks: EBML.EBMLElementDetail[];
 
   private segmentOffset: number;
-  private last2SimpleBlockVideoTrackTimecode: [number, number];
-  private last2SimpleBlockAudioTrackTimecode: [number, number];
-  private lastClusterTimecode: number;
+  private last2SimpleBlockVideoTrackTimestamp: [number, number];
+  private last2SimpleBlockAudioTrackTimestamp: [number, number];
+  private lastClusterTimestamp: number;
   private lastClusterPosition: number;
   private firstVideoBlockRead: boolean;
   private firstAudioBlockRead: boolean;
-  timecodeScale: number;
+  timestampScale: number;
   metadataSize: number;
   metadatas: EBML.EBMLElementDetail[];
 
@@ -58,11 +58,11 @@ export default class EBMLReader extends EventEmitter {
     
     this.stack = [];
     this.segmentOffset = 0;
-    this.last2SimpleBlockVideoTrackTimecode = [0, 0];
-    this.last2SimpleBlockAudioTrackTimecode = [0, 0];
-    this.lastClusterTimecode = 0;
+    this.last2SimpleBlockVideoTrackTimestamp = [0, 0];
+    this.last2SimpleBlockAudioTrackTimestamp = [0, 0];
+    this.lastClusterTimestamp = 0;
     this.lastClusterPosition = 0;
-    this.timecodeScale = 1000000; // webm default TimecodeScale is 1ms
+    this.timestampScale = 1000000; // webm default TimestampScale is 1ms
     this.metadataSize = 0;
     this.metadatas = [];
     this.cues = [];
@@ -124,11 +124,11 @@ export default class EBMLReader extends EventEmitter {
       this.emit("metadata", {data, metadataSize: this.metadataSize});
     }else{
       if(!this.use_segment_info){ return; }
-      const timecode = this.lastClusterTimecode;
+      const timestamp = this.lastClusterTimestamp;
       const duration = this.duration;
-      const timecodeScale = this.timecodeScale;
-      this.emit("cluster", {timecode, data});
-      this.emit("duration", {timecodeScale, duration});
+      const timestampScale = this.timestampScale;
+      this.emit("cluster", {timestamp, data});
+      this.emit("duration", {timestampScale, duration});
     }
   }
   read(elm: EBML.EBMLElementDetail){
@@ -169,37 +169,45 @@ export default class EBMLReader extends EventEmitter {
       this.segmentOffset = elm.dataStart;
       this.emit("segment_offset", this.segmentOffset);
     }else if(elm.type === "b" && elm.name === "SimpleBlock"){
-      const {timecode, trackNumber, frames} = tools.ebmlBlock(elm.data);
+      const {timecode: timestamp, trackNumber, frames} = tools.ebmlBlock(elm.data);
       if(this.trackTypes[trackNumber] === 1){ // trackType === 1 => video track
         if(!this.firstVideoBlockRead){
           this.firstVideoBlockRead = true;
           if(this.trackInfo.type === "both" || this.trackInfo.type === "video"){
-            const CueTime = this.lastClusterTimecode + timecode;
+            const CueTime = this.lastClusterTimestamp + timestamp;
             this.cues.push({CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
-            this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
+            this.emit("cue_info", {
+                CueTrack: trackNumber,
+                CueClusterPosition: this.lastClusterPosition,
+                CueTime: this.lastClusterTimestamp
+            });
             this.emit("cue", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
           }
         }
-        this.last2SimpleBlockVideoTrackTimecode = [this.last2SimpleBlockVideoTrackTimecode[1], timecode];
+        this.last2SimpleBlockVideoTrackTimestamp = [this.last2SimpleBlockVideoTrackTimestamp[1], timestamp];
       }else if(this.trackTypes[trackNumber] === 2){ // trackType === 2 => audio track
         if(!this.firstAudioBlockRead){
           this.firstAudioBlockRead = true;
           if(this.trackInfo.type === "audio"){
-            const CueTime = this.lastClusterTimecode + timecode;
+            const CueTime = this.lastClusterTimestamp + timestamp;
             this.cues.push({CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
-            this.emit("cue_info", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime: this.lastClusterTimecode});
+            this.emit("cue_info", {
+                CueTrack: trackNumber,
+                CueClusterPosition: this.lastClusterPosition,
+                CueTime: this.lastClusterTimestamp
+            });
             this.emit("cue", {CueTrack: trackNumber, CueClusterPosition: this.lastClusterPosition, CueTime});
           }
         }
-        this.last2SimpleBlockAudioTrackTimecode = [this.last2SimpleBlockAudioTrackTimecode[1], timecode];
+        this.last2SimpleBlockAudioTrackTimestamp = [this.last2SimpleBlockAudioTrackTimestamp[1], timestamp];
       }
       if(this.use_duration_every_simpleblock){
-        this.emit("duration", {timecodeScale: this.timecodeScale, duration: this.duration});
+        this.emit("duration", {timestampScale: this.timestampScale, duration: this.duration});
       }
       if(this.use_webp){
         frames.forEach((frame)=>{
           const startcode = frame.slice(3, 6).toString("hex");
-          if(startcode !== "9d012a"){ return; }; // VP8 の場合
+          if(startcode !== "9d012a"){ return; } // VP8 の場合
           const webpBuf = tools.VP8BitStreamToRiffWebPBuffer(frame);
           const webp = new Blob([webpBuf], {type: "image/webp"});
           const currentTime = this.duration;
@@ -213,9 +221,9 @@ export default class EBMLReader extends EventEmitter {
       this.emit("cluster_ptr", elm.tagStart);
       this.lastClusterPosition = elm.tagStart;
     }else if(elm.type === "u" && elm.name === "Timestamp"){
-      this.lastClusterTimecode = elm.value;
+      this.lastClusterTimestamp = elm.value;
     }else if(elm.type === "u" && elm.name === "TimestampScale"){
-      this.timecodeScale = elm.value;
+      this.timestampScale = elm.value;
     }else if(elm.type === "m" && elm.name === "TrackEntry"){
       if(elm.isEnd){
         this.trackTypes[this.currentTrack.TrackNumber] = this.currentTrack.TrackType;
@@ -252,11 +260,11 @@ export default class EBMLReader extends EventEmitter {
   }
   /**
    * DefaultDuration が定義されている場合は最後のフレームのdurationも考慮する
-   * 単位 timecodeScale
+   * 単位 timestampScale
    * 
    * !!! if you need duration with seconds !!!
    * ```js
-   * const nanosec = reader.duration * reader.timecodeScale;
+   * const nanosec = reader.duration * reader.timestampScale;
    * const sec = nanosec / 1000 / 1000 / 1000;
    * ```
    */
@@ -269,7 +277,7 @@ export default class EBMLReader extends EventEmitter {
     let defaultDuration = 0;
     // nanoseconds
     let codecDelay = 0;
-    let lastTimecode = 0;
+    let lastTimestamp = 0;
 
     const _defaultDuration = this.trackDefaultDuration[this.trackInfo.trackNumber];
     if(typeof _defaultDuration === "number"){
@@ -278,38 +286,40 @@ export default class EBMLReader extends EventEmitter {
       // https://bugs.chromium.org/p/chromium/issues/detail?id=606000#c22
       // default duration がないときに使う delta
       if(this.trackInfo.type === "both"){
-        if(this.last2SimpleBlockAudioTrackTimecode[1] > this.last2SimpleBlockVideoTrackTimecode[1]){
+        if(this.last2SimpleBlockAudioTrackTimestamp[1] > this.last2SimpleBlockVideoTrackTimestamp[1]){
           // audio diff
-          defaultDuration = (this.last2SimpleBlockAudioTrackTimecode[1] - this.last2SimpleBlockAudioTrackTimecode[0]) * this.timecodeScale;
+          defaultDuration = (this.last2SimpleBlockAudioTrackTimestamp[1] -
+                             this.last2SimpleBlockAudioTrackTimestamp[0]) * this.timestampScale;
           // audio delay
           const delay = this.trackCodecDelay[this.trackTypes.indexOf(2)]; // 2 => audio
           if(typeof delay === "number"){ codecDelay = delay; }
-          // audio timecode
-          lastTimecode = this.last2SimpleBlockAudioTrackTimecode[1];
+          // audio timestamp
+          lastTimestamp = this.last2SimpleBlockAudioTrackTimestamp[1];
         }else{
           // video diff
-          defaultDuration = (this.last2SimpleBlockVideoTrackTimecode[1] - this.last2SimpleBlockVideoTrackTimecode[0]) * this.timecodeScale;
+          defaultDuration = (this.last2SimpleBlockVideoTrackTimestamp[1] -
+                             this.last2SimpleBlockVideoTrackTimestamp[0]) * this.timestampScale;
           // video delay
           const delay = this.trackCodecDelay[this.trackTypes.indexOf(1)]; // 1 => video
           if(typeof delay === "number"){ codecDelay = delay; }
-          // video timecode
-          lastTimecode = this.last2SimpleBlockVideoTrackTimecode[1];
+          // video timestamp
+          lastTimestamp = this.last2SimpleBlockVideoTrackTimestamp[1];
         }
       }else if(this.trackInfo.type === "video"){
-        defaultDuration = (this.last2SimpleBlockVideoTrackTimecode[1] - this.last2SimpleBlockVideoTrackTimecode[0]) * this.timecodeScale;
+        defaultDuration = (this.last2SimpleBlockVideoTrackTimestamp[1] - this.last2SimpleBlockVideoTrackTimestamp[0]) * this.timestampScale;
         const delay = this.trackCodecDelay[this.trackInfo.trackNumber]; // 2 => audio
         if(typeof delay === "number"){ codecDelay = delay; }
-        lastTimecode = this.last2SimpleBlockVideoTrackTimecode[1];
+        lastTimestamp = this.last2SimpleBlockVideoTrackTimestamp[1];
       }else if(this.trackInfo.type === "audio"){
-        defaultDuration = (this.last2SimpleBlockAudioTrackTimecode[1] - this.last2SimpleBlockAudioTrackTimecode[0]) * this.timecodeScale;
+        defaultDuration = (this.last2SimpleBlockAudioTrackTimestamp[1] - this.last2SimpleBlockAudioTrackTimestamp[0]) * this.timestampScale;
         const delay = this.trackCodecDelay[this.trackInfo.trackNumber]; // 1 => video
         if(typeof delay === "number"){ codecDelay = delay; }
-        lastTimecode = this.last2SimpleBlockAudioTrackTimecode[1];
+        lastTimestamp = this.last2SimpleBlockAudioTrackTimestamp[1];
       }// else { not reached }
     }
-    // convert to timecodescale
-    const duration_nanosec = ((this.lastClusterTimecode + lastTimecode) * this.timecodeScale) + defaultDuration - codecDelay;
-    const duration = duration_nanosec / this.timecodeScale;
+    // convert to timestampscale
+    const duration_nanosec = ((this.lastClusterTimestamp + lastTimestamp) * this.timestampScale) + defaultDuration - codecDelay;
+    const duration = duration_nanosec / this.timestampScale;
     return Math.floor(duration);
   }
   /**
@@ -330,12 +340,12 @@ export default class EBMLReader extends EventEmitter {
   addListener(event: "cue_info", listener: (ev: CueInfo )=> void): this;
   /** emit on every cue point for cluster to create seekable webm file from MediaRecorder */
   addListener(event: "cue", listener: (ev: CueInfo )=> void): this;
-  /** latest EBML > Info > TimecodeScale and EBML > Info > Duration to create seekable webm file from MediaRecorder */
+  /** latest EBML > Info > TimestampScale and EBML > Info > Duration to create seekable webm file from MediaRecorder */
   addListener(event: "duration", listener: (ev: DurationInfo )=> void): this;
   /** EBML header without Cluster Element for recording metadata chunk */
   addListener(event: "metadata", listener: (ev: SegmentInfo & {metadataSize: number})=> void): this;
   /** emit every Cluster Element and its children for recording chunk */
-  addListener(event: "cluster", listener: (ev: SegmentInfo & {timecode: number})=> void): this;
+  addListener(event: "cluster", listener: (ev: SegmentInfo & {timestamp: number})=> void): this;
   /** for thumbnail */
   addListener(event: "webp", listener: (ev: ThumbnailInfo)=> void): this;
   addListener(event: string, listener: (ev: any)=> void): this {
@@ -359,7 +369,7 @@ export default class EBMLReader extends EventEmitter {
       // for debug
       //if(elm.name === "SimpleBlock"){
         //const o = EBML.tools.ebmlBlock(elm.value);
-        //console.log(elm.name, elm.type, o.trackNumber, o.timecode);
+        //console.log(elm.name, elm.type, o.trackNumber, o.timestamp);
       //}else{
         console.log(elm.name, elm.type);
       //}
@@ -369,9 +379,9 @@ export default class EBMLReader extends EventEmitter {
   }
 }
 /** CueClusterPosition: Offset byte from __file start__. It is not an offset from the Segment element. */
-export interface CueInfo {CueTrack: number; CueClusterPosition: number; CueTime: number; };
-export interface SegmentInfo {data: EBML.EBMLElementDetail[];};
-export interface DurationInfo {duration: number; timecodeScale: number;};
-export interface ThumbnailInfo {webp: Blob; currentTime: number;};
+export interface CueInfo {CueTrack: number; CueClusterPosition: number; CueTime: number; }
+export interface SegmentInfo {data: EBML.EBMLElementDetail[];}
+export interface DurationInfo {duration: number; timestampScale: number;}
+export interface ThumbnailInfo {webp: Blob; currentTime: number;}
 
 

@@ -1,0 +1,6 @@
+{
+  "excludeExternals": "true",
+  "excludePrivate": "true",
+  "out": "doc",
+  "readme": "none"
+}

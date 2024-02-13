@@ -1,14 +1,15 @@
 /// <reference types="node" />
-export declare type ChildElementsValue = NumberElement | StringElement | BinaryElement | DateElement;
-export declare type EBMLElementValue = MasterElement | ChildElementsValue;
-export declare type ChildElementBuffer = ChildElement & {
+import { Buffer } from "./tools";
+export type ChildElementsValue = NumberElement | StringElement | BinaryElement | DateElement;
+export type EBMLElementValue = MasterElement | ChildElementsValue;
+export type ChildElementBuffer = ChildElement & {
     data: Buffer;
 };
-export declare type EBMLElementBuffer = MasterElement | ChildElementBuffer;
-export declare type EBMLElementBufferValue = MasterElement | (ChildElementsValue & {
+export type EBMLElementBuffer = MasterElement | ChildElementBuffer;
+export type EBMLElementBufferValue = MasterElement | (ChildElementsValue & {
     data: Buffer;
 });
-export declare type EBMLElementDetail = (MasterElement | (ChildElementsValue & {
+export type EBMLElementDetail = (MasterElement | (ChildElementsValue & {
     data: Buffer;
 })) & ElementDetail;
 export interface IElement {

@@ -1,11 +1,10 @@
 <script src="../dist/EBML.js"></script>
-<script src="../dist/EBMLReader.js"></script>
 <script>
 const main = async(function* main(){
   const logging = true;
   let tasks = Promise.resolve(void 0);
 
-  const webmBuf = yield fetch("chrome52.fish.refined.webm").then((res)=> res.arrayBuffer());
+  const webmBuf = yield fetch("chrome52.webm").then((res)=> res.arrayBuffer());
   const mimeType = 'video/webm; codecs="vp8, opus"';
 
   const ms = new MediaSource();
@@ -92,7 +91,7 @@ const main = async(function* main(){
   });
 
   // refine video
-  const reader = new EBMLReader.default();
+  const reader = new EBML.Reader();
   const clusters = [];
   let metadata = null;
   reader.addListener("metadata", ({metadataSize, data})=>{

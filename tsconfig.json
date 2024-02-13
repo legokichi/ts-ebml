@@ -5,7 +5,6 @@
         "allowSyntheticDefaultImports": true,
         "allowUnreachableCode": false,
         "allowUnusedLabels": false,
-        "charset": "utf8",
         "declaration": true,
         "diagnostics": true,
         "emitBOM": false,
@@ -19,7 +18,6 @@
         "lib": ["dom", "es5", "es2015.core", "es2015.promise", "es2015.iterable", "es2015.symbol"],
         "types" : [],
         "listFiles": true,
-        "locale": "en-us",
         //"mapRoot": null,
         "module": "commonjs",
         //"moduleResolution": "classic",
@@ -46,8 +44,6 @@
         //"sourceRoot": "./src",
         "strictNullChecks": true,
         "stripInternal": false,
-        "suppressExcessPropertyErrors": true,
-        "suppressImplicitAnyIndexErrors": true,
         "target": "es5"
         //"traceResolution": false
     },

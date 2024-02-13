@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import * as EBML from "./EBML";
-export declare const Buffer: typeof global.Buffer;
+import { Buffer } from "buffer";
+export { Buffer } from "buffer";
 export declare const readVint: (buffer: Buffer, start: number) => null | ({
     length: number;
     value: number;
@@ -34,14 +35,16 @@ export declare function createRIFFChunk(FourCC: string, chunk: Buffer): Buffer;
 /**
  * convert the metadata from a streaming webm bytestream to a seekable file by inserting Duration, Seekhead and Cues
  * @param originalMetadata - orginal metadata (everything before the clusters start) from media recorder
- * @param duration - Duration (TimecodeScale)
- * @param cues - cue points for clusters
+ * @param duration - Duration (TimestampScale)
+ * @param cuesInfo - cue points for clusters
+ * @param cuesOffset - extra space to leave before cue points
+ * @param cuesPosition - location for cue points (if zero, put after tracks metadata)
  */
 export declare function makeMetadataSeekable(originalMetadata: EBML.EBMLElementDetail[], duration: number, cuesInfo: {
     CueTrack: number;
     CueClusterPosition: number;
     CueTime: number;
-}[]): ArrayBuffer;
+}[], cuesOffset?: number, cuesPosition?: number): ArrayBuffer;
 /**
  * print all element id names in a list
 
@@ -75,7 +78,7 @@ export declare function extractElement(idName: string, metadata: EBML.EBMLElemen
  * @deprecated
  * metadata に対して duration と seekhead を追加した metadata を返す
  * @param metadata - 変更前の webm における ファイル先頭から 最初の Cluster 要素までの 要素
- * @param duration - Duration (TimecodeScale)
+ * @param duration - Duration (TimestampScale)
  * @param cues - cue points for clusters
  * @deprecated @param clusterPtrs - 変更前の webm における SeekHead に追加する Cluster 要素 への start pointer
  * @deprecated @param cueInfos - please use cues.
