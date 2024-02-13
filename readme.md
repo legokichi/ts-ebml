@@ -122,8 +122,9 @@ namespace tools {
 # develop
 
 ```sh
-npm run setup # install cli tools
-npm run init  # install libraries
+npm install
+npm install -g http-server # install cli tools
+npm run init  # update libraries
 npm run build # build js code
 npm run lint  # tslint
 npm run doc   # typedoc
