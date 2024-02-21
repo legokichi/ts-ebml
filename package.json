@@ -1,6 +1,6 @@
 {
   "name": "ts-ebml",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "ebml decoder and encoder",
   "scripts": {
     "clean": "rimraf lib/* dist/* test/*.js",
