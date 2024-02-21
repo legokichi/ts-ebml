@@ -1,17 +1,15 @@
 /// <reference types="node" />
 import * as EBML from "./EBML";
-import { Buffer } from "buffer";
-export { Buffer } from "buffer";
-export declare const readVint: (buffer: Buffer, start: number) => null | ({
+export declare const readVint: (buffer: Buffer, start: number) => null | {
     length: number;
     value: number;
-});
+};
 export declare const writeVint: (val: number) => Buffer;
 export declare const ebmlBlock: (buf: Buffer) => EBML.SimpleBlock;
 export declare function readBlock(buf: ArrayBuffer): EBML.SimpleBlock;
 /**
-  * @param end - if end === false then length is unknown
-  */
+ * @param end - if end === false then length is unknown
+ */
 export declare function encodeTag(tagId: Buffer, tagData: Buffer, unknownSize?: boolean): Buffer;
 /**
  * @return - SimpleBlock to WebP Filter

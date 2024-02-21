@@ -1,6 +1,6 @@
 name: ci
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   test:
@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16, 18, 20]
+        node-version: [20]
 
     steps:
       - name: Checkout
@@ -22,7 +22,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Init
-        run: npm run init
+        run: npm ci
 
       - name: Build
         run: npm run build
@@ -30,11 +30,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Format
+        run: npm run fmt
+
+      - name: Diff
+        run: git diff --exit-code -- . ':(exclude)lib/test.js' 
+
       - name: Doc
         run: npm run doc
 
       - name: Test
         run: npm test
-
-      - name: Examples
-        run: npm run examples

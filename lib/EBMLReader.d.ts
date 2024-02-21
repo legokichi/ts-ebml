@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { EventEmitter } from "events";
-import * as EBML from './EBML';
+import * as EBML from "./EBML";
 /**
  * This is an informal code for reference.
  * EBMLReader is a class for getting information to enable seeking Webm recorded by MediaRecorder.
@@ -24,7 +24,6 @@ export default class EBMLReader extends EventEmitter {
     private trackTypes;
     private trackDefaultDuration;
     private trackCodecDelay;
-    private first_video_simpleblock_of_cluster_is_loaded;
     private ended;
     trackInfo: {
         type: "video" | "audio" | "both";
@@ -36,6 +35,7 @@ export default class EBMLReader extends EventEmitter {
      * usefull for thumbnail creation.
      */
     use_webp: boolean;
+    /** Enabling this flag will slow down the operation */
     use_duration_every_simpleblock: boolean;
     logging: boolean;
     logGroup: string;
@@ -76,7 +76,7 @@ export default class EBMLReader extends EventEmitter {
      * @deprecated
      * emit on every segment
      * https://www.matroska.org/technical/specs/notes.html#Position_References
-    */
+     */
     addListener(event: "segment_offset", listener: (ev: number) => void): this;
     /**
      * @deprecated

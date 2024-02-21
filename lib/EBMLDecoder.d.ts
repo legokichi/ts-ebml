@@ -4,11 +4,11 @@ export default class EBMLDecoder {
     private _tag_stack;
     private _state;
     /**
-     * _buffer の先頭からの位置
+     * Position from the beginning of _buffer
      */
     private _cursor;
     /**
-     * 全体におけるポインタ
+     * pointer in the whole
      */
     private _total;
     private _schema;
@@ -18,17 +18,14 @@ export default class EBMLDecoder {
     private readChunk;
     private getSchemaInfo;
     /**
-     * vint された parsing tag
+     * parsing vint-ed tag
      * @return - return false when waiting for more data
      */
     private readTag;
     /**
-     * vint された現在のタグの内容の大きさを読み込む
+     * Reads the size of the vint-ed current tag content
      * @return - return false when waiting for more data
      */
     private readSize;
-    /**
-     * データ読み込み
-     */
     private readContent;
 }

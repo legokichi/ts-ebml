@@ -1,5 +1,4 @@
 /// <reference types="node" />
-import { Buffer } from "./tools";
 export type ChildElementsValue = NumberElement | StringElement | BinaryElement | DateElement;
 export type EBMLElementValue = MasterElement | ChildElementsValue;
 export type ChildElementBuffer = ChildElement & {
@@ -60,11 +59,11 @@ export interface ElementDetail {
      */
     level: number;
     /**
-     * このタグのバッファ全体における開始オフセット位置
+     * Start offset position of this tag in the whole buffer
      */
     tagStart: number;
     /**
-     * このタグのバッファ全体における終了オフセット位置
+     * End offset position of this tag in the whole buffer
      */
     tagEnd: number;
     /**
@@ -76,11 +75,11 @@ export interface ElementDetail {
      */
     sizeEnd: number;
     /**
-     * 要素の中身の開始位置
+     * Starting position of the element content
      */
     dataStart: number;
     /**
-     * 要素の中身の終了位置
+     * End position of the element content
      */
     dataEnd: number;
     /**
