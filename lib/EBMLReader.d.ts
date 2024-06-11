@@ -99,7 +99,9 @@ export default class EBMLReader extends EventEmitter {
     /** emit every Cluster Element and its children for recording chunk */
     addListener(event: "cluster", listener: (ev: SegmentInfo & {
         timecode: number;
-    } & DurationInfo) => void): this;
+    } & DurationInfo & {
+        ended: boolean;
+    }) => void): this;
     /** for thumbnail */
     addListener(event: "webp", listener: (ev: ThumbnailInfo) => void): this;
     put(elm: EBML.EBMLElementDetail): void;
