@@ -926,3 +926,30 @@ export function convertEBMLDateToJSDate(
       Number(int64str) / 1000 / 1000
   );
 }
+
+/**
+ * Converts a Buffer (Big-Endian) of arbitrary length to an unsigned BigInt.
+ * @param buffer Buffer containing bytes in Big-Endian order
+ * @returns The unsigned BigInt value
+ */
+export function bigIntFromUnsignedBufferBE(buffer: Buffer): bigint {
+  let result = BigInt(0);
+  for (const byte of buffer) {
+    result = (result << BigInt(8)) + BigInt(byte);
+  }
+  return result;
+}
+
+/**
+ * Converts a Buffer (Big-Endian) to a signed BigInt (interpreted as two's complement).
+ * @param buffer Buffer containing bytes in Big-Endian order
+ * @returns The signed BigInt value
+ */
+export function bigIntFromSignedBufferBE(buffer: Buffer): bigint {
+  const unsigned = bigIntFromUnsignedBufferBE(buffer);
+  const bitLength = BigInt(buffer.length * 8);
+  const signBit = BigInt(1) << (bitLength - BigInt(1));
+  return (unsigned & signBit) !== BigInt(0)
+    ? unsigned - (BigInt(1) << bitLength)
+    : unsigned;
+}
