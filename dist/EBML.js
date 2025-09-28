@@ -29,7 +29,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const bigint_buffer_1 = require("bigint-buffer");
 const tools_1 = require("./tools");
 const tools = __importStar(require("./tools"));
 const schema = require("matroska-schema");
@@ -214,8 +213,8 @@ class EBMLDecoder {
                 if (data.length > 6) {
                     // feross/buffer shim can read over 7 octets
                     // but nodejs buffer only can read under 6 octets
-                    // so use bigint-buffer
-                    tagObj.value = Number((0, bigint_buffer_1.toBigIntBE)(data));
+                    // so use custom converter
+                    tagObj.value = Number(tools.bigIntFromUnsignedBufferBE(data));
                 }
                 else {
                     tagObj.value = data.readUIntBE(0, data.length);
@@ -260,7 +259,7 @@ class EBMLDecoder {
                 // nano second; Date.UTC(2001,1,1,0,0,0,0) === 980985600000
                 // Date - signed 8 octets integer in nanoseconds with 0 indicating
                 // the precise beginning of the millennium (at 2001-01-01T00:00:00,000000000 UTC)
-                tagObj.value = (0, tools_1.convertEBMLDateToJSDate)(Number((0, bigint_buffer_1.toBigIntBE)(data)));
+                tagObj.value = (0, tools_1.convertEBMLDateToJSDate)(Number(tools.bigIntFromSignedBufferBE(data)));
                 break;
             }
         }
@@ -304,7 +303,7 @@ class EBMLDecoder {
 exports.default = EBMLDecoder;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./tools":6,"bigint-buffer":8,"buffer":9,"matroska-schema":20}],3:[function(require,module,exports){
+},{"./tools":6,"buffer":8,"matroska-schema":19}],3:[function(require,module,exports){
 (function (Buffer){(function (){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -446,7 +445,7 @@ class EBMLEncoder {
 exports.default = EBMLEncoder;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./tools":6,"buffer":9,"matroska-schema":20}],4:[function(require,module,exports){
+},{"./tools":6,"buffer":8,"matroska-schema":19}],4:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -883,7 +882,7 @@ class EBMLReader extends events_1.EventEmitter {
 }
 exports.default = EBMLReader;
 
-},{"./tools":6,"events":17}],5:[function(require,module,exports){
+},{"./tools":6,"events":16}],5:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -928,14 +927,14 @@ exports.tools = tools;
 const version = require("../package.json").version;
 exports.version = version;
 
-},{"../package.json":22,"./EBML":1,"./EBMLDecoder":2,"./EBMLEncoder":3,"./EBMLReader":4,"./tools":6}],6:[function(require,module,exports){
+},{"../package.json":21,"./EBML":1,"./EBMLDecoder":2,"./EBMLEncoder":3,"./EBMLReader":4,"./tools":6}],6:[function(require,module,exports){
 (function (Buffer){(function (){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.convertEBMLDateToJSDate = exports.createFloatBuffer = exports.createIntBuffer = exports.createUIntBuffer = exports.encodeValueToBuffer = exports.concat = exports.putRefinedMetaData = exports.extractElement = exports.removeElement = exports.makeMetadataSeekable = exports.createRIFFChunk = exports.VP8BitStreamToRiffWebPBuffer = exports.WebPBlockFilter = exports.WebPFrameFilter = exports.encodeTag = exports.readBlock = exports.ebmlBlock = exports.writeVint = exports.readVint = void 0;
+exports.bigIntFromSignedBufferBE = exports.bigIntFromUnsignedBufferBE = exports.convertEBMLDateToJSDate = exports.createFloatBuffer = exports.createIntBuffer = exports.createUIntBuffer = exports.encodeValueToBuffer = exports.concat = exports.putRefinedMetaData = exports.extractElement = exports.removeElement = exports.makeMetadataSeekable = exports.createRIFFChunk = exports.VP8BitStreamToRiffWebPBuffer = exports.WebPBlockFilter = exports.WebPFrameFilter = exports.encodeTag = exports.readBlock = exports.ebmlBlock = exports.writeVint = exports.readVint = void 0;
 const int64_buffer_1 = require("int64-buffer");
 const EBMLEncoder_1 = __importDefault(require("./EBMLEncoder"));
 const { tools: _tools } = require('ebml/lib/ebml.js');
@@ -1745,9 +1744,36 @@ function convertEBMLDateToJSDate(int64str) {
         Number(int64str) / 1000 / 1000);
 }
 exports.convertEBMLDateToJSDate = convertEBMLDateToJSDate;
+/**
+ * Converts a Buffer (Big-Endian) of arbitrary length to an unsigned BigInt.
+ * @param buffer Buffer containing bytes in Big-Endian order
+ * @returns The unsigned BigInt value
+ */
+function bigIntFromUnsignedBufferBE(buffer) {
+    let result = BigInt(0);
+    for (const byte of buffer) {
+        result = (result << BigInt(8)) + BigInt(byte);
+    }
+    return result;
+}
+exports.bigIntFromUnsignedBufferBE = bigIntFromUnsignedBufferBE;
+/**
+ * Converts a Buffer (Big-Endian) to a signed BigInt (interpreted as two's complement).
+ * @param buffer Buffer containing bytes in Big-Endian order
+ * @returns The signed BigInt value
+ */
+function bigIntFromSignedBufferBE(buffer) {
+    const unsigned = bigIntFromUnsignedBufferBE(buffer);
+    const bitLength = BigInt(buffer.length * 8);
+    const signBit = BigInt(1) << (bitLength - BigInt(1));
+    return (unsigned & signBit) !== BigInt(0)
+        ? unsigned - (BigInt(1) << bitLength)
+        : unsigned;
+}
+exports.bigIntFromSignedBufferBE = bigIntFromSignedBufferBE;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./EBMLEncoder":3,"buffer":9,"ebml-block":10,"ebml/lib/ebml.js":13,"int64-buffer":19}],7:[function(require,module,exports){
+},{"./EBMLEncoder":3,"buffer":8,"ebml-block":9,"ebml/lib/ebml.js":12,"int64-buffer":18}],7:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -1900,79 +1926,6 @@ function fromByteArray (uint8) {
 }
 
 },{}],8:[function(require,module,exports){
-(function (Buffer){(function (){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", { value: true });
-let converter;
-/**
- * Convert a little-endian buffer into a BigInt.
- * @param buf The little-endian buffer to convert
- * @returns A BigInt with the little-endian representation of buf.
- */
-function toBigIntLE(buf) {
-    {
-        const reversed = Buffer.from(buf);
-        reversed.reverse();
-        const hex = reversed.toString('hex');
-        if (hex.length === 0) {
-            return BigInt(0);
-        }
-        return BigInt(`0x${hex}`);
-    }
-    return converter.toBigInt(buf, false);
-}
-exports.toBigIntLE = toBigIntLE;
-/**
- * Convert a big-endian buffer into a BigInt
- * @param buf The big-endian buffer to convert.
- * @returns A BigInt with the big-endian representation of buf.
- */
-function toBigIntBE(buf) {
-    {
-        const hex = buf.toString('hex');
-        if (hex.length === 0) {
-            return BigInt(0);
-        }
-        return BigInt(`0x${hex}`);
-    }
-    return converter.toBigInt(buf, true);
-}
-exports.toBigIntBE = toBigIntBE;
-/**
- * Convert a BigInt to a little-endian buffer.
- * @param num   The BigInt to convert.
- * @param width The number of bytes that the resulting buffer should be.
- * @returns A little-endian buffer representation of num.
- */
-function toBufferLE(num, width) {
-    {
-        const hex = num.toString(16);
-        const buffer = Buffer.from(hex.padStart(width * 2, '0').slice(0, width * 2), 'hex');
-        buffer.reverse();
-        return buffer;
-    }
-    // Allocation is done here, since it is slower using napi in C
-    return converter.fromBigInt(num, Buffer.allocUnsafe(width), false);
-}
-exports.toBufferLE = toBufferLE;
-/**
- * Convert a BigInt to a big-endian buffer.
- * @param num   The BigInt to convert.
- * @param width The number of bytes that the resulting buffer should be.
- * @returns A big-endian buffer representation of num.
- */
-function toBufferBE(num, width) {
-    {
-        const hex = num.toString(16);
-        return Buffer.from(hex.padStart(width * 2, '0').slice(0, width * 2), 'hex');
-    }
-    return converter.fromBigInt(num, Buffer.allocUnsafe(width), true);
-}
-exports.toBufferBE = toBufferBE;
-
-}).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":9}],9:[function(require,module,exports){
 (function (Buffer){(function (){
 /*!
  * The buffer module from node.js, for the browser.
@@ -3753,7 +3706,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"base64-js":7,"buffer":9,"ieee754":18}],10:[function(require,module,exports){
+},{"base64-js":7,"buffer":8,"ieee754":17}],9:[function(require,module,exports){
 var BufferReader = require('./lib/buffer-reader')
 
 var XIPH_LACING = 1
@@ -3834,7 +3787,7 @@ function readLacedData (reader, lacing) {
   return frames
 }
 
-},{"./lib/buffer-reader":11}],11:[function(require,module,exports){
+},{"./lib/buffer-reader":10}],10:[function(require,module,exports){
 var vint = require('./vint')
 
 function BufferReader (buffer) {
@@ -3884,7 +3837,7 @@ Object.defineProperty(BufferReader.prototype, 'length', {
 
 module.exports = BufferReader
 
-},{"./vint":12}],12:[function(require,module,exports){
+},{"./vint":11}],11:[function(require,module,exports){
 // https://github.com/themasch/node-ebml/blob/master/lib/ebml/tools.js
 module.exports = function (buffer, start, signed) {
   start = start || 0
@@ -3923,7 +3876,7 @@ module.exports = function (buffer, start, signed) {
   }
 }
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function (global,Buffer){(function (){
 'use strict';
 
@@ -13628,7 +13581,7 @@ exports.Encoder = EbmlEncoder;
 
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"buffer":9,"debug":14}],14:[function(require,module,exports){
+},{"buffer":8,"debug":13}],13:[function(require,module,exports){
 (function (process){(function (){
 /**
  * This is the web browser implementation of `debug()`.
@@ -13827,7 +13780,7 @@ function localstorage() {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./debug":15,"_process":21}],15:[function(require,module,exports){
+},{"./debug":14,"_process":20}],14:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -14054,7 +14007,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":16}],16:[function(require,module,exports){
+},{"ms":15}],15:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -14208,7 +14161,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -14707,7 +14660,7 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
   }
 }
 
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -14794,7 +14747,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function (Buffer){(function (){
 // int64-buffer.js
 
@@ -15104,7 +15057,7 @@ var Uint64BE, Int64BE, Uint64LE, Int64LE;
 }(typeof exports === 'object' && typeof exports.nodeName !== 'string' ? exports : (this || {}));
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":9}],20:[function(require,module,exports){
+},{"buffer":8}],19:[function(require,module,exports){
 module.exports = {
   byEbmlID: {
     0x80: {
@@ -18491,7 +18444,7 @@ module.exports = {
   }
 };
 
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -18677,7 +18630,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports={
   "name": "ts-ebml",
   "version": "3.0.1",
@@ -18711,7 +18664,6 @@ module.exports={
   },
   "homepage": "https://github.com/legokichi/ts-ebml#readme",
   "dependencies": {
-    "bigint-buffer": "^1.1.5",
     "commander": "^12.0.0",
     "ebml": "^3.0.0",
     "ebml-block": "^1.1.2",
@@ -18759,6 +18711,5 @@ module.exports={
     }
   }
 }
-
 },{}]},{},[5])(5)
 });

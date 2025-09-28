@@ -102,3 +102,15 @@ export declare function createUIntBuffer(value: number): Buffer;
 export declare function createIntBuffer(value: number): Buffer;
 export declare function createFloatBuffer(value: number, bytes?: 4 | 8): Buffer;
 export declare function convertEBMLDateToJSDate(int64str: number | string | Date): Date;
+/**
+ * Converts a Buffer (Big-Endian) of arbitrary length to an unsigned BigInt.
+ * @param buffer Buffer containing bytes in Big-Endian order
+ * @returns The unsigned BigInt value
+ */
+export declare function bigIntFromUnsignedBufferBE(buffer: Buffer): bigint;
+/**
+ * Converts a Buffer (Big-Endian) to a signed BigInt (interpreted as two's complement).
+ * @param buffer Buffer containing bytes in Big-Endian order
+ * @returns The signed BigInt value
+ */
+export declare function bigIntFromSignedBufferBE(buffer: Buffer): bigint;

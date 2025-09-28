@@ -1,5 +1,4 @@
-﻿import { toBigIntBE } from "bigint-buffer";
-import { readVint, convertEBMLDateToJSDate } from "./tools";
+﻿import { readVint, convertEBMLDateToJSDate } from "./tools";
 import * as EBML from "./EBML";
 import * as tools from "./tools";
 const schema: any = require("matroska-schema");
@@ -231,8 +230,8 @@ export default class EBMLDecoder {
         if (data.length > 6) {
           // feross/buffer shim can read over 7 octets
           // but nodejs buffer only can read under 6 octets
-          // so use bigint-buffer
-          tagObj.value = Number(toBigIntBE(data));
+          // so use custom converter
+          tagObj.value = Number(tools.bigIntFromUnsignedBufferBE(data));
         } else {
           tagObj.value = data.readUIntBE(0, data.length);
         }
@@ -276,7 +275,9 @@ export default class EBMLDecoder {
         // nano second; Date.UTC(2001,1,1,0,0,0,0) === 980985600000
         // Date - signed 8 octets integer in nanoseconds with 0 indicating
         // the precise beginning of the millennium (at 2001-01-01T00:00:00,000000000 UTC)
-        tagObj.value = convertEBMLDateToJSDate(Number(toBigIntBE(data)));
+        tagObj.value = convertEBMLDateToJSDate(
+          Number(tools.bigIntFromSignedBufferBE(data))
+        );
         break;
       }
     }

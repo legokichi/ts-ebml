@@ -31,7 +31,6 @@
   },
   "homepage": "https://github.com/legokichi/ts-ebml#readme",
   "dependencies": {
-    "bigint-buffer": "^1.1.5",
     "commander": "^12.0.0",
     "ebml": "^3.0.0",
     "ebml-block": "^1.1.2",
