@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "files": [
+    "src/index.ts",
+    "src/cli.ts",
+    "src/test.ts",
+    "src/run_test.ts",
+    "src/esm.mts"
+  ]
+}
