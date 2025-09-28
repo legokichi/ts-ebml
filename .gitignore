@@ -3,3 +3,4 @@ dist/
 test-results/
 doc/
 .cache/
+AGENTS.md

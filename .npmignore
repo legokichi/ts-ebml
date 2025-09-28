@@ -13,3 +13,4 @@ test-results/
 .cache/
 .git
 .github
+AGENTS.md
