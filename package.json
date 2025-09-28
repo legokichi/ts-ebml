@@ -36,7 +36,6 @@
     "ebml-block": "^1.1.2",
     "events": "^3.3.0",
     "int64-buffer": "^1.0.1",
-    "matroska": "^2.2.5",
     "matroska-schema": "^2.1.0"
   },
   "devDependencies": {
