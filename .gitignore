@@ -1,4 +1,5 @@
 node_modules/
-dist/test.js
+dist/
 test-results/
-dist
+doc/
+.cache/
